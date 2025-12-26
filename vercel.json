@@ -5,8 +5,8 @@
       "includeFiles": "db/**/*"
     }
   },
-  "routes": [
-    { "src": "/api/state/(?<syncId>.+)", "dest": "/api/state/[syncId]" },
-    { "src": "/(.*)", "dest": "/index.html" }
+  "rewrites": [
+    { "source": "/api/state/:syncId", "destination": "/api/state/[syncId]" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
