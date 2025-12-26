@@ -1,4 +1,9 @@
 {
+  "functions": {
+    "api/state/[syncId].ts": {
+      "includeFiles": "db/**/*"
+    }
+  },
   "rewrites": [
     { "source": "/api/state/(.*)", "destination": "/api/state/$1" },
     { "source": "/(.*)", "destination": "/" }
