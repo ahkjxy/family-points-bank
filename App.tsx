@@ -24,7 +24,9 @@ import {
 export default function App() {
   const navigate = useNavigate();
   const location = useLocation();
-  const match = useMatch('/:syncId/*') || useMatch('/:syncId');
+  const matchAny = useMatch('/:syncId/*');
+  const matchExact = useMatch('/:syncId');
+  const match = matchAny || matchExact;
   const syncId = match?.params?.syncId;
   const fallbackSyncId = syncId || '';
 
@@ -560,6 +562,29 @@ export default function App() {
     navigate(`/${target}/${tab}`);
   };
 
+  const handleLogout = async () => {
+    setIsLoading(true);
+    try {
+      await supabase.auth.signOut();
+      setSession(null);
+      setFatalError(null);
+      setBootingFamily(false);
+      setIsSyncing(false);
+      setState({
+        currentProfileId: INITIAL_PROFILES[1].id,
+        profiles: INITIAL_PROFILES,
+        tasks: INITIAL_TASKS,
+        rewards: INITIAL_REWARDS,
+        syncId: '',
+      });
+      navigate('/', { replace: true });
+    } catch (e) {
+      notifyError('退出登录失败', e);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const resolvedFamilyId = resolveFamilyId();
 
   if (!authReady) {
@@ -642,6 +667,7 @@ export default function App() {
           currentProfile={currentProfile}
           isAdmin={isAdmin}
           onPrint={() => printReport(state)}
+          onLogout={handleLogout}
         />
 
         <Routes>

@@ -7,9 +7,10 @@ interface HeaderBarProps {
   currentProfile: Profile;
   isAdmin: boolean;
   onPrint: () => void;
+  onLogout: () => void;
 }
 
-export function HeaderBar({ activeTab, currentProfile, isAdmin, onPrint }: HeaderBarProps) {
+export function HeaderBar({ activeTab, currentProfile, isAdmin, onPrint, onLogout }: HeaderBarProps) {
   return (
     <header className="sticky top-3 z-20 mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between bg-white/90 backdrop-blur-xl rounded-3xl px-4 py-3 border border-white/80 shadow-[0_24px_80px_-38px_rgba(124,77,255,0.55)]">
       <div className="space-y-1">
@@ -41,6 +42,12 @@ export function HeaderBar({ activeTab, currentProfile, isAdmin, onPrint }: Heade
             <span className="text-gray-700">打印手册</span>
           </button>
         )}
+        <button
+          onClick={onLogout}
+          className="px-4 py-2 rounded-2xl text-xs font-bold bg-white border border-gray-200 text-gray-700 hover:border-[#FF4D94] hover:text-[#FF4D94] transition-all w-full md:w-auto"
+        >
+          退出登录
+        </button>
         <div className="flex-1 md:flex-none px-4 py-3 bg-white rounded-2xl border border-white/80 shadow-[0_18px_50px_-28px_rgba(0,0,0,0.45)] flex items-center gap-3 min-w-[160px]">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#FF4D94]/15 to-[#7C4DFF]/15 text-[#FF4D94] flex items-center justify-center font-bold points-font">∞</div>
           <div className="flex flex-col leading-tight">
