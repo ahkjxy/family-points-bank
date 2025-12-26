@@ -22,8 +22,9 @@ export function EarnSection({ tasks, onSelectTask }: EarnSectionProps) {
   const renderTone = (cat: string) => cat === 'penalty' ? 'text-rose-500 bg-rose-50' : 'text-[#FF4D94] bg-pink-50';
 
   const filtered = useMemo(() => {
-    if (activeTab === 'all') return tasks;
-    return tasks.filter(t => t.category === activeTab);
+    const sorted = [...tasks].sort((a, b) => a.points - b.points);
+    if (activeTab === 'all') return sorted;
+    return sorted.filter(t => t.category === activeTab);
   }, [activeTab, tasks]);
 
   return (

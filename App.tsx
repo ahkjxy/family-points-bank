@@ -62,6 +62,11 @@ export default function App() {
 
   const [fatalError, setFatalError] = useState<string | null>(null);
 
+  const notifyError = (message: string, e?: any) => {
+    console.warn(message, e);
+    alert(`${message}：${(e as Error)?.message || '请稍后重试'}`);
+  };
+
   const seedFamilyIfEmpty = async (familyId: string) => {
     try {
       const { count: profileCount } = await supabase
@@ -70,16 +75,15 @@ export default function App() {
         .eq('family_id', familyId);
       if ((profileCount ?? 0) > 0) return;
 
+      const adminName = (session?.user?.email?.split('@')[0] || '管理员').slice(0, 20);
       const { data: insertedProfiles } = await supabase
         .from('profiles')
         .insert([
-          { family_id: familyId, name: '管理员', balance: 0, role: 'admin', avatar_color: 'bg-blue-600' },
-          { family_id: familyId, name: '孩子A', balance: 0, role: 'child', avatar_color: 'bg-pink-500' },
-          { family_id: familyId, name: '孩子B', balance: 0, role: 'child', avatar_color: 'bg-purple-500' },
+          { family_id: familyId, name: adminName, balance: 0, role: 'admin', avatar_color: 'bg-blue-600' },
         ])
         .select();
 
-      const adminProfileId = insertedProfiles?.find((p: any) => p.role === 'admin')?.id;
+      const adminProfileId = insertedProfiles?.[0]?.id;
 
       await supabase.from('tasks').insert(
         INITIAL_TASKS.map(t => ({
@@ -315,8 +319,9 @@ export default function App() {
       return;
     }
 
+    const txId = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `tx-${Date.now()}`;
     const transaction: Transaction = {
-      id: Date.now().toString(),
+      id: txId,
       title,
       points,
       timestamp: Date.now(),
@@ -356,7 +361,7 @@ export default function App() {
         await refreshFamily(familyId);
       }
     } catch (e) {
-      console.warn('Supabase transaction failed', e);
+      notifyError('积分变动失败', e);
     }
     await syncToCloud(newState);
   };
@@ -365,6 +370,8 @@ export default function App() {
     if (!isAdmin) return;
     const familyId = resolveFamilyId();
     let newState = { ...state } as FamilyState;
+    let success = false;
+    const typeLabel = type === 'task' ? '任务' : '奖品';
 
     try {
       if (type === 'task') {
@@ -380,10 +387,13 @@ export default function App() {
             item = data;
           }
           await refreshFamily(familyId);
+          setEditingItem(null);
+          success = true;
           return;
         } else {
           await supabase.from('tasks').delete().eq('id', item.id);
           newState.tasks = state.tasks.filter(t => t.id !== item.id);
+          success = true;
         }
       } else if (type === 'reward') {
         if (action === 'save') {
@@ -398,20 +408,24 @@ export default function App() {
             item = data;
           }
           await refreshFamily(familyId);
+          setEditingItem(null);
+          success = true;
           return;
         } else {
           await supabase.from('rewards').delete().eq('id', item.id);
           newState.rewards = state.rewards.filter(r => r.id !== item.id);
+          success = true;
         }
       }
     } catch (e) {
-      console.warn('Supabase CRUD failed', e);
+      notifyError(`${typeLabel}${action === 'save' ? '保存' : '删除'}失败`, e);
     }
 
-    setEditingItem(null);
-    setState(newState);
-    await syncToCloud(newState);
+    if (!success) return;
+
     if (action === 'delete') {
+      setState(newState);
+      await syncToCloud(newState);
       await refreshFamily(familyId);
     }
   };
@@ -431,7 +445,7 @@ export default function App() {
       if (error) throw error;
       await refreshFamily(familyId);
     } catch (e) {
-      console.warn('Supabase profile rename failed', e);
+      notifyError('更新成员姓名失败', e);
     }
     await syncToCloud(newState);
   };
@@ -464,7 +478,7 @@ export default function App() {
         await refreshFamily(familyId);
       }
     } catch (e) {
-      console.warn('Supabase add profile failed', e);
+      notifyError('新增成员失败', e);
     }
     await syncToCloud(newState);
   };
@@ -494,7 +508,7 @@ export default function App() {
       await supabase.from('profiles').delete().eq('id', id).eq('family_id', familyId);
       await refreshFamily(familyId);
     } catch (e) {
-      console.warn('Supabase delete profile failed', e);
+      notifyError('删除成员失败', e);
     }
     await syncToCloud(newState);
   };
@@ -530,18 +544,23 @@ export default function App() {
     reader.readAsDataURL(file);
   };
 
-  const filteredTasks = useMemo(() =>
-    taskFilter === 'all' ? state.tasks : state.tasks.filter(t => t.category === taskFilter)
-  , [state.tasks, taskFilter]);
+  const filteredTasks = useMemo(() => {
+    const sorted = [...state.tasks].sort((a, b) => a.points - b.points);
+    return taskFilter === 'all' ? sorted : sorted.filter(t => t.category === taskFilter);
+  }, [state.tasks, taskFilter]);
 
-  const filteredRewards = useMemo(() =>
-    rewardFilter === 'all' ? state.rewards : state.rewards.filter(r => r.type === rewardFilter)
-  , [state.rewards, rewardFilter]);
+  const filteredRewards = useMemo(() => {
+    const sorted = [...state.rewards].sort((a, b) => a.points - b.points);
+    return rewardFilter === 'all' ? sorted : sorted.filter(r => r.type === rewardFilter);
+  }, [state.rewards, rewardFilter]);
 
   const goTab = (tab: 'dashboard' | 'earn' | 'redeem' | 'history' | 'settings' | 'doc') => {
     const target = resolveFamilyId();
+    if (!target) return;
     navigate(`/${target}/${tab}`);
   };
+
+  const resolvedFamilyId = resolveFamilyId();
 
   if (!authReady) {
     return (
@@ -590,9 +609,9 @@ export default function App() {
               <p className="font-semibold text-gray-800 mb-1">主要功能</p>
               <ul className="list-disc list-inside space-y-1">
                 <li>多成员积分 / 扣分与历史记录</li>
-                <li>任务与奖品配置、同步到本地文件</li>
+                <li>任务与奖品配置，实时存入 Supabase</li>
                 <li>兑换记录与打印制度手册</li>
-                <li>按 Sync ID 独立的家庭空间</li>
+                <li>按家庭 ID（Supabase families.id）独立的家庭空间</li>
               </ul>
             </div>
           </div>
@@ -626,8 +645,8 @@ export default function App() {
         />
 
         <Routes>
-          <Route path="/" element={<Navigate to={`/${fallbackSyncId}/dashboard`} replace />} />
-          <Route path="/:syncId" element={<Navigate to={`/${resolveFamilyId()}/dashboard`} replace />} />
+          <Route path="/" element={resolvedFamilyId ? <Navigate to={`/${resolvedFamilyId}/dashboard`} replace /> : <AuthGate />} />
+          <Route path="/:syncId" element={resolvedFamilyId ? <Navigate to={`/${resolvedFamilyId}/dashboard`} replace /> : <AuthGate />} />
           <Route 
             path="/:syncId/dashboard" 
             element={

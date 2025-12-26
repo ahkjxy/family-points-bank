@@ -86,6 +86,25 @@ export const AuthGate: React.FC = () => {
     }
   };
 
+  const handleResetPassword = async () => {
+    clearNotice();
+    const em = email.trim();
+    if (!em) {
+      setError('请输入邮箱以重置密码');
+      return;
+    }
+    setLoading(true);
+    try {
+      const { error: resetErr } = await supabase.auth.resetPasswordForEmail(em, { redirectTo: window.location.origin });
+      if (resetErr) throw resetErr;
+      setMessage('已发送重置密码邮件，请查收邮箱并按链接修改密码。');
+    } catch (err) {
+      setError((err as Error)?.message || '发送失败');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-[#F9F4FF] via-white to-[#EAF6FF] px-6 py-12">
       <div className="w-full max-w-md bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/80 p-8 space-y-6">
@@ -146,6 +165,12 @@ export const AuthGate: React.FC = () => {
                 onClick={handleSignup}
                 className="px-4 py-3 rounded-2xl bg-white border border-gray-200 text-gray-800 font-bold hover:border-[#FF4D94] hover:text-[#FF4D94]"
               >注册</button>
+              <button
+                type="button"
+                disabled={loading}
+                onClick={handleResetPassword}
+                className="px-4 py-3 rounded-2xl bg-white border border-gray-200 text-gray-600 font-bold hover:border-[#7C4DFF] hover:text-[#7C4DFF]"
+              >忘记密码</button>
             </div>
           </form>
         ) : (

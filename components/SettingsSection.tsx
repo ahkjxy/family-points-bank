@@ -171,6 +171,7 @@ export function SettingsSection({
             <div className="flex justify-between items-center">
               <h3 className="text-sm font-bold text-gray-400 font-display uppercase tracking-[0.2em]">元气任务配置</h3>
               <button onClick={() => onEdit({ type: 'task', item: { category: 'learning', title: '', description: '', points: 1, frequency: '每日' } })} className="px-4 py-2 bg-gray-800 text-white rounded-xl text-[10px] font-bold flex items-center gap-2 hover:bg-black transition-all shadow-md"><Icon name="plus" size={12} /> 新增规则</button>
+              <button onClick={() => onEdit({ type: 'reward', item: { title: '', description: '', points: 1, type: '实物奖品', imageUrl: '' } })} className="px-4 py-2 bg-white text-gray-800 rounded-xl text-[10px] font-bold flex items-center gap-2 hover:border hover:border-[#FF4D94] transition-all shadow-sm"><Icon name="gift" size={12} /> 新增奖品</button>
             </div>
             <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
               {['all', 'learning', 'chores', 'discipline', 'penalty'].map(cat => (
@@ -277,9 +278,9 @@ export function SettingsSection({
             </div>
           </div>
           <ul className="text-sm text-gray-600 space-y-1 list-disc list-inside">
-            <li>同步会调用云端 API `/api/state/{currentSyncId || 'SYNC_ID'}` 拉取数据并刷新页面状态。</li>
-            <li>写入（任务、奖品、记账、成员）会直接 POST 到同一 API 并等待返回。</li>
-            <li>若接口返回 404，会提示家庭未开通或无权限访问。</li>
+            <li>同步会重新从 Supabase 读取 families / profiles / tasks / rewards / transactions 并刷新当前家庭状态。</li>
+            <li>写入（任务、奖品、记账、成员）通过 Supabase 表完成，成功后会更新页面数据。</li>
+            <li>若无权限或找不到家庭，将提示检查登录状态或访问链接。</li>
           </ul>
         </div>
       )}

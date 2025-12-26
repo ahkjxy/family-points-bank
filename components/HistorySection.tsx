@@ -17,8 +17,9 @@ export function HistorySection({ history }: HistorySectionProps) {
   const [activeTab, setActiveTab] = useState<HistoryTab>('all');
 
   const filtered = useMemo(() => {
-    if (activeTab === 'all') return history;
-    return history.filter(h => h.type === activeTab);
+    const sorted = [...history].sort((a, b) => b.timestamp - a.timestamp);
+    if (activeTab === 'all') return sorted;
+    return sorted.filter(h => h.type === activeTab);
   }, [activeTab, history]);
 
   return (

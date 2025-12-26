@@ -23,8 +23,8 @@ export function DocsPage() {
         <p className="text-sm text-gray-600 max-w-3xl">本页汇总应用的路由、页面功能、操作流程与同步策略，可用于新用户上手或内部分发。</p>
         <div className="flex flex-wrap gap-2 pt-1">
           <Badge>React + Vite</Badge>
-          <Badge>API Sync</Badge>
-          <Badge>No Local Cache</Badge>
+          <Badge>Supabase</Badge>
+          <Badge>Server Sync</Badge>
           <Badge>Admin / Member</Badge>
         </div>
       </div>
@@ -60,29 +60,29 @@ export function DocsPage() {
           </div>
           <div className="p-4 rounded-2xl bg-gray-50 border border-gray-100 space-y-1 md:col-span-2">
             <h4 className="text-sm font-bold text-gray-900">系统配置（管理员）</h4>
-            <p>Tab 分区：成员管理（新增/改名/删除）、任务配置、商店配置、同步/打印；任务/奖品可增改删，奖品可上传图片。</p>
+            <p>Tab 分区：成员管理（新增/改名/删除）、任务配置、商店配置、云同步/打印；任务/奖品实时写入 Supabase，奖品可上传图片。</p>
           </div>
         </div>
       </Section>
 
       <Section title="操作流程">
         <ul className="space-y-1 list-decimal list-inside">
-          <li>录入任务：进入“元气任务”点击行 → 确认弹窗 → 入账并同步。</li>
-          <li>兑换奖品：在“梦想商店”选择可负担的奖品 → 确认弹窗 → 扣减并同步。</li>
+          <li>录入任务：进入“元气任务”点击行 → 确认弹窗 → 入账并写入 Supabase。</li>
+          <li>兑换奖品：在“梦想商店”选择可负担的奖品 → 确认弹窗 → 扣减并写入 Supabase。</li>
           <li>新增规则：设置页点击“新增规则/上架新品” → 填表 → 保存（任务周期可选 每日/每次/每周/每月/每学期/每年）。</li>
-          <li>手动同步：设置页“同步云端”会重新请求云端 API `/api/state/:syncId` 并刷新当前状态。</li>
+          <li>手动同步：设置页“同步云端”会重新从 Supabase 拉取当前家庭数据并刷新状态。</li>
           <li>账户切换：侧栏入口选择成员，立即切换上下文与历史。</li>
         </ul>
       </Section>
 
       <Section title="数据与同步策略">
         <ul className="space-y-1 list-disc list-inside">
-          <li>数据源：云端 API `/api/state/:syncId`。</li>
-          <li>本地缓存：无；每次直接请求云端接口。</li>
-          <li>启动：进入页面即请求云端数据。</li>
-          <li>写入（记账、任务/奖品 CRUD）：直接 POST 到 `/api/state/:syncId`。</li>
-          <li>手动同步：设置页按钮会强制重新请求 API 并刷新状态。</li>
-          <li>字段：包含 profiles、tasks、rewards、history、lastSyncedAt。</li>
+          <li>数据源：Supabase 数据库（families、profiles、tasks、rewards、transactions）。</li>
+          <li>缓存策略：无本地持久化，每次拉取 Supabase 最新数据。</li>
+          <li>启动：登录后按家庭 ID 读取 Supabase 数据。</li>
+          <li>写入：记账、任务/奖品 CRUD、成员变更直接操作 Supabase 表，成功后刷新。</li>
+          <li>手动同步：设置页按钮会重新 fetch Supabase，强制刷新状态。</li>
+          <li>隔离：按 families.id 区分家庭空间；角色 admin/child 控制权限。</li>
         </ul>
       </Section>
 

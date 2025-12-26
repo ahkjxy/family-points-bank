@@ -13,8 +13,9 @@ export function RedeemSection({ rewards, balance, onRedeem }: RedeemSectionProps
   const [activeTab, setActiveTab] = useState<typeof tabs[number]>('all');
 
   const filtered = useMemo(() => {
-    if (activeTab === 'all') return rewards;
-    return rewards.filter(r => r.type === activeTab);
+    const sorted = [...rewards].sort((a, b) => a.points - b.points);
+    if (activeTab === 'all') return sorted;
+    return sorted.filter(r => r.type === activeTab);
   }, [activeTab, rewards]);
 
   return (
