@@ -63,12 +63,19 @@ export function generateHTMLReport(
     <style>
         @media print {
             @page { margin: 12mm; }
-            body { padding: 0; }
+            body { padding: 0; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+        }
+        :root {
+            --primary: #FF4D94;
+            --secondary: #7C4DFF;
+            --accent: #10B981;
+            --amber: #F59E0B;
+            --bg: #FFF8FB;
         }
         body {
             font-family: "PingFang SC", "STHeiti", sans-serif;
-            color: #111;
-            line-height: 1.3;
+            color: #0f172a;
+            line-height: 1.35;
             padding: 20px;
             background: #fff;
             font-size: 11px;
@@ -78,7 +85,7 @@ export function generateHTMLReport(
             margin: 0 auto;
         }
         .header {
-            border-bottom: 2px solid #000;
+            border-bottom: 3px solid var(--primary);
             padding-bottom: 12px;
             margin-bottom: 25px;
             display: flex;
@@ -90,56 +97,78 @@ export function generateHTMLReport(
             font-weight: 800;
             margin: 0;
             letter-spacing: 2px;
+            color: var(--secondary);
         }
         .header-info {
             text-align: right;
             font-size: 9px;
-            color: #555;
+            color: #475569;
             font-weight: 600;
         }
         .section-title {
             font-size: 18px;
             font-weight: 800;
-            margin: 25px 0 10px 0;
-            border-bottom: 1px solid #000;
-            padding-bottom: 4px;
+            margin: 25px 0 12px 0;
+            border-bottom: 2px solid rgba(255, 77, 148, 0.35);
+            padding-bottom: 6px;
             text-transform: uppercase;
+            color: var(--primary);
         }
         .category-title {
             font-size: 13px;
-            font-weight: 700;
+            font-weight: 800;
             margin: 15px 0 8px 0;
             display: flex;
             align-items: center;
+            gap: 8px;
+            color: #0f172a;
+        }
+        .category-title::before {
+            content: "";
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            box-shadow: 0 0 0 3px rgba(255,77,148,0.12);
         }
         table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 15px;
+            background: #fff;
+            overflow: hidden;
+            border-radius: 10px;
+            box-shadow: 0 8px 30px -18px rgba(124,77,255,0.45);
         }
         th, td {
-            border: 0.5px solid #000;
-            padding: 7px 5px;
+            border: 0.5px solid rgba(148, 163, 184, 0.6);
+            padding: 7px 6px;
             text-align: left;
         }
         th {
-            background: #f9f9f9;
-            font-weight: 700;
+            background: linear-gradient(90deg, #FFE4F1, #E9DCFF);
+            color: #5B1B70;
+            font-weight: 800;
             font-size: 9px;
             text-align: center;
+            letter-spacing: 0.05em;
         }
-        .col-pts { width: 45px; font-weight: 800; text-align: center; }
-        .col-freq { width: 45px; text-align: center; font-size: 9px; color: #444; }
-        .col-desc { font-weight: normal; }
-        small { font-size: 8px; color: #666; font-weight: 400; display: block; margin-top: 2px; }
+        tr:nth-child(odd) td { background: #FFF9FD; }
+        tr:nth-child(even) td { background: #F7F5FF; }
+        .col-pts { width: 48px; font-weight: 900; text-align: center; color: var(--primary); }
+        .col-freq { width: 48px; text-align: center; font-size: 9px; color: #475569; font-weight: 700; }
+        .col-desc { font-weight: 600; color: #0f172a; }
+        small { font-size: 8px; color: #6b7280; font-weight: 500; display: block; margin-top: 3px; }
 
         .rules-footer {
             margin-top: 40px;
             font-size: 8px;
-            color: #888;
+            color: #475569;
             text-align: center;
-            border-top: 1px dashed #eee;
+            border-top: 1px dashed rgba(148, 163, 184, 0.7);
             padding-top: 20px;
+            background: linear-gradient(90deg, rgba(255,77,148,0.06), rgba(124,77,255,0.06));
         }
     </style>
 </head>
