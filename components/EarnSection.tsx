@@ -29,12 +29,12 @@ export function EarnSection({ tasks, onSelectTask }: EarnSectionProps) {
 
   return (
     <div className="space-y-6 pb-14 animate-in slide-in-from-bottom-4 duration-500">
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 bg-white/60 backdrop-blur rounded-2xl p-2 border border-gray-100 shadow-sm">
         {categories.map(cat => (
           <button
             key={cat}
             onClick={() => setActiveTab(cat)}
-            className={`px-4 py-2 rounded-full text-[11px] font-bold transition-all ${activeTab === cat ? 'bg-[#FF4D94] text-white shadow-md' : 'bg-white border border-gray-200 text-gray-500 hover:border-[#FF4D94]'}`}
+            className={`px-4 py-2 rounded-full text-[11px] font-bold transition-all min-w-[96px] text-center ${activeTab === cat ? 'bg-[#FF4D94] text-white shadow-md shadow-[#FF4D94]/20' : 'bg-white border border-gray-200 text-gray-600 hover:border-[#FF4D94]/50 hover:text-[#FF4D94]'}`}
           >
             {renderLabel(cat)}
           </button>

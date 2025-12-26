@@ -22,7 +22,9 @@ export function EditModal({ editingItem, onClose, onSave, onUpdate, fileInputRef
       <div className="bg-white w-full max-w-[550px] rounded-[48px] shadow-3xl relative z-10 p-10 space-y-6 animate-in slide-in-from-bottom-8 border border-gray-100 max-h-[90vh] overflow-y-auto no-scrollbar">
         <div className="flex justify-between items-center px-2">
           <div>
-            <h3 className="text-2xl font-bold text-gray-900 font-display tracking-tight">{item.id ? '修改条目' : '创建新规则'}</h3>
+            <h3 className="text-2xl font-bold text-gray-900 font-display tracking-tight">
+              {type === 'reward' ? '上架商品' : item.id ? '修改规则' : '创建新规则'}
+            </h3>
             <p className="text-[9px] text-gray-400 mt-1 uppercase tracking-widest font-bold">MODE: {type.toUpperCase()}</p>
           </div>
           <button onClick={onClose} className="text-gray-300 hover:text-[#FF4D94] transition-all p-2 rounded-full hover:bg-gray-100"><Icon name="plus" size={32} className="rotate-45" /></button>
@@ -34,7 +36,7 @@ export function EditModal({ editingItem, onClose, onSave, onUpdate, fileInputRef
               <label className="text-[10px] font-bold uppercase text-gray-400 ml-4 tracking-widest">奖品图片 Reward Image</label>
               <div 
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full h-40 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center cursor-pointer hover:bg-pink-50 hover:border-pink-200 transition-all overflow-hidden"
+                className="w-full h-20 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center cursor-pointer hover:bg-pink-50 hover:border-pink-200 transition-all overflow-hidden"
               >
                 {item.imageUrl ? (
                   <img src={item.imageUrl} className="w-full h-full object-cover" />

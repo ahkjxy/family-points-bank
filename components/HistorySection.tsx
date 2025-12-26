@@ -23,20 +23,20 @@ export function HistorySection({ history }: HistorySectionProps) {
   }, [activeTab, history]);
 
   return (
-    <div className="space-y-4 pb-16 animate-in zoom-in-95 duration-500">
-      <div className="flex flex-wrap gap-2">
+    <div className="space-y-6 pb-16 animate-in zoom-in-95 duration-500">
+      <div className="flex flex-wrap gap-2 bg-white/60 backdrop-blur rounded-2xl p-2 border border-gray-100 shadow-sm">
         {(['all', 'earn', 'penalty', 'redeem'] as HistoryTab[]).map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 rounded-full text-[11px] font-bold transition-all ${activeTab === tab ? 'bg-[#FF4D94] text-white shadow-md' : 'bg-white border border-gray-200 text-gray-500 hover:border-[#FF4D94]'}`}
+            className={`px-4 py-2 rounded-full text-[11px] font-bold transition-all min-w-[96px] text-center ${activeTab === tab ? 'bg-[#FF4D94] text-white shadow-md shadow-[#FF4D94]/20' : 'bg-white border border-gray-200 text-gray-600 hover:border-[#FF4D94]/50 hover:text-[#FF4D94]'}`}
           >
             {TAB_LABELS[tab]}
           </button>
         ))}
       </div>
 
-      <div className="bg-white rounded-[24px] shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-white rounded-[32px] shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)] border border-gray-100 overflow-hidden">
         <table className="w-full text-left">
           <thead className="bg-gray-50/50">
             <tr>

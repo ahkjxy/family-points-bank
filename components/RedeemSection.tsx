@@ -20,19 +20,19 @@ export function RedeemSection({ rewards, balance, onRedeem }: RedeemSectionProps
 
   return (
     <div className="space-y-6 pb-16 animate-in zoom-in-95 duration-500">
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 bg-white/60 backdrop-blur rounded-2xl p-2 border border-gray-100 shadow-sm">
         {tabs.map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 rounded-full text-[11px] font-bold transition-all ${activeTab === tab ? 'bg-[#FF4D94] text-white shadow-md' : 'bg-white border border-gray-200 text-gray-500 hover:border-[#FF4D94]'}`}
+            className={`px-4 py-2 rounded-full text-[11px] font-bold transition-all min-w-[96px] text-center ${activeTab === tab ? 'bg-[#FF4D94] text-white shadow-md shadow-[#FF4D94]/20' : 'bg-white border border-gray-200 text-gray-600 hover:border-[#FF4D94]/50 hover:text-[#FF4D94]'}`}
           >
             {tab === 'all' ? '全部奖品' : tab}
           </button>
         ))}
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+      <div className="space-y-3">
         {filtered.map(reward => {
           const canAfford = balance >= reward.points;
           return (
@@ -40,22 +40,20 @@ export function RedeemSection({ rewards, balance, onRedeem }: RedeemSectionProps
               key={reward.id} 
               disabled={!canAfford}
               onClick={() => onRedeem({ title: reward.title, points: -reward.points, type: 'redeem' })}
-              className={`p-0 vibrant-card flex flex-col items-center text-center group active:scale-95 transition-all overflow-hidden ${!canAfford ? 'opacity-50 grayscale bg-gray-50' : ''}`}
+              className={`w-full flex items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl border transition-all text-left group ${canAfford ? 'bg-white hover:border-[#FF4D94]/30 hover:shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)] active:scale-[0.99]' : 'bg-gray-50 border-gray-100 cursor-not-allowed opacity-60 grayscale'}`}
             >
-              <div className="w-full h-32 bg-gray-100 flex items-center justify-center overflow-hidden">
-                {reward.imageUrl ? (
-                  <img src={reward.imageUrl} alt={reward.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                ) : (
-                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${reward.type === '实物奖品' ? 'bg-amber-50 text-amber-500' : 'bg-indigo-50 text-indigo-500'} group-hover:scale-110 transition-all shadow-sm`}>
-                    <Icon name="reward" size={28} />
-                  </div>
-                )}
-              </div>
-              <div className="p-4 w-full">
-                <span className="text-xs font-bold text-gray-800 mb-3 h-8 line-clamp-2 leading-tight px-1 font-display block">{reward.title}</span>
-                <div className={`w-full py-2.5 rounded-xl text-[10px] font-bold ${canAfford ? 'btn-pop' : 'bg-gray-200 text-gray-500'}`}>
-                  {reward.points} PTS
+              <div className="flex items-center gap-4 overflow-hidden">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 overflow-hidden ${reward.type === '实物奖品' ? 'bg-amber-50 text-amber-500' : 'bg-indigo-50 text-indigo-500'}`}>
+                  {reward.imageUrl ? <img src={reward.imageUrl} alt={reward.title} className="w-full h-full object-cover" /> : <Icon name="reward" size={18} />}
                 </div>
+                <div className="overflow-hidden">
+                  <p className="text-sm font-bold text-gray-900 truncate group-hover:text-[#FF4D94]">{reward.title}</p>
+                  <p className="text-[11px] text-gray-400 uppercase tracking-wide truncate">{reward.type}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 shrink-0">
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-xl text-[11px] font-black text-[#FF4D94] bg-[#FFF2F7] points-font">{reward.points} pts</span>
+                <span className="w-10 h-10 rounded-[14px] bg-gradient-to-br from-[#FF4D94] to-[#FF7AB5] text-white font-black text-sm flex items-center justify-center shadow-lg shadow-[#FF4D94]/30">{reward.points}</span>
               </div>
             </button>
           );
