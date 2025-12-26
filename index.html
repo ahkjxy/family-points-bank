@@ -1,0 +1,109 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>元气积分银行</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #FF4D94;
+            --primary-soft: #FFF0F6;
+            --secondary: #7C4DFF;
+            --success: #00C897;
+            --warning: #FF9F43;
+            --surface: #FFFFFF;
+            --bg: #FDFCFD;
+        }
+        
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background-color: var(--bg);
+            color: #1A1A1A;
+            letter-spacing: -0.01em;
+        }
+
+        .font-display {
+            font-family: 'Quicksand', sans-serif;
+        }
+
+        /* Airy Glass Sidebar */
+        .glass-sidebar {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border-right: 1px solid rgba(255, 77, 148, 0.1);
+        }
+
+        /* Floating Modern Cards */
+        .vibrant-card {
+            background: var(--surface);
+            border-radius: 24px;
+            box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(0,0,0,0.03);
+        }
+
+        .vibrant-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px -8px rgba(255, 77, 148, 0.15);
+            border-color: rgba(255, 77, 148, 0.2);
+        }
+
+        /* Neo-Pop Buttons */
+        .btn-pop {
+            background: var(--primary);
+            color: white;
+            border-radius: 16px;
+            font-weight: 700;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(255, 77, 148, 0.25);
+        }
+
+        .btn-pop:hover {
+            filter: brightness(1.05);
+            box-shadow: 0 6px 20px rgba(255, 77, 148, 0.35);
+        }
+
+        .btn-pop:active {
+            transform: scale(0.97);
+        }
+
+        .points-font {
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 700;
+            font-feature-settings: "tnum";
+        }
+
+        /* Hide scrollbars but allow scrolling */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+            100% { transform: translateY(0px); }
+        }
+        .animate-float { animation: float 4s ease-in-out infinite; }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "path": "https://esm.sh/path@^0.12.7",
+    "url": "https://esm.sh/url@^0.11.4",
+    "vite": "https://esm.sh/vite@^7.3.0",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body class="antialiased">
+    <div id="root"></div>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>
