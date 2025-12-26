@@ -1,10 +1,8 @@
 import fs from 'fs';
 import fsp from 'fs/promises';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import { INITIAL_PROFILES, INITIAL_REWARDS, INITIAL_TASKS, FIXED_SYNC_ID } from '../../constants';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const defaultState = {
   currentProfileId: INITIAL_PROFILES[0]?.id ?? 'admin-only',
   profiles: INITIAL_PROFILES,
@@ -13,7 +11,7 @@ const defaultState = {
   syncId: FIXED_SYNC_ID,
 };
 
-const resolvePath = (syncId: string) => path.resolve(__dirname, '..', '..', 'db', `${syncId}.json`);
+const resolvePath = (syncId: string) => path.join(process.cwd(), 'db', `${syncId}.json`);
 
 export default async function handler(req: any, res: any) {
   const syncId = decodeURIComponent((req.query?.syncId as string) || '').trim();
@@ -37,7 +35,8 @@ export default async function handler(req: any, res: any) {
       }
       const raw = await fsp.readFile(dataPath, 'utf-8');
       const fallback = { ...defaultState, syncId };
-      res.status(200).json(raw?.trim() ? JSON.parse(raw) : fallback);
+      const parsed = raw?.trim() ? JSON.parse(raw) : fallback;
+      res.status(200).json(parsed);
     } catch (e) {
       handleError(e);
     }
