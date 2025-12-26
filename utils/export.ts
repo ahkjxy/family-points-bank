@@ -63,7 +63,11 @@ export function generateHTMLReport(
     <style>
         @media print {
             @page { margin: 12mm; }
-            body { padding: 0; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+            * { -webkit-print-color-adjust: exact; print-color-adjust: exact; box-shadow: none !important; }
+            body { padding: 0; background: #fff; }
+            .container { max-width: 100%; margin: 0; }
+            table { box-shadow: none !important; border-radius: 4px !important; }
+            .header, .section-title, .rules-footer { box-shadow: none !important; }
         }
         :root {
             --primary: #FF4D94;
@@ -138,8 +142,8 @@ export function generateHTMLReport(
             margin-bottom: 15px;
             background: #fff;
             overflow: hidden;
-            border-radius: 10px;
-            box-shadow: 0 8px 30px -18px rgba(124,77,255,0.45);
+            border-radius: 8px;
+            box-shadow: 0 6px 18px -14px rgba(124,77,255,0.30);
         }
         th, td {
             border: 0.5px solid rgba(148, 163, 184, 0.6);
@@ -168,7 +172,9 @@ export function generateHTMLReport(
             text-align: center;
             border-top: 1px dashed rgba(148, 163, 184, 0.7);
             padding-top: 20px;
-            background: linear-gradient(90deg, rgba(255,77,148,0.06), rgba(124,77,255,0.06));
+            background: linear-gradient(90deg, rgba(255,77,148,0.04), rgba(124,77,255,0.04));
+            box-shadow: 0 4px 16px -12px rgba(15,23,42,0.25);
+            border-radius: 8px;
         }
     </style>
 </head>
