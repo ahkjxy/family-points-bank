@@ -6,7 +6,7 @@
     }
   },
   "routes": [
-    { "src": "/api/state/(?<syncId>.+)", "dest": "/api/state/[syncId].ts" },
+    { "src": "/api/state/(?<syncId>.+)", "dest": "/api/state/[syncId]" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
