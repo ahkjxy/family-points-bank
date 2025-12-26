@@ -1,8 +1,10 @@
 import fs from 'fs';
 import fsp from 'fs/promises';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { INITIAL_PROFILES, INITIAL_REWARDS, INITIAL_TASKS, FIXED_SYNC_ID } from '../../constants';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const defaultState = {
   currentProfileId: INITIAL_PROFILES[0]?.id ?? 'admin-only',
   profiles: INITIAL_PROFILES,
@@ -11,10 +13,10 @@ const defaultState = {
   syncId: FIXED_SYNC_ID,
 };
 
-const resolvePath = (syncId: string) => path.resolve(process.cwd(), 'db', `${syncId}.json`);
+const resolvePath = (syncId: string) => path.resolve(__dirname, '..', '..', 'db', `${syncId}.json`);
 
 export default async function handler(req: any, res: any) {
-  const syncId = decodeURIComponent((req.query.syncId as string) || '').trim();
+  const syncId = decodeURIComponent((req.query?.syncId as string) || '').trim();
   if (!syncId) {
     res.status(400).json({ ok: false, message: 'Missing syncId' });
     return;
@@ -23,6 +25,7 @@ export default async function handler(req: any, res: any) {
   const dataPath = resolvePath(syncId);
 
   const handleError = (err: unknown, status = 500) => {
+    console.error('api/state error', err);
     res.status(status).json({ ok: false, message: (err as Error)?.message || 'Unknown error' });
   };
 
