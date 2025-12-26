@@ -1,4 +1,3 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
 import fs from 'fs';
 import fsp from 'fs/promises';
 import path from 'path';
@@ -14,7 +13,7 @@ const defaultState = {
 
 const resolvePath = (syncId: string) => path.resolve(process.cwd(), 'db', `${syncId}.json`);
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req: any, res: any) {
   const syncId = decodeURIComponent((req.query.syncId as string) || '').trim();
   if (!syncId) {
     res.status(400).json({ ok: false, message: 'Missing syncId' });
