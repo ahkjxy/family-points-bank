@@ -37,21 +37,26 @@ export function HistorySection({ history }: HistorySectionProps) {
       </div>
 
       <div className="bg-white rounded-[32px] shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)] border border-gray-100 overflow-hidden">
-        <table className="w-full text-left">
-          <thead className="bg-gray-50/50">
+        <table className="w-full text-left text-sm">
+          <thead className="bg-gray-50/80 border-b border-gray-100">
             <tr>
-              <th className="px-8 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">操作时间</th>
-              <th className="px-8 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">能量明细</th>
-              <th className="px-8 py-5 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-right">数值变动</th>
+              <th className="px-6 sm:px-8 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">操作时间</th>
+              <th className="px-6 sm:px-8 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">能量明细</th>
+              <th className="px-6 sm:px-8 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] text-right">数值变动</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
-            {filtered.map(h => (
-              <tr key={h.id} className="hover:bg-gray-50/50 transition-colors">
-                <td className="px-8 py-4 text-[10px] text-gray-400 font-medium tabular-nums">{new Date(h.timestamp).toLocaleDateString()}</td>
-                <td className="px-8 py-4 text-sm font-bold text-gray-700">{h.title}</td>
-                <td className={`px-8 py-4 text-xl font-bold text-right points-font ${h.points > 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
-                  {h.points > 0 ? '+' : ''}{h.points}
+            {filtered.map((h, idx) => (
+              <tr
+                key={h.id}
+                className={`${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/60'} hover:bg-gray-50/90 transition-colors`}
+              >
+                <td className="px-6 sm:px-8 py-3 text-[11px] text-gray-400 font-medium tabular-nums whitespace-nowrap">{new Date(h.timestamp).toLocaleDateString()}</td>
+                <td className="px-6 sm:px-8 py-3 text-sm font-bold text-gray-800 leading-tight">{h.title}</td>
+                <td className="px-6 sm:px-8 py-3 text-right">
+                  <span className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[12px] font-black points-font ${h.points > 0 ? 'text-emerald-600 bg-emerald-50' : 'text-rose-600 bg-rose-50'}`}>
+                    {h.points > 0 ? '+' : ''}{h.points}
+                  </span>
                 </td>
               </tr>
             ))}
