@@ -59,15 +59,8 @@ export default async function handler(req: any, res: any) {
   }
 
   if (req.method === 'POST') {
-    try {
-      const parsed = req.body ?? {};
-      await fsp.mkdir(path.dirname(dataPath), { recursive: true });
-      const payload = { ...parsed, syncId };
-      await fsp.writeFile(dataPath, JSON.stringify(payload, null, 2), 'utf-8');
-      res.status(200).json({ ok: true });
-    } catch (e) {
-      handleError(e);
-    }
+    // Vercel 函数为只读文件系统，线上无法写入本地 db。
+    res.status(403).json({ ok: false, message: '只读环境：线上不可写入 db 文件' });
     return;
   }
 

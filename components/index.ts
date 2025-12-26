@@ -10,3 +10,5 @@ export * from './EditModal';
 export * from './PendingActionModal';
 export * from './DocsPage';
 export * from './Icon';
+export * from './MobileNav';
+export * from './AuthGate';

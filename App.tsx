@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import type { Session } from '@supabase/supabase-js';
 import { Routes, Route, Navigate, useNavigate, useLocation, useMatch } from 'react-router-dom';
 import { FamilyState, Transaction, Profile, Category } from './types';
-import { INITIAL_TASKS, INITIAL_REWARDS, INITIAL_PROFILES, FIXED_SYNC_ID, SYNC_API_PREFIX } from './constants';
+import { INITIAL_TASKS, INITIAL_REWARDS, INITIAL_PROFILES, FIXED_SYNC_ID } from './constants';
+import { supabase } from './supabaseClient';
 import { printReport } from './utils/export';
 import {
   Sidebar,
@@ -15,14 +17,17 @@ import {
   EditModal,
   PendingActionModal,
   DocsPage,
+  MobileNav,
+  AuthGate,
 } from './components';
 
 export default function App() {
   const navigate = useNavigate();
   const location = useLocation();
-  const match = useMatch('/:syncId/*');
+  const match = useMatch('/:syncId/*') || useMatch('/:syncId');
   const syncId = match?.params?.syncId;
-  const fallbackSyncId = syncId || FIXED_SYNC_ID;
+  const defaultSyncId = FIXED_SYNC_ID || 'demo';
+  const fallbackSyncId = syncId || defaultSyncId;
 
   const [state, setState] = useState<FamilyState>({
     currentProfileId: INITIAL_PROFILES[1].id,
@@ -31,6 +36,12 @@ export default function App() {
     rewards: INITIAL_REWARDS,
     syncId: fallbackSyncId,
   });
+
+  const [session, setSession] = useState<Session | null>(null);
+  const [authReady, setAuthReady] = useState(false);
+  const [bootingFamily, setBootingFamily] = useState(false);
+
+  const resolveFamilyId = () => syncId || state.syncId || defaultSyncId;
 
   const [editingItem, setEditingItem] = useState<{ type: 'task' | 'reward'; item: any } | null>(null);
   const [pendingAction, setPendingAction] = useState<{ title: string; points: number; type: 'earn' | 'penalty' | 'redeem' } | null>(null);
@@ -52,23 +63,135 @@ export default function App() {
 
   const [fatalError, setFatalError] = useState<string | null>(null);
 
+  const seedFamilyIfEmpty = async (familyId: string) => {
+    try {
+      const { count: profileCount } = await supabase
+        .from('profiles')
+        .select('id', { count: 'exact', head: true })
+        .eq('family_id', familyId);
+      if ((profileCount ?? 0) > 0) return;
+
+      const { data: insertedProfiles } = await supabase
+        .from('profiles')
+        .insert([
+          { family_id: familyId, name: '管理员', balance: 0, role: 'admin', avatar_color: 'bg-blue-600' },
+          { family_id: familyId, name: '孩子A', balance: 0, role: 'child', avatar_color: 'bg-pink-500' },
+          { family_id: familyId, name: '孩子B', balance: 0, role: 'child', avatar_color: 'bg-purple-500' },
+        ])
+        .select();
+
+      const adminProfileId = insertedProfiles?.find((p: any) => p.role === 'admin')?.id;
+
+      await supabase.from('tasks').insert(
+        INITIAL_TASKS.map(t => ({
+          family_id: familyId,
+          category: t.category,
+          title: t.title,
+          description: t.description,
+          points: t.points,
+          frequency: t.frequency,
+        }))
+      );
+
+      await supabase.from('rewards').insert(
+        INITIAL_REWARDS.map(r => ({
+          family_id: familyId,
+          title: r.title,
+          points: r.points,
+          type: r.type,
+          image_url: r.imageUrl,
+        }))
+      );
+
+      if (adminProfileId) {
+        await supabase.from('families').update({ current_profile_id: adminProfileId }).eq('id', familyId);
+      }
+    } catch (e) {
+      console.warn('Seed family failed', e);
+    }
+  };
+
+  const ensureFamilyForSession = async (sess: Session) => {
+    const userId = sess.user.id;
+    let targetFamilyId = syncId?.trim() || '';
+
+    if (targetFamilyId) {
+      await supabase.from('family_members').upsert({ family_id: targetFamilyId, user_id: userId, role: 'owner' }, { onConflict: 'family_id,user_id' });
+    } else {
+      const { data: memberships } = await supabase
+        .from('family_members')
+        .select('family_id, role, created_at')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: true });
+      if (memberships?.length) {
+        targetFamilyId = memberships[0].family_id as string;
+      }
+    }
+
+    if (!targetFamilyId) {
+      const { data: created, error: createErr } = await supabase
+        .from('families')
+        .insert({ name: `${sess.user.email?.split('@')[0] || '我的'}的家庭` })
+        .select()
+        .single();
+      if (createErr || !created?.id) throw createErr || new Error('创建家庭失败');
+      targetFamilyId = created.id as string;
+    }
+
+    await supabase.from('family_members').upsert({ family_id: targetFamilyId, user_id: userId, role: 'owner' }, { onConflict: 'family_id,user_id' });
+    await seedFamilyIfEmpty(targetFamilyId);
+    return targetFamilyId;
+  };
+
   const fetchData = async (targetSyncId: string) => {
+    const normalized = targetSyncId?.trim();
+    if (!normalized) {
+      setFatalError('缺少 Sync ID，请在 URL 中使用 /{syncId}/dashboard 访问');
+      setIsLoading(false);
+      setIsSyncing(false);
+      return;
+    }
     setIsSyncing(true);
     try {
-      const res = await fetch(`${SYNC_API_PREFIX}${encodeURIComponent(targetSyncId)}?t=${Date.now()}`);
-      if (res.status === 404) {
-        setFatalError('家庭未开通或链接失效，请联系管理员购买：微信 liaoyuan3256 · 66 元终身。功能：多成员积分/扣分、任务与奖品配置、兑换记录、打印手册、本地文件同步。');
+      const { data, error } = await supabase
+        .from('families')
+        .select(`
+          id, name, current_profile_id,
+          profiles (*),
+          tasks (*),
+          rewards (*),
+          transactions (*, profile_id, family_id)
+        `)
+        .eq('id', targetSyncId)
+        .single();
+
+      if (error || !data) {
+        setFatalError('家庭未开通或链接失效，请检查 Sync ID。');
         return;
       }
-      if (!res.ok) {
-        throw new Error('同步失败，请稍后重试');
-      }
-      const data = await res.json();
-      if (!data || !data.profiles) {
-        throw new Error('数据格式不完整');
-      }
-      const preferredId = data.currentProfileId ?? state.currentProfileId;
-      const normalizedRemote = { ...data, syncId: targetSyncId, currentProfileId: ensureCurrentProfileId(data.profiles, preferredId) } as FamilyState;
+
+      const tx = (data as any).transactions || [];
+      const profiles = ((data as any).profiles || []).map((p: any) => {
+        const history = tx
+          .filter((t: any) => t.profile_id === p.id)
+          .map((t: any) => ({
+            id: t.id,
+            title: t.title,
+            points: t.points,
+            timestamp: t.timestamp ? new Date(t.timestamp).getTime() : Date.now(),
+            type: t.type,
+          }))
+          .sort((a: any, b: any) => b.timestamp - a.timestamp);
+        return { ...p, avatarColor: p.avatar_color || p.avatarColor, history };
+      });
+
+      const normalizedRemote: FamilyState = {
+        currentProfileId: ensureCurrentProfileId(profiles, (data as any).current_profile_id || state.currentProfileId),
+        profiles,
+        tasks: (data as any).tasks || [],
+        rewards: (data as any).rewards || [],
+        syncId: targetSyncId,
+      };
       setState(normalizedRemote);
       setFatalError(null);
     } catch (e) {
@@ -80,15 +203,77 @@ export default function App() {
     }
   };
 
+  const refreshFamily = async (fid?: string) => {
+    const target = fid || resolveFamilyId();
+    await fetchData(target);
+  };
+
   useEffect(() => {
-    const target = syncId || FIXED_SYNC_ID;
-    setState(s => ({ ...s, syncId: target }));
-    fetchData(target);
+    const init = async () => {
+      const url = window.location.href;
+      if (url.includes('code=')) { // 仅 OAuth/PKCE 使用 code 交换；magiclink 不需要
+        try {
+          await supabase.auth.exchangeCodeForSession(url);
+          const cleaned = new URL(url);
+          cleaned.searchParams.delete('code');
+          cleaned.searchParams.delete('token');
+          cleaned.searchParams.delete('type');
+          if (cleaned.hash) cleaned.hash = '';
+          window.history.replaceState({}, document.title, cleaned.toString());
+        } catch (e) {
+          console.warn('exchangeCodeForSession failed', e);
+        }
+      }
+
+      const { data } = await supabase.auth.getSession();
+      setSession(data.session);
+      setAuthReady(true);
+      if (!data.session) {
+        setIsLoading(false);
+      }
+    };
+    init();
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, sess) => {
+      setSession(sess);
+      if (!sess) {
+        setFatalError(null);
+        setIsLoading(false);
+        setState(s => ({ ...s, syncId: fallbackSyncId }));
+      }
+    });
+    return () => sub?.subscription?.unsubscribe();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [syncId]);
+  }, []);
+
+  useEffect(() => {
+    if (!authReady) return;
+    if (!session) return;
+    let cancelled = false;
+    (async () => {
+      setBootingFamily(true);
+      setIsLoading(true);
+      try {
+        const familyId = await ensureFamilyForSession(session);
+        if (cancelled) return;
+        setState(s => ({ ...s, syncId: familyId }));
+        if (!syncId || syncId !== familyId) {
+          navigate(`/${familyId}/dashboard`, { replace: true });
+        }
+        await fetchData(familyId);
+      } catch (e) {
+        if (!cancelled) setFatalError((e as Error)?.message || '初始化家庭失败');
+      } finally {
+        if (!cancelled) setBootingFamily(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session, authReady, syncId]);
 
   const currentProfile = useMemo<Profile>(() =>
-    state.profiles.find(p => p.id === state.currentProfileId) || state.profiles[1]
+    state.profiles.find(p => p.id === state.currentProfileId) || state.profiles[0] || INITIAL_PROFILES[0]
   , [state.profiles, state.currentProfileId]);
 
   const isAdmin = currentProfile.role === 'admin';
@@ -110,28 +295,13 @@ export default function App() {
 
   useEffect(() => {
     if (!isAdmin && activeTab === 'settings') {
-      navigate('/dashboard', { replace: true });
+      navigate(`/${resolveFamilyId()}/dashboard`, { replace: true });
     }
-  }, [isAdmin, activeTab, navigate]);
+  }, [isAdmin, activeTab, navigate, syncId, state.syncId]);
 
   const syncToCloud = async (newState: FamilyState) => {
-    setIsSyncing(true);
-    const mergedState = { ...newState, lastSyncedAt: Date.now() } as FamilyState;
-    const targetSyncId = syncId || state.syncId || FIXED_SYNC_ID;
-    try {
-      const res = await fetch(`${SYNC_API_PREFIX}${encodeURIComponent(targetSyncId)}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(mergedState),
-      });
-      if (!res.ok) throw new Error('保存失败');
-      setState(mergedState);
-    } catch (e) {
-      console.warn('Save failed', e);
-      throw e;
-    } finally {
-      setTimeout(() => setIsSyncing(false), 500);
-    }
+    // Supabase 模式下，写操作在各自函数内完成，这里仅更新本地状态
+    setState({ ...newState, lastSyncedAt: Date.now() } as FamilyState);
   };
 
   const handleTransaction = async () => {
@@ -163,32 +333,86 @@ export default function App() {
 
     setPendingAction(null);
     setState(newState);
+
+    const familyId = resolveFamilyId();
+    try {
+      const { data: inserted, error: txErr } = await supabase.from('transactions').insert({
+        id: transaction.id,
+        family_id: familyId,
+        profile_id: state.currentProfileId,
+        title,
+        points,
+        type,
+        timestamp: new Date(transaction.timestamp).toISOString(),
+      }).select().single();
+      if (txErr) throw txErr;
+      const { error: balErr } = await supabase
+        .from('profiles')
+        .update({ balance: currentProfile.balance + points })
+        .eq('id', state.currentProfileId);
+      if (balErr) throw balErr;
+      if (inserted) {
+        await refreshFamily(familyId);
+      }
+    } catch (e) {
+      console.warn('Supabase transaction failed', e);
+    }
     await syncToCloud(newState);
   };
 
   const crudAction = async (type: 'task' | 'reward', action: 'save' | 'delete', item: any) => {
     if (!isAdmin) return;
+    const familyId = resolveFamilyId();
     let newState = { ...state } as FamilyState;
 
-    if (type === 'task') {
-      if (action === 'save') {
-        const exists = state.tasks.find(t => t.id === item.id);
-        newState.tasks = exists ? state.tasks.map(t => t.id === item.id ? item : t) : [...state.tasks, { ...item, id: `task-${Date.now()}` }];
-      } else {
-        newState.tasks = state.tasks.filter(t => t.id !== item.id);
+    try {
+      if (type === 'task') {
+        if (action === 'save') {
+          const exists = state.tasks.find(t => t.id === item.id);
+          const payload = { ...item, id: item.id || undefined, family_id: familyId };
+          if (exists) {
+            const { error } = await supabase.from('tasks').update(payload).eq('id', item.id);
+            if (error) throw error;
+          } else {
+            const { data, error } = await supabase.from('tasks').insert(payload).select().single();
+            if (error) throw error;
+            item = data;
+          }
+          await refreshFamily(familyId);
+          return;
+        } else {
+          await supabase.from('tasks').delete().eq('id', item.id);
+          newState.tasks = state.tasks.filter(t => t.id !== item.id);
+        }
+      } else if (type === 'reward') {
+        if (action === 'save') {
+          const exists = state.rewards.find(r => r.id === item.id);
+          const payload = { ...item, id: item.id || undefined, family_id: familyId };
+          if (exists) {
+            const { error } = await supabase.from('rewards').update(payload).eq('id', item.id);
+            if (error) throw error;
+          } else {
+            const { data, error } = await supabase.from('rewards').insert(payload).select().single();
+            if (error) throw error;
+            item = data;
+          }
+          await refreshFamily(familyId);
+          return;
+        } else {
+          await supabase.from('rewards').delete().eq('id', item.id);
+          newState.rewards = state.rewards.filter(r => r.id !== item.id);
+        }
       }
-    } else if (type === 'reward') {
-      if (action === 'save') {
-        const exists = state.rewards.find(r => r.id === item.id);
-        newState.rewards = exists ? state.rewards.map(r => r.id === item.id ? item : r) : [...state.rewards, { ...item, id: `reward-${Date.now()}` }];
-      } else {
-        newState.rewards = state.rewards.filter(r => r.id !== item.id);
-      }
+    } catch (e) {
+      console.warn('Supabase CRUD failed', e);
     }
 
     setEditingItem(null);
     setState(newState);
     await syncToCloud(newState);
+    if (action === 'delete') {
+      await refreshFamily(familyId);
+    }
   };
 
   const avatarPalette = ['bg-blue-600', 'bg-pink-500', 'bg-purple-500', 'bg-amber-500', 'bg-emerald-500', 'bg-indigo-500'];
@@ -200,6 +424,14 @@ export default function App() {
       profiles: state.profiles.map(p => p.id === id ? { ...p, name } : p)
     } as FamilyState;
     setState(newState);
+    const familyId = resolveFamilyId();
+    try {
+      const { error } = await supabase.from('profiles').update({ name }).eq('id', id).eq('family_id', familyId);
+      if (error) throw error;
+      await refreshFamily(familyId);
+    } catch (e) {
+      console.warn('Supabase profile rename failed', e);
+    }
     await syncToCloud(newState);
   };
 
@@ -207,6 +439,7 @@ export default function App() {
     if (!isAdmin) return;
     const trimmed = name.trim();
     if (!trimmed) return;
+    const familyId = resolveFamilyId();
     const newProfile: Profile = {
       id: `p-${Date.now()}`,
       name: trimmed,
@@ -217,6 +450,21 @@ export default function App() {
     };
     const newState = { ...state, profiles: [...state.profiles, newProfile] } as FamilyState;
     setState(newState);
+    try {
+      const { data, error } = await supabase.from('profiles').insert({
+        family_id: familyId,
+        name: newProfile.name,
+        balance: newProfile.balance,
+        role: newProfile.role,
+        avatar_color: newProfile.avatarColor,
+      }).select().single();
+      if (error) throw error;
+      if (data) {
+        await refreshFamily(familyId);
+      }
+    } catch (e) {
+      console.warn('Supabase add profile failed', e);
+    }
     await syncToCloud(newState);
   };
 
@@ -240,6 +488,13 @@ export default function App() {
 
     const newState = { ...state, profiles: remainingProfiles, currentProfileId: nextCurrent } as FamilyState;
     setState(newState);
+    const familyId = resolveFamilyId();
+    try {
+      await supabase.from('profiles').delete().eq('id', id).eq('family_id', familyId);
+      await refreshFamily(familyId);
+    } catch (e) {
+      console.warn('Supabase delete profile failed', e);
+    }
     await syncToCloud(newState);
   };
 
@@ -248,14 +503,16 @@ export default function App() {
       setShowProfileSwitcher(false);
       return;
     }
+    const familyId = resolveFamilyId();
     const newState = { ...state, currentProfileId: id } as FamilyState;
     setState(newState);
     setShowProfileSwitcher(false);
     try {
-      await syncToCloud(newState);
+      await supabase.from('families').update({ current_profile_id: id }).eq('id', familyId);
     } catch (e) {
       console.warn('Profile switch sync failed', e);
     }
+    await syncToCloud(newState);
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -281,11 +538,24 @@ export default function App() {
   , [state.rewards, rewardFilter]);
 
   const goTab = (tab: 'dashboard' | 'earn' | 'redeem' | 'history' | 'settings' | 'doc') => {
-    const target = syncId || state.syncId || FIXED_SYNC_ID;
+    const target = resolveFamilyId();
     navigate(`/${target}/${tab}`);
   };
 
-  if (isLoading) {
+  if (!authReady) {
+    return (
+      <div className="h-screen w-full flex flex-col items-center justify-center bg-[#FDFCFD]">
+        <div className="w-12 h-12 border-4 border-[#FF4D94] border-t-transparent rounded-full animate-spin mb-6"></div>
+        <h2 className="text-xl font-bold text-[#FF4D94] font-display">正在初始化...</h2>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return <AuthGate />;
+  }
+
+  if (isLoading || bootingFamily) {
     return (
       <div className="h-screen w-full flex flex-col items-center justify-center bg-[#FDFCFD]">
         <div className="w-12 h-12 border-4 border-[#FF4D94] border-t-transparent rounded-full animate-spin mb-6"></div>
@@ -335,16 +605,18 @@ export default function App() {
   }
 
   return (
-    <div className="flex min-h-screen bg-[#FDFCFD]">
-      <Sidebar 
-        activeTab={activeTab}
-        onChangeTab={goTab}
-        isAdmin={isAdmin}
-        currentProfile={currentProfile}
-        onProfileClick={() => setShowProfileSwitcher(true)}
-      />
+    <div className="min-h-screen bg-gradient-to-br from-[#F9F4FF] via-[#FDFCFD] to-[#EAF6FF] flex flex-col lg:flex-row">
+      <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen">
+        <Sidebar 
+          activeTab={activeTab}
+          onChangeTab={goTab}
+          isAdmin={isAdmin}
+          currentProfile={currentProfile}
+          onProfileClick={() => setShowProfileSwitcher(true)}
+        />
+      </div>
 
-      <main className="flex-1 p-8 overflow-y-auto no-scrollbar">
+      <main className="flex-1 w-full lg:p-8 px-4 pt-6 pb-28 lg:pt-10 lg:pb-10 overflow-y-auto no-scrollbar">
         <HeaderBar 
           activeTab={activeTab}
           currentProfile={currentProfile}
@@ -354,7 +626,7 @@ export default function App() {
 
         <Routes>
           <Route path="/" element={<Navigate to={`/${fallbackSyncId}/dashboard`} replace />} />
-          <Route path="/:syncId" element={<Navigate to={`/${fallbackSyncId}/dashboard`} replace />} />
+          <Route path="/:syncId" element={<Navigate to={`/${resolveFamilyId()}/dashboard`} replace />} />
           <Route 
             path="/:syncId/dashboard" 
             element={
@@ -401,20 +673,27 @@ export default function App() {
                 onRewardFilterChange={setRewardFilter}
                 onEdit={(payload) => setEditingItem(payload)}
                 onDelete={(type, item) => crudAction(type, 'delete', item)}
-                onSync={() => fetchData(syncId || state.syncId || FIXED_SYNC_ID)}
+                onSync={() => refreshFamily()}
                 onPrint={() => printReport(state)}
                 onProfileNameChange={(id, name) => handleProfileNameChange(id, name)}
                 onAddProfile={(name, role) => handleAddProfile(name, role)}
                 onDeleteProfile={(id) => handleDeleteProfile(id)}
                 isSyncing={isSyncing}
-                currentSyncId={syncId || state.syncId}
+                currentSyncId={resolveFamilyId()}
               />
-            ) : <Navigate to={`/${syncId}/dashboard`} replace />}
+            ) : <Navigate to={`/${resolveFamilyId()}/dashboard`} replace />}
           />
           <Route path="/:syncId/doc" element={<DocsPage />} />
-          <Route path="*" element={<Navigate to={syncId ? `/${syncId}/dashboard` : '/'} replace />} />
+          <Route path="*" element={<Navigate to={`/${resolveFamilyId()}/dashboard`} replace />} />
         </Routes>
       </main>
+
+      <MobileNav 
+        activeTab={activeTab}
+        onChangeTab={goTab}
+        isAdmin={isAdmin}
+        onProfileClick={() => setShowProfileSwitcher(true)}
+      />
 
       <ProfileSwitcherModal 
         open={showProfileSwitcher}

@@ -1,0 +1,65 @@
+import React, { useState } from 'react';
+import { supabase } from '../supabaseClient';
+
+export const AuthGate: React.FC = () => {
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+
+  const handleSend = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setMessage('');
+    setError('');
+    const trimmed = email.trim();
+    if (!trimmed) {
+      setError('请输入邮箱');
+      return;
+    }
+    setLoading(true);
+    try {
+      const { error: otpError } = await supabase.auth.signInWithOtp({ email: trimmed, options: { emailRedirectTo: window.location.origin } });
+      if (otpError) throw otpError;
+      setMessage('已发送登录链接，请前往邮箱点击确认。');
+    } catch (err) {
+      setError((err as Error)?.message || '发送失败');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-[#F9F4FF] via-white to-[#EAF6FF] px-6 py-12">
+      <div className="w-full max-w-md bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/80 p-8 space-y-6">
+        <div className="space-y-2 text-center">
+          <p className="text-xs font-bold uppercase tracking-[0.25em] text-gray-400">Family Points Bank</p>
+          <h2 className="text-2xl font-black text-gray-900">登录后使用家庭积分</h2>
+          <p className="text-sm text-gray-600">输入邮箱，我们会发送魔法链接（无需密码）。</p>
+        </div>
+        <form onSubmit={handleSend} className="space-y-4">
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-gray-700">邮箱</label>
+            <input
+              type="email"
+              className="w-full rounded-2xl border border-gray-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#FF4D94]/60"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={loading}
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-3 rounded-2xl bg-gradient-to-r from-[#FF4D94] to-[#7C4DFF] text-white font-bold shadow-lg hover:brightness-110 active:scale-95 transition"
+          >
+            {loading ? '发送中...' : '发送登录链接'}
+          </button>
+        </form>
+        {message && <div className="text-sm text-emerald-600 bg-emerald-50 border border-emerald-100 px-4 py-3 rounded-2xl">{message}</div>}
+        {error && <div className="text-sm text-red-600 bg-red-50 border border-red-100 px-4 py-3 rounded-2xl">{error}</div>}
+        <p className="text-xs text-gray-500 text-center">登录后我们会为你创建或关联一个家庭空间。</p>
+      </div>
+    </div>
+  );
+};
