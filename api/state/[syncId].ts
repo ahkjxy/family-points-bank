@@ -1,20 +1,31 @@
 import fs from 'fs';
 import fsp from 'fs/promises';
 import path from 'path';
-import { INITIAL_PROFILES, INITIAL_REWARDS, INITIAL_TASKS, FIXED_SYNC_ID } from '../../constants';
 
+// 极简默认数据（仅当本地文件为空时使用）
 const defaultState = {
-  currentProfileId: INITIAL_PROFILES[0]?.id ?? 'admin-only',
-  profiles: INITIAL_PROFILES,
-  tasks: INITIAL_TASKS,
-  rewards: INITIAL_REWARDS,
-  syncId: FIXED_SYNC_ID,
+  currentProfileId: 'admin-only',
+  profiles: [],
+  tasks: [],
+  rewards: [],
+  syncId: '',
 };
 
+// 在 Vercel 函数中，process.cwd() 指向构建产物根目录，db 会被 includeFiles 一起打包
 const resolvePath = (syncId: string) => path.join(process.cwd(), 'db', `${syncId}.json`);
 
 export default async function handler(req: any, res: any) {
-  const syncId = decodeURIComponent((req.query?.syncId as string) || '').trim();
+  const syncId = (() => {
+    const raw = (req.query && (req.query as any).syncId) || '';
+    try {
+      return decodeURIComponent(String(raw)).trim();
+    } catch {
+      return String(raw).trim();
+    }
+  })();
+
+  res.setHeader('Content-Type', 'application/json');
+
   if (!syncId) {
     res.status(400).json({ ok: false, message: 'Missing syncId' });
     return;
@@ -24,13 +35,17 @@ export default async function handler(req: any, res: any) {
 
   const handleError = (err: unknown, status = 500) => {
     console.error('api/state error', err);
-    res.status(status).json({ ok: false, message: (err as Error)?.message || 'Unknown error' });
+    try {
+      res.status(status).json({ ok: false, message: (err as Error)?.message || 'Unknown error' });
+    } catch (e) {
+      console.error('api/state response error', e);
+    }
   };
 
   if (req.method === 'GET') {
     try {
       if (!fs.existsSync(dataPath)) {
-        handleError(new Error('家庭不存在'), 404);
+        res.status(404).json({ ok: false, message: '家庭不存在' });
         return;
       }
       const raw = await fsp.readFile(dataPath, 'utf-8');
