@@ -1,11 +1,12 @@
 {
+  "version": 2,
   "functions": {
     "api/state/[syncId].ts": {
       "includeFiles": "db/**/*"
     }
   },
   "routes": [
-    { "src": "/api/state/(.*)", "dest": "/api/state/[syncId].ts" },
+    { "src": "/api/state/(?<syncId>.+)", "dest": "/api/state/[syncId].ts" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
