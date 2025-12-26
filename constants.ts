@@ -5,6 +5,8 @@ export const SYNC_API_PREFIX = '/api/state/';
 // 不再写死默认家庭 ID，访问时以 URL 参数为准
 export const FIXED_SYNC_ID = '';
 
+export const AUTH_REDIRECT = import.meta.env.VITE_AUTH_REDIRECT || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173');
+
 export const INITIAL_PROFILES: Profile[] = [
   { id: 'p-dad', name: '王僚原', balance: 0, history: [], avatarColor: 'bg-blue-600', role: 'admin' },
   { id: 'p-sister1', name: '王可心', balance: 0, history: [], avatarColor: 'bg-pink-500', role: 'child' },

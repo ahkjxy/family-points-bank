@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { AUTH_REDIRECT } from '../constants';
 import { supabase } from '../supabaseClient';
 
 type Mode = 'password' | 'magic';
@@ -56,7 +57,7 @@ export const AuthGate: React.FC = () => {
     }
     setLoading(true);
     try {
-      const { error: signErr } = await supabase.auth.signUp({ email: em, password: pw, options: { emailRedirectTo: window.location.origin } });
+      const { error: signErr } = await supabase.auth.signUp({ email: em, password: pw, options: { emailRedirectTo: AUTH_REDIRECT } });
       if (signErr) throw signErr;
       setMessage('已发送确认邮件，请到邮箱完成验证后再登录');
     } catch (err) {
@@ -76,7 +77,7 @@ export const AuthGate: React.FC = () => {
     }
     setLoading(true);
     try {
-      const { error: otpError } = await supabase.auth.signInWithOtp({ email: em, options: { emailRedirectTo: window.location.origin } });
+      const { error: otpError } = await supabase.auth.signInWithOtp({ email: em, options: { emailRedirectTo: AUTH_REDIRECT } });
       if (otpError) throw otpError;
       setMessage('已发送登录链接，请前往邮箱点击确认。');
     } catch (err) {
@@ -95,7 +96,7 @@ export const AuthGate: React.FC = () => {
     }
     setLoading(true);
     try {
-      const { error: resetErr } = await supabase.auth.resetPasswordForEmail(em, { redirectTo: window.location.origin });
+      const { error: resetErr } = await supabase.auth.resetPasswordForEmail(em, { redirectTo: AUTH_REDIRECT });
       if (resetErr) throw resetErr;
       setMessage('已发送重置密码邮件，请查收邮箱并按链接修改密码。');
     } catch (err) {
