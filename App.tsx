@@ -26,8 +26,7 @@ export default function App() {
   const location = useLocation();
   const match = useMatch('/:syncId/*') || useMatch('/:syncId');
   const syncId = match?.params?.syncId;
-  const defaultSyncId = FIXED_SYNC_ID || 'demo';
-  const fallbackSyncId = syncId || defaultSyncId;
+  const fallbackSyncId = syncId || '';
 
   const [state, setState] = useState<FamilyState>({
     currentProfileId: INITIAL_PROFILES[1].id,
@@ -41,7 +40,7 @@ export default function App() {
   const [authReady, setAuthReady] = useState(false);
   const [bootingFamily, setBootingFamily] = useState(false);
 
-  const resolveFamilyId = () => syncId || state.syncId || defaultSyncId;
+  const resolveFamilyId = () => syncId || state.syncId || '';
 
   const [editingItem, setEditingItem] = useState<{ type: 'task' | 'reward'; item: any } | null>(null);
   const [pendingAction, setPendingAction] = useState<{ title: string; points: number; type: 'earn' | 'penalty' | 'redeem' } | null>(null);
@@ -256,7 +255,9 @@ export default function App() {
         const familyId = await ensureFamilyForSession(session);
         if (cancelled) return;
         setState(s => ({ ...s, syncId: familyId }));
-        if (!syncId || syncId !== familyId) {
+        const segments = location.pathname.split('/').filter(Boolean);
+        const currentId = segments[0];
+        if (currentId !== familyId) {
           navigate(`/${familyId}/dashboard`, { replace: true });
         }
         await fetchData(familyId);

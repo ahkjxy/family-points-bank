@@ -1,24 +1,82 @@
 import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
 
+type Mode = 'password' | 'magic';
+
 export const AuthGate: React.FC = () => {
+  const [mode, setMode] = useState<Mode>('password');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
-  const handleSend = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const clearNotice = () => {
     setMessage('');
     setError('');
-    const trimmed = email.trim();
-    if (!trimmed) {
+  };
+
+  const handlePasswordLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    clearNotice();
+    const em = email.trim();
+    const pw = password.trim();
+    if (!em || !pw) {
+      setError('请输入邮箱和密码');
+      return;
+    }
+    setLoading(true);
+    try {
+      const { data, error: signErr } = await supabase.auth.signInWithPassword({ email: em, password: pw });
+      if (signErr) {
+        if (signErr.message?.includes('Invalid login credentials')) {
+          setError('邮箱或密码不正确');
+        } else {
+          setError(signErr.message);
+        }
+        return;
+      }
+      if (data?.session) {
+        setMessage('登录成功，正在进入...');
+      }
+    } catch (err) {
+      setError((err as Error)?.message || '登录失败');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSignup = async () => {
+    clearNotice();
+    const em = email.trim();
+    const pw = password.trim();
+    if (!em || !pw) {
+      setError('请输入邮箱和密码');
+      return;
+    }
+    setLoading(true);
+    try {
+      const { error: signErr } = await supabase.auth.signUp({ email: em, password: pw, options: { emailRedirectTo: window.location.origin } });
+      if (signErr) throw signErr;
+      setMessage('已发送确认邮件，请到邮箱完成验证后再登录');
+    } catch (err) {
+      setError((err as Error)?.message || '注册失败');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleMagic = async (e: React.FormEvent) => {
+    e.preventDefault();
+    clearNotice();
+    const em = email.trim();
+    if (!em) {
       setError('请输入邮箱');
       return;
     }
     setLoading(true);
     try {
-      const { error: otpError } = await supabase.auth.signInWithOtp({ email: trimmed, options: { emailRedirectTo: window.location.origin } });
+      const { error: otpError } = await supabase.auth.signInWithOtp({ email: em, options: { emailRedirectTo: window.location.origin } });
       if (otpError) throw otpError;
       setMessage('已发送登录链接，请前往邮箱点击确认。');
     } catch (err) {
@@ -34,28 +92,85 @@ export const AuthGate: React.FC = () => {
         <div className="space-y-2 text-center">
           <p className="text-xs font-bold uppercase tracking-[0.25em] text-gray-400">Family Points Bank</p>
           <h2 className="text-2xl font-black text-gray-900">登录后使用家庭积分</h2>
-          <p className="text-sm text-gray-600">输入邮箱，我们会发送魔法链接（无需密码）。</p>
+          <p className="text-sm text-gray-600">已有账号可直接密码登录；新用户可注册或使用魔法链接。</p>
         </div>
-        <form onSubmit={handleSend} className="space-y-4">
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-gray-700">邮箱</label>
-            <input
-              type="email"
-              className="w-full rounded-2xl border border-gray-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#FF4D94]/60"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={loading}
-            />
-          </div>
+
+        <div className="flex gap-2 p-1 bg-gray-100 rounded-2xl text-sm font-semibold">
           <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 rounded-2xl bg-gradient-to-r from-[#FF4D94] to-[#7C4DFF] text-white font-bold shadow-lg hover:brightness-110 active:scale-95 transition"
-          >
-            {loading ? '发送中...' : '发送登录链接'}
-          </button>
-        </form>
+            className={`flex-1 py-2 rounded-xl ${mode === 'password' ? 'bg-white shadow text-gray-900' : 'text-gray-500'}`}
+            onClick={() => { setMode('password'); clearNotice(); }}
+          >密码登录 / 注册</button>
+          <button
+            className={`flex-1 py-2 rounded-xl ${mode === 'magic' ? 'bg-white shadow text-gray-900' : 'text-gray-500'}`}
+            onClick={() => { setMode('magic'); clearNotice(); }}
+          >魔法链接</button>
+        </div>
+
+        {mode === 'password' ? (
+          <form onSubmit={handlePasswordLogin} className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-700">邮箱</label>
+              <input
+                type="email"
+                className="w-full rounded-2xl border border-gray-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#FF4D94]/60"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={loading}
+                autoComplete="email"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-700">密码</label>
+              <input
+                type="password"
+                className="w-full rounded-2xl border border-gray-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#FF4D94]/60"
+                placeholder="至少 6 位"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={loading}
+                autoComplete="current-password"
+              />
+            </div>
+            <div className="flex gap-3">
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-[#FF4D94] to-[#7C4DFF] text-white font-bold shadow-lg hover:brightness-110 active:scale-95 transition"
+              >
+                {loading ? '处理中...' : '登录'}
+              </button>
+              <button
+                type="button"
+                disabled={loading}
+                onClick={handleSignup}
+                className="px-4 py-3 rounded-2xl bg-white border border-gray-200 text-gray-800 font-bold hover:border-[#FF4D94] hover:text-[#FF4D94]"
+              >注册</button>
+            </div>
+          </form>
+        ) : (
+          <form onSubmit={handleMagic} className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-700">邮箱</label>
+              <input
+                type="email"
+                className="w-full rounded-2xl border border-gray-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#FF4D94]/60"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={loading}
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 rounded-2xl bg-gradient-to-r from-[#FF4D94] to-[#7C4DFF] text-white font-bold shadow-lg hover:brightness-110 active:scale-95 transition"
+            >
+              {loading ? '发送中...' : '发送登录链接'}
+            </button>
+          </form>
+        )}
+
         {message && <div className="text-sm text-emerald-600 bg-emerald-50 border border-emerald-100 px-4 py-3 rounded-2xl">{message}</div>}
         {error && <div className="text-sm text-red-600 bg-red-50 border border-red-100 px-4 py-3 rounded-2xl">{error}</div>}
         <p className="text-xs text-gray-500 text-center">登录后我们会为你创建或关联一个家庭空间。</p>
