@@ -1,16 +1,19 @@
 import React from 'react';
 import { Profile } from '../types';
 import { Icon } from './Icon';
+import { ThemeMode } from './ThemeProvider';
 
 interface HeaderBarProps {
   activeTab: 'dashboard' | 'earn' | 'redeem' | 'history' | 'settings' | 'doc';
   currentProfile: Profile;
   isAdmin: boolean;
+  theme: ThemeMode;
+  onToggleTheme: () => void;
   onPrint: () => void;
   onLogout: () => void;
 }
 
-export function HeaderBar({ activeTab, currentProfile, isAdmin, onPrint, onLogout }: HeaderBarProps) {
+export function HeaderBar({ activeTab, currentProfile, isAdmin, theme, onToggleTheme, onPrint, onLogout }: HeaderBarProps) {
   return (
     <header className="sticky top-3 z-20 mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between bg-white/90 backdrop-blur-xl rounded-3xl px-4 py-3 border border-white/80 shadow-[0_24px_80px_-38px_rgba(124,77,255,0.55)]">
       <div className="space-y-1">
@@ -42,6 +45,15 @@ export function HeaderBar({ activeTab, currentProfile, isAdmin, onPrint, onLogou
             <span className="text-gray-700">打印手册</span>
           </button>
         )}
+        <button
+          onClick={onToggleTheme}
+          className="px-4 py-2 rounded-2xl text-xs font-bold flex items-center gap-2 bg-white border border-gray-200 text-gray-700 hover:border-[#7C4DFF] hover:text-[#7C4DFF] transition-all w-full md:w-auto"
+        >
+          <span className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#7C4DFF]/10 to-[#FF4D94]/10 flex items-center justify-center text-[#7C4DFF]">
+            <Icon name={theme === 'dark' ? 'sun' : 'moon'} size={14} />
+          </span>
+          <span>{theme === 'dark' ? '浅色模式' : '夜间模式'}</span>
+        </button>
         <button
           onClick={onLogout}
           className="px-4 py-2 rounded-2xl text-xs font-bold bg-white border border-gray-200 text-gray-700 hover:border-[#FF4D94] hover:text-[#FF4D94] transition-all w-full md:w-auto"

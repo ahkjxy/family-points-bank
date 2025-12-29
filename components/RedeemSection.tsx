@@ -32,7 +32,7 @@ export function RedeemSection({ rewards, balance, onRedeem }: RedeemSectionProps
         ))}
       </div>
 
-      <div className="space-y-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
         {filtered.map(reward => {
           const canAfford = balance >= reward.points;
           return (
@@ -40,9 +40,9 @@ export function RedeemSection({ rewards, balance, onRedeem }: RedeemSectionProps
               key={reward.id} 
               disabled={!canAfford}
               onClick={() => onRedeem({ title: reward.title, points: -reward.points, type: 'redeem' })}
-              className={`w-full flex items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl border transition-all text-left group ${canAfford ? 'bg-white hover:border-[#FF4D94]/30 hover:shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)] active:scale-[0.99]' : 'bg-gray-50 border-gray-100 cursor-not-allowed opacity-60 grayscale'}`}
+              className={`w-full h-full p-4 sm:p-5 rounded-2xl border transition-all text-left group flex flex-col gap-3 ${canAfford ? 'bg-white hover:border-[#FF4D94]/30 hover:shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)] active:scale-[0.99]' : 'bg-gray-50 border-gray-100 cursor-not-allowed opacity-60 grayscale'}`}
             >
-              <div className="flex items-center gap-4 overflow-hidden">
+              <div className="flex items-center gap-3 overflow-hidden">
                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 overflow-hidden ${reward.type === '实物奖品' ? 'bg-amber-50 text-amber-500' : 'bg-indigo-50 text-indigo-500'}`}>
                   {reward.imageUrl ? <img src={reward.imageUrl} alt={reward.title} className="w-full h-full object-cover" /> : <Icon name="reward" size={18} />}
                 </div>
@@ -51,7 +51,7 @@ export function RedeemSection({ rewards, balance, onRedeem }: RedeemSectionProps
                   <p className="text-[11px] text-gray-400 uppercase tracking-wide truncate">{reward.type}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 shrink-0">
+              <div className="flex items-center justify-between gap-3 mt-auto">
                 <span className="inline-flex items-center gap-1 px-3 py-1 rounded-xl text-[11px] font-black text-[#FF4D94] bg-[#FFF2F7] points-font">{reward.points} pts</span>
                 <span className="w-10 h-10 rounded-[14px] bg-gradient-to-br from-[#FF4D94] to-[#FF7AB5] text-white font-black text-sm flex items-center justify-center shadow-lg shadow-[#FF4D94]/30">{reward.points}</span>
               </div>

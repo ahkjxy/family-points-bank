@@ -21,10 +21,10 @@ export function EarnSection({ tasks, onSelectTask }: EarnSectionProps) {
 
   const renderTone = (cat: string) => cat === 'penalty' ? 'text-rose-500 bg-rose-50' : 'text-[#FF4D94] bg-pink-50';
 
-  const filtered = useMemo(() => {
+  const filtered = useMemo<Task[]>(() => {
     const sorted = [...tasks].sort((a, b) => a.points - b.points);
     if (activeTab === 'all') return sorted;
-    return sorted.filter(t => t.category === activeTab);
+    return sorted.filter((t: Task) => t.category === activeTab);
   }, [activeTab, tasks]);
 
   return (
@@ -42,10 +42,10 @@ export function EarnSection({ tasks, onSelectTask }: EarnSectionProps) {
       </div>
 
       {categories
-        .filter(cat => cat === activeTab || activeTab === 'all')
-        .filter(cat => cat !== 'all')
-        .map(cat => {
-          const list = filtered.filter(t => t.category === cat);
+        .filter((cat: typeof categories[number]) => cat === activeTab || activeTab === 'all')
+        .filter((cat: typeof categories[number]) => cat !== 'all')
+        .map((cat: typeof categories[number]) => {
+          const list = filtered.filter((t: Task) => t.category === cat);
           if (list.length === 0) return null;
           return (
             <section key={cat} className="bg-white rounded-[24px] shadow-sm border border-gray-100 overflow-hidden">
@@ -62,49 +62,39 @@ export function EarnSection({ tasks, onSelectTask }: EarnSectionProps) {
                 <span className="text-[11px] text-gray-400 font-bold uppercase tracking-widest">{list.length} 项</span>
               </div>
 
-              <div className="overflow-x-auto no-scrollbar">
-                <table className="min-w-full text-left text-sm">
-                  <thead className="bg-gray-50/60">
-                    <tr>
-                      <th className="px-5 py-2.5 text-[10px] font-bold uppercase tracking-widest text-gray-400">事项 / 描述</th>
-                      <th className="px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest text-gray-400">周期</th>
-                      <th className="px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest text-gray-400 text-right">元气值</th>
-                      <th className="px-3 py-2.5"></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {list.map((task, idx) => (
-                      <tr 
-                        key={task.id}
-                        onClick={() => onSelectTask({ title: task.title, points: task.points, type: task.category === 'penalty' ? 'penalty' : 'earn' })}
-                        className={`cursor-pointer transition-colors group border-l-4 border-l-transparent ${idx % 2 === 0 ? 'bg-white hover:bg-gray-50' : 'bg-gray-50/70 hover:bg-gray-100'} group-hover:border-l-[#FF4D94]`}
-                      >
-                        <td className="px-5 py-3 text-[13px] text-gray-800">
-                          <div className="flex flex-wrap items-center gap-2.5">
-                            <span className="text-[10px] font-bold px-2 py-1 rounded-md bg-gray-100 text-gray-500 uppercase">{task.frequency}</span>
-                            <span className="group-hover:text-[#FF4D94] transition-colors font-bold leading-tight line-clamp-1">{task.title}</span>
-                            <span className="text-[11px] text-gray-400 font-semibold truncate max-w-full">· {task.description || '暂无详细描述'}</span>
+              <div className="px-4 pb-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {list.map((task: Task) => (
+                    <button
+                      key={task.id}
+                      onClick={() => onSelectTask({ title: task.title, points: task.points, type: task.category === 'penalty' ? 'penalty' : 'earn' })}
+                      className="w-full text-left group rounded-2xl border border-gray-100 bg-white shadow-[0_8px_30px_-24px_rgba(15,23,42,0.35)] hover:border-[#FF4D94]/40 hover:shadow-[0_14px_38px_-22px_rgba(255,77,148,0.35)] transition-all p-4 flex flex-col gap-3"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-[10px] font-bold px-2 py-1 rounded-md bg-gray-100 text-gray-500 uppercase whitespace-nowrap">{task.frequency}</span>
+                            <span className="text-sm font-bold text-gray-800 leading-tight group-hover:text-[#FF4D94] truncate">{task.title}</span>
                           </div>
-                        </td>
-                        <td className="px-4 py-3 text-[12px] text-gray-500 font-semibold whitespace-nowrap">{task.frequency}</td>
-                        <td className="px-4 py-3 text-right">
-                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[12px] font-black points-font ${task.points > 0 ? 'text-emerald-600 bg-emerald-50' : 'text-rose-600 bg-rose-50'}`}>
-                            {task.points > 0 ? '+' : ''}{task.points}
-                          </span>
-                        </td>
-                        <td className="px-3 py-3 text-right text-gray-300 group-hover:text-[#FF4D94]">
-                          <Icon name={task.category === 'penalty' ? 'penalty' : 'plus'} size={14} />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                          <p className="text-[11px] text-gray-400 font-semibold line-clamp-2 mt-1">{task.description || '暂无详细描述'}</p>
+                        </div>
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[12px] font-black points-font shrink-0 ${task.points > 0 ? 'text-emerald-600 bg-emerald-50' : 'text-rose-600 bg-rose-50'}`}>
+                          {task.points > 0 ? '+' : ''}{task.points}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-[11px] text-gray-400 font-semibold">
+                        <span className="inline-flex items-center gap-1"><Icon name={task.category === 'penalty' ? 'penalty' : 'plus'} size={14} /> 点击快速录入</span>
+                        <span className="text-[10px] px-2 py-1 rounded-full bg-gray-50 text-gray-500">{renderLabel(task.category)}</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
               </div>
             </section>
           );
         })}
 
-      {filtered.filter(t => activeTab === 'all' ? true : t.category === activeTab).length === 0 && (
+      {filtered.filter((t: Task) => (activeTab === 'all' ? true : t.category === activeTab)).length === 0 && (
         <div className="bg-white p-8 rounded-[24px] border border-dashed border-gray-200 text-center text-gray-400 font-semibold">
           暂无可用任务
         </div>

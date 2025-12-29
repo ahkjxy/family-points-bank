@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Transaction } from '../types';
+import { formatDateTime } from '../utils/datetime';
 
 type HistoryTab = 'all' | 'earn' | 'penalty' | 'redeem';
 const TAB_LABELS: Record<HistoryTab, string> = {
@@ -51,7 +52,7 @@ export function HistorySection({ history }: HistorySectionProps) {
                 key={h.id}
                 className={`${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/60'} hover:bg-gray-50/90 transition-colors`}
               >
-                <td className="px-6 sm:px-8 py-3 text-[11px] text-gray-400 font-medium tabular-nums whitespace-nowrap">{new Date(h.timestamp).toLocaleDateString()}</td>
+                <td className="px-6 sm:px-8 py-3 text-[11px] text-gray-400 font-medium tabular-nums whitespace-nowrap">{formatDateTime(h.timestamp)}</td>
                 <td className="px-6 sm:px-8 py-3 text-sm font-bold text-gray-800 leading-tight">{h.title}</td>
                 <td className="px-6 sm:px-8 py-3 text-right">
                   <span className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[12px] font-black points-font ${h.points > 0 ? 'text-emerald-600 bg-emerald-50' : 'text-rose-600 bg-rose-50'}`}>

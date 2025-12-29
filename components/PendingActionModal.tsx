@@ -3,11 +3,12 @@ import { Icon } from './Icon';
 
 interface PendingActionModalProps {
   pendingAction: { title: string; points: number; type: 'earn' | 'penalty' | 'redeem' } | null;
+  error?: string | null;
   onCancel: () => void;
   onConfirm: () => void;
 }
 
-export function PendingActionModal({ pendingAction, onCancel, onConfirm }: PendingActionModalProps) {
+export function PendingActionModal({ pendingAction, error, onCancel, onConfirm }: PendingActionModalProps) {
   if (!pendingAction) return null;
 
   return (
@@ -22,6 +23,11 @@ export function PendingActionModal({ pendingAction, onCancel, onConfirm }: Pendi
           事项说明：<span className="text-gray-900 font-bold block my-2 text-sm">"{pendingAction.title}"</span>
           元气值变动：<span className={`${pendingAction.points > 0 ? 'text-emerald-500' : 'text-rose-500'} font-black text-xl tabular-nums`}>{pendingAction.points > 0 ? '+' : ''}{pendingAction.points} PTS</span>
         </p>
+        {error && (
+          <div className="mt-6 rounded-2xl bg-rose-50 border border-rose-100 text-rose-600 text-xs px-4 py-3 font-semibold">
+            {error}
+          </div>
+        )}
         <div className="mt-10 flex gap-4">
           <button onClick={onCancel} className="flex-1 py-4 bg-gray-50 rounded-2xl text-[10px] font-bold text-gray-400 hover:bg-gray-100 transition-all">取消</button>
           <button onClick={onConfirm} className="flex-1 py-4 btn-pop rounded-2xl text-[10px] font-bold tracking-widest shadow-xl">确认录入</button>

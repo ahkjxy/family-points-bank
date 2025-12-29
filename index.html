@@ -14,14 +14,32 @@
             --success: #00C897;
             --warning: #FF9F43;
             --surface: #FFFFFF;
+            --surface-strong: #F7F8FC;
             --bg: #FDFCFD;
+            --app-bg: radial-gradient(120% 120% at 0% 0%, #FFF5F9 0%, #FDFCFD 50%, #EAF6FF 100%);
+            --text-primary: #0F172A;
+            --text-muted: #6B7280;
+            --border-subtle: rgba(0,0,0,0.06);
+            color-scheme: light;
+        }
+
+        :root[data-theme='dark'] {
+            --surface: rgba(15, 23, 42, 0.92);
+            --surface-strong: #0b1220;
+            --bg: #0b1220;
+            --app-bg: radial-gradient(120% 120% at 0% 0%, #0b1220 0%, #0c1526 40%, #0b1220 100%);
+            --text-primary: #E5E7EB;
+            --text-muted: #9CA3AF;
+            --border-subtle: rgba(255,255,255,0.08);
+            color-scheme: dark;
         }
         
         body {
             font-family: 'Inter', system-ui, sans-serif;
-            background-color: var(--bg);
-            color: #1A1A1A;
+            background: var(--app-bg);
+            color: var(--text-primary);
             letter-spacing: -0.01em;
+            transition: background-color 0.2s ease, color 0.2s ease;
         }
 
         .font-display {
@@ -34,6 +52,10 @@
             backdrop-filter: blur(12px);
             border-right: 1px solid rgba(255, 77, 148, 0.1);
         }
+        [data-theme='dark'] .glass-sidebar {
+            background: rgba(15, 23, 42, 0.65);
+            border-right: 1px solid rgba(255,255,255,0.08);
+        }
 
         /* Floating Modern Cards */
         .vibrant-card {
@@ -41,7 +63,7 @@
             border-radius: 24px;
             box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.05);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid rgba(0,0,0,0.03);
+            border: 1px solid var(--border-subtle);
         }
 
         .vibrant-card:hover {
@@ -60,31 +82,39 @@
             box-shadow: 0 4px 12px rgba(255, 77, 148, 0.25);
         }
 
-        .btn-pop:hover {
-            filter: brightness(1.05);
-            box-shadow: 0 6px 20px rgba(255, 77, 148, 0.35);
-        }
+        .btn-pop:hover { filter: brightness(1.05); box-shadow: 0 6px 20px rgba(255, 77, 148, 0.35); }
+        .btn-pop:active { transform: scale(0.97); }
 
-        .btn-pop:active {
-            transform: scale(0.97);
-        }
-
-        .points-font {
-            font-family: 'Quicksand', sans-serif;
-            font-weight: 700;
-            font-feature-settings: "tnum";
-        }
+        .points-font { font-family: 'Quicksand', sans-serif; font-weight: 700; font-feature-settings: "tnum"; }
 
         /* Hide scrollbars but allow scrolling */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-5px); }
-            100% { transform: translateY(0px); }
-        }
+        /* Dark theme overrides for常用 Tailwind色阶 */
+        [data-theme='dark'] .bg-white { background-color: var(--surface) !important; }
+        [data-theme='dark'] .bg-white\/60 { background-color: rgba(15,23,42,0.72) !important; }
+        [data-theme='dark'] .bg-white\/70 { background-color: rgba(15,23,42,0.78) !important; }
+        [data-theme='dark'] .bg-white\/80 { background-color: rgba(15,23,42,0.82) !important; }
+        [data-theme='dark'] .bg-white\/90 { background-color: rgba(15,23,42,0.88) !important; }
+        [data-theme='dark'] .bg-gray-50 { background-color: #0f172a !important; }
+        [data-theme='dark'] .bg-gray-50\/60 { background-color: rgba(15,23,42,0.65) !important; }
+        [data-theme='dark'] .bg-gray-50\/70 { background-color: rgba(15,23,42,0.7) !important; }
+        [data-theme='dark'] .bg-gray-50\/80 { background-color: rgba(15,23,42,0.75) !important; }
+        [data-theme='dark'] .border-gray-50 { border-color: var(--border-subtle) !important; }
+        [data-theme='dark'] .text-gray-900, [data-theme='dark'] .text-gray-800, [data-theme='dark'] .text-gray-700 { color: var(--text-primary) !important; }
+        [data-theme='dark'] .text-gray-600, [data-theme='dark'] .text-gray-500, [data-theme='dark'] .text-gray-400 { color: var(--text-muted) !important; }
+        [data-theme='dark'] .border-gray-200, [data-theme='dark'] .border-gray-100, [data-theme='dark'] .border-gray-300 { border-color: var(--border-subtle) !important; }
+        [data-theme='dark'] .shadow-\[0_24px_80px_-38px_rgba\(124,77,255,0.55\)\] { box-shadow: 0 24px 80px -38px rgba(0,0,0,0.55) !important; }
+
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0px); } }
         .animate-float { animation: float 4s ease-in-out infinite; }
+
+        /* 打印保持浅色 */
+        @media print {
+            :root { color-scheme: light; }
+            body { background: white !important; color: #111 !important; }
+        }
     </style>
 <script type="importmap">
 {

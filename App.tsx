@@ -21,9 +21,23 @@ import {
   AuthGate,
   PasswordResetModal,
   PasswordResetPage,
+  ToastProvider,
+  useToast,
+  ThemeProvider,
+  useTheme,
 } from './components';
 
 export default function App() {
+  return (
+    <ThemeProvider>
+      <ToastProvider>
+        <AppContent />
+      </ToastProvider>
+    </ThemeProvider>
+  );
+}
+
+function AppContent() {
   const navigate = useNavigate();
   const location = useLocation();
   const matchAny = useMatch('/:syncId/*');
@@ -58,6 +72,10 @@ export default function App() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const { showToast, dismissToast } = useToast();
+  const { theme, toggleTheme } = useTheme();
+  const [pendingError, setPendingError] = useState<string | null>(null);
+
   const ensureCurrentProfileId = (profiles: Profile[], preferredId?: string) => {
     if (!profiles.length) return '';
     if (preferredId && profiles.some(p => p.id === preferredId)) return preferredId;
@@ -67,9 +85,13 @@ export default function App() {
 
   const [fatalError, setFatalError] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (pendingAction) setPendingError(null);
+  }, [pendingAction]);
+
   const notifyError = (message: string, e?: any) => {
     console.warn(message, e);
-    alert(`${message}：${(e as Error)?.message || '请稍后重试'}`);
+    showToast({ type: 'error', title: message, description: (e as Error)?.message || '请稍后重试', duration: 3800 });
   };
 
   const seedFamilyIfEmpty = async (familyId: string) => {
@@ -319,11 +341,13 @@ export default function App() {
 
   const handleTransaction = async () => {
     if (!pendingAction) return;
+    setPendingError(null);
     const { title, points, type } = pendingAction;
 
     if (type === 'redeem' && currentProfile.balance < Math.abs(points)) {
-      alert('当前元气值不足哦！✨');
-      setPendingAction(null);
+      const msg = '当前元气值不足';
+      setPendingError(msg);
+      showToast({ type: 'error', title: msg, description: '请先完成任务赚取元气值' });
       return;
     }
 
@@ -349,6 +373,8 @@ export default function App() {
     setState(newState);
 
     const familyId = resolveFamilyId();
+    const loadingId = showToast({ type: 'loading', title: '正在同步积分...', duration: 0 });
+    let synced = false;
     try {
       const { data: inserted, error: txErr } = await supabase.from('transactions').insert({
         id: transaction.id,
@@ -368,10 +394,17 @@ export default function App() {
       if (inserted) {
         await refreshFamily(familyId);
       }
+      synced = true;
+      showToast({ type: 'success', title: '已记录元气变动', description: `${title}：${points > 0 ? '+' : ''}${points} pts` });
     } catch (e) {
       notifyError('积分变动失败', e);
+    } finally {
+      if (loadingId) dismissToast(loadingId);
     }
     await syncToCloud(newState);
+    if (!synced) {
+      showToast({ type: 'info', title: '本地已保存', description: '同步遇到问题，请稍后刷新重试' });
+    }
   };
 
   const crudAction = async (type: 'task' | 'reward', action: 'save' | 'delete', item: any) => {
@@ -397,6 +430,7 @@ export default function App() {
           await refreshFamily(familyId);
           setEditingItem(null);
           success = true;
+          showToast({ type: 'success', title: '任务已保存', description: item.title || '已更新任务配置' });
           return;
         } else {
           await supabase.from('tasks').delete().eq('id', item.id);
@@ -418,6 +452,7 @@ export default function App() {
           await refreshFamily(familyId);
           setEditingItem(null);
           success = true;
+          showToast({ type: 'success', title: '任务已保存', description: item.title || '已更新任务配置' });
           return;
         } else {
           await supabase.from('rewards').delete().eq('id', item.id);
@@ -435,6 +470,7 @@ export default function App() {
       setState(newState);
       await syncToCloud(newState);
       await refreshFamily(familyId);
+      showToast({ type: 'success', title: `${typeLabel}已删除` });
     }
   };
 
@@ -452,6 +488,7 @@ export default function App() {
       const { error } = await supabase.from('profiles').update({ name }).eq('id', id).eq('family_id', familyId);
       if (error) throw error;
       await refreshFamily(familyId);
+      showToast({ type: 'success', title: '姓名已更新' });
     } catch (e) {
       notifyError('更新成员姓名失败', e);
     }
@@ -485,6 +522,7 @@ export default function App() {
       if (data) {
         await refreshFamily(familyId);
       }
+      showToast({ type: 'success', title: '成员已新增', description: newProfile.name });
     } catch (e) {
       notifyError('新增成员失败', e);
     }
@@ -496,12 +534,12 @@ export default function App() {
     const target = state.profiles.find(p => p.id === id);
     if (!target) return;
     if (state.profiles.length <= 1) {
-      alert('至少保留一位成员');
+      showToast({ type: 'error', title: '至少保留一位成员', description: '无法删除最后一名成员' });
       return;
     }
     const admins = state.profiles.filter(p => p.role === 'admin');
     if (target.role === 'admin' && admins.length <= 1) {
-      alert('至少保留一位管理员');
+      showToast({ type: 'error', title: '至少保留一位管理员', description: '请先指定其他管理员后再删除' });
       return;
     }
     const remainingProfiles = state.profiles.filter(p => p.id !== id);
@@ -515,6 +553,7 @@ export default function App() {
     try {
       await supabase.from('profiles').delete().eq('id', id).eq('family_id', familyId);
       await refreshFamily(familyId);
+      showToast({ type: 'success', title: '成员已删除', description: target.name });
     } catch (e) {
       notifyError('删除成员失败', e);
     }
@@ -660,7 +699,10 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#F9F4FF] via-[#FDFCFD] to-[#EAF6FF] flex flex-col lg:flex-row">
+    <div
+      className="min-h-screen flex flex-col lg:flex-row transition-colors"
+      style={{ background: 'var(--app-bg)', color: 'var(--text-primary)' }}
+    >
       <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen">
         <Sidebar 
           activeTab={activeTab}
@@ -676,6 +718,8 @@ export default function App() {
           activeTab={activeTab}
           currentProfile={currentProfile}
           isAdmin={isAdmin}
+          theme={theme}
+          onToggleTheme={toggleTheme}
           onPrint={() => printReport(state)}
           onLogout={handleLogout}
         />
@@ -689,6 +733,7 @@ export default function App() {
             element={
               <DashboardSection 
                 currentProfile={currentProfile}
+                profiles={state.profiles}
                 onGoEarn={() => goTab('earn')}
                 onGoRedeem={() => goTab('redeem')}
               />
@@ -773,7 +818,11 @@ export default function App() {
 
       <PendingActionModal 
         pendingAction={pendingAction}
-        onCancel={() => setPendingAction(null)}
+        error={pendingError}
+        onCancel={() => {
+          setPendingError(null);
+          setPendingAction(null);
+        }}
         onConfirm={handleTransaction}
       />
 

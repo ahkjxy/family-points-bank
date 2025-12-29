@@ -1,12 +1,13 @@
 
-import { FamilyState, Task, Reward } from '../types';
+import { FamilyState, Task } from '../types';
 import { FIXED_SYNC_ID } from '../constants';
+import { formatDateTime } from './datetime';
 
 export function generateHTMLReport(
   state: FamilyState
 ): string {
   const now = new Date();
-  const reportDate = now.toLocaleDateString('zh-CN');
+  const reportDate = formatDateTime(now);
 
   // Categorize for handbook style
   const learningTasks = state.tasks.filter(t => t.category === 'learning');
@@ -240,13 +241,33 @@ export function printReport(state: FamilyState): void {
   if (printWindow) {
     printWindow.document.write(html);
     printWindow.document.close();
+    printWindow.focus();
     printWindow.onload = () => {
       setTimeout(() => {
         printWindow.print();
         printWindow.close();
-      }, 500);
+      }, 300);
     };
+    return;
   }
+
+  // fallback: 如果弹窗被拦截，则用隐藏 iframe 打印
+  const iframe = document.createElement('iframe');
+  iframe.style.position = 'fixed';
+  iframe.style.right = '0';
+  iframe.style.bottom = '0';
+  iframe.style.width = '0';
+  iframe.style.height = '0';
+  iframe.style.border = '0';
+  iframe.srcdoc = html;
+  document.body.appendChild(iframe);
+  iframe.onload = () => {
+    iframe.contentWindow?.focus();
+    iframe.contentWindow?.print();
+    setTimeout(() => {
+      document.body.removeChild(iframe);
+    }, 500);
+  };
 }
 
 export function exportToHTML(state: FamilyState): void {

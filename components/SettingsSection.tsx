@@ -243,28 +243,30 @@ export function SettingsSection({
               ))}
             </div>
           </div>
-          <div className="flex-1 overflow-y-auto pr-2 no-scrollbar border-t border-gray-50 pt-4 space-y-3">
-            {tasks.map((t, idx) => (
-              <div 
-                key={t.id} 
-                className={`flex items-center justify-between p-4 rounded-2xl group border transition-all ${idx % 2 === 0 ? 'bg-white border-gray-100' : 'bg-gray-50 border-gray-100/70'} hover:bg-white hover:border-[#FF4D94]/30 shadow-[0_10px_30px_-24px_rgba(15,23,42,0.45)]`}
-              >
-                <div className="flex items-center gap-4 overflow-hidden">
-                  <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-[#F1F5F9] text-gray-600 shrink-0 uppercase tracking-wide">{t.category[0]}</span>
-                  <div className="overflow-hidden">
-                    <span className="text-sm font-bold text-gray-800 block truncate group-hover:text-[#FF4D94]">{t.title}</span>
-                    <span className="text-[11px] text-gray-400 truncate block">{t.description || '暂无详细描述'}</span>
+          <div className="flex-1 overflow-y-auto pr-2 no-scrollbar border-t border-gray-50 pt-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+              {tasks.map(t => (
+                <div 
+                  key={t.id} 
+                  className="flex items-center justify-between p-3 sm:p-4 rounded-2xl group border bg-white border-gray-100 hover:border-[#FF4D94]/30 hover:shadow-[0_10px_30px_-24px_rgba(15,23,42,0.45)] transition-all"
+                >
+                  <div className="flex items-center gap-3 overflow-hidden">
+                    <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-[#F1F5F9] text-gray-600 shrink-0 uppercase tracking-wide">{t.category[0]}</span>
+                    <div className="overflow-hidden">
+                      <span className="text-sm font-bold text-gray-800 block truncate group-hover:text-[#FF4D94]">{t.title}</span>
+                      <span className="text-[11px] text-gray-400 truncate block">{t.description || '暂无详细描述'}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 shrink-0 ml-3">
+                    <span className="text-sm font-black text-[#FF4D94] points-font bg-[#FFF2F7] px-3 py-1 rounded-xl">{t.points}</span>
+                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                      <button onClick={() => onEdit({ type: 'task', item: t })} className="p-2 text-gray-300 hover:text-[#FF4D94] hover:bg-pink-50 rounded-lg transition-all"><Icon name="settings" size={16} /></button>
+                      <button onClick={() => window.confirm(`下架任务: \"${t.title}\"？`) && onDelete('task', t)} className="p-2 text-gray-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"><Icon name="trash" size={16} /></button>
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-4 shrink-0 ml-4">
-                  <span className="text-sm font-black text-[#FF4D94] points-font bg-[#FFF2F7] px-3 py-1 rounded-xl">{t.points}</span>
-                  <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                    <button onClick={() => onEdit({ type: 'task', item: t })} className="p-2 text-gray-300 hover:text-[#FF4D94] hover:bg-pink-50 rounded-lg transition-all"><Icon name="settings" size={16} /></button>
-                    <button onClick={() => window.confirm(`下架任务: "${t.title}"？`) && onDelete('task', t)} className="p-2 text-gray-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"><Icon name="trash" size={16} /></button>
-                  </div>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       )}
@@ -293,31 +295,34 @@ export function SettingsSection({
               ))}
             </div>
           </div>
-          <div className="flex-1 overflow-y-auto pr-2 no-scrollbar border-t border-gray-50 pt-4 space-y-3">
-            {rewards.map((r, idx) => (
-              <div 
-                key={r.id} 
-                className={`flex items-center justify-between p-4 rounded-2xl group border transition-all ${idx % 2 === 0 ? 'bg-white border-gray-100' : 'bg-gray-50 border-gray-100/70'} hover:bg-white hover:border-[#FF4D94]/30 shadow-[0_10px_30px_-24px_rgba(15,23,42,0.45)]`}
-              >
-                <div className="flex items-center gap-4 overflow-hidden">
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 overflow-hidden ${r.type === '实物奖品' ? 'bg-amber-50 text-amber-500' : 'bg-indigo-50 text-indigo-500'}`}>
-                    {r.imageUrl ? <img src={r.imageUrl} className="w-full h-full object-cover" /> : <Icon name="reward" size={18} />}
+          <div className="flex-1 overflow-y-auto pr-2 no-scrollbar border-t border-gray-50 pt-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+              {rewards.map(r => (
+                <div 
+                  key={r.id} 
+                  className="flex items-center justify-between p-3 sm:p-4 rounded-2xl group border bg-white border-gray-100 hover:border-[#FF4D94]/30 hover:shadow-[0_10px_30px_-24px_rgba(15,23,42,0.45)] transition-all"
+                >
+                  <div className="flex items-center gap-3 overflow-hidden">
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 overflow-hidden ${r.type === '实物奖品' ? 'bg-amber-50 text-amber-500' : 'bg-indigo-50 text-indigo-500'}`}> 
+                      {r.imageUrl ? <img src={r.imageUrl} className="w-full h-full object-cover" /> : <Icon name="reward" size={18} />}
+                    </div>
+                    <div className="overflow-hidden">
+                      <span className="text-sm font-bold text-gray-800 block truncate group-hover:text-[#FF4D94]">{r.title}</span>
+                      <span className="text-[11px] text-gray-400 block tracking-wider uppercase">{r.type}</span>
+                    </div>
                   </div>
-                  <div className="overflow-hidden">
-                    <span className="text-sm font-bold text-gray-800 block truncate group-hover:text-[#FF4D94]">{r.title}</span>
-                    <span className="text-[11px] text-gray-400 block tracking-wider uppercase">{r.type}</span>
+                  <div className="flex items-center gap-3 shrink-0 ml-3">
+                    <span className="text-sm font-black text-[#FF4D94] points-font bg-[#FFF2F7] px-3 py-1 rounded-xl">{r.points}</span>
+                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                      <button onClick={() => onEdit({ type: 'reward', item: r })} className="p-2 text-gray-300 hover:text-[#FF4D94] hover:bg-pink-50 rounded-lg"><Icon name="settings" size={16} /></button>
+                      <button onClick={() => window.confirm(`下架奖品: \"${r.title}\"？`) && onDelete('reward', r)} className="p-2 text-gray-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg"><Icon name="trash" size={16} /></button>
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-4 shrink-0 ml-4">
-                  <span className="text-sm font-black text-[#FF4D94] points-font bg-[#FFF2F7] px-3 py-1 rounded-xl">{r.points}</span>
-                  <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                    <button onClick={() => onEdit({ type: 'reward', item: r })} className="p-2 text-gray-300 hover:text-[#FF4D94] hover:bg-pink-50 rounded-lg"><Icon name="settings" size={16} /></button>
-                    <button onClick={() => window.confirm(`下架奖品: "${r.title}"？`) && onDelete('reward', r)} className="p-2 text-gray-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg"><Icon name="trash" size={16} /></button>
-                  </div>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
+
         </div>
       )}
 
