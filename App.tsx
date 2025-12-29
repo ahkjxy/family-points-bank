@@ -19,6 +19,7 @@ import {
   DocsPage,
   MobileNav,
   AuthGate,
+  PasswordResetModal,
 } from './components';
 
 export default function App() {
@@ -49,6 +50,7 @@ export default function App() {
   const [showProfileSwitcher, setShowProfileSwitcher] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
 
   const [taskFilter, setTaskFilter] = useState<Category | 'all'>('all');
   const [rewardFilter, setRewardFilter] = useState<'实物奖品' | '特权奖励' | 'all'>('all');
@@ -238,8 +240,11 @@ export default function App() {
       }
     };
     init();
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, sess) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, sess) => {
       setSession(sess);
+      if (event === 'PASSWORD_RECOVERY') {
+        setShowPasswordReset(true);
+      }
       if (!sess) {
         setFatalError(null);
         setIsLoading(false);
@@ -764,6 +769,11 @@ export default function App() {
         pendingAction={pendingAction}
         onCancel={() => setPendingAction(null)}
         onConfirm={handleTransaction}
+      />
+
+      <PasswordResetModal 
+        open={showPasswordReset}
+        onClose={() => setShowPasswordReset(false)}
       />
     </div>
   );

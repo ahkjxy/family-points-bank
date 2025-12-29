@@ -12,3 +12,4 @@ export * from './DocsPage';
 export * from './Icon';
 export * from './MobileNav';
 export * from './AuthGate';
+export * from './PasswordResetModal';

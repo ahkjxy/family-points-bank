@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AUTH_REDIRECT } from '../constants';
 import { supabase } from '../supabaseClient';
+import { PasswordResetModal } from './PasswordResetModal';
 
 type Mode = 'password' | 'magic';
 
@@ -11,6 +12,7 @@ export const AuthGate: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [showReset, setShowReset] = useState(false);
 
   const clearNotice = () => {
     setMessage('');
@@ -105,6 +107,26 @@ export const AuthGate: React.FC = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const hash = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : '';
+    const params = new URLSearchParams(hash);
+    const type = params.get('type');
+    const access_token = params.get('access_token');
+    const refresh_token = params.get('refresh_token');
+    if (type === 'recovery' && access_token && refresh_token) {
+      supabase.auth.setSession({ access_token, refresh_token });
+      setShowReset(true);
+      const cleaned = window.location.origin + window.location.pathname + window.location.search;
+      window.history.replaceState({}, document.title, cleaned);
+    }
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setShowReset(true);
+      }
+    });
+    return () => sub.subscription?.unsubscribe();
+  }, []);
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-[#F9F4FF] via-white to-[#EAF6FF] px-6 py-12">
@@ -201,6 +223,8 @@ export const AuthGate: React.FC = () => {
         {error && <div className="text-sm text-red-600 bg-red-50 border border-red-100 px-4 py-3 rounded-2xl">{error}</div>}
         <p className="text-xs text-gray-500 text-center">登录后我们会为你创建或关联一个家庭空间。</p>
       </div>
+
+      <PasswordResetModal open={showReset} onClose={() => setShowReset(false)} />
     </div>
   );
 };

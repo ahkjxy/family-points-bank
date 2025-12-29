@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Task, Reward, Category, Profile, UserRole } from '../types';
 import { Icon } from './Icon';
 import { FIXED_SYNC_ID } from '../constants';
+import { supabase } from '../supabaseClient';
 
 interface SettingsSectionProps {
   profiles: Profile[];
@@ -44,6 +45,9 @@ export function SettingsSection({
   const [newName, setNewName] = useState('');
   const [newRole, setNewRole] = useState<UserRole>('child');
   const [activeTab, setActiveTab] = useState<'members' | 'tasks' | 'rewards' | 'sync'>('members');
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetMessage, setResetMessage] = useState<string | null>(null);
 
   useEffect(() => {
     setDraftNames(Object.fromEntries(profiles.map(p => [p.id, p.name])));
@@ -55,6 +59,23 @@ export function SettingsSection({
     onAddProfile(trimmed, newRole);
     setNewName('');
     setNewRole('child');
+  };
+
+  const handleSendReset = async () => {
+    const trimmed = resetEmail.trim();
+    if (!trimmed) return;
+    setResetLoading(true);
+    setResetMessage(null);
+    try {
+      const redirectTo = `${window.location.origin}/${currentSyncId || ''}/dashboard`;
+      const { error } = await supabase.auth.resetPasswordForEmail(trimmed, { redirectTo });
+      if (error) throw error;
+      setResetMessage('重置邮件已发送，请让用户查收并点击邮件中的链接设置新密码。');
+    } catch (e) {
+      setResetMessage(`发送失败：${(e as Error)?.message || '请稍后重试'}`);
+    } finally {
+      setResetLoading(false);
+    }
   };
 
   const tabs = [
@@ -314,6 +335,31 @@ export function SettingsSection({
             <li>写入（任务、奖品、记账、成员）通过 Supabase 表完成，成功后会更新页面数据。</li>
             <li>若无权限或找不到家庭，将提示检查登录状态或访问链接。</li>
           </ul>
+
+          <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-gray-100 space-y-3">
+            <div className="flex items-center gap-2 text-sm font-bold text-gray-800">
+              <Icon name="info" size={16} />
+              <span>给指定邮箱发送“重置密码”邮件</span>
+            </div>
+            <div className="flex flex-col md:flex-row md:items-center gap-3">
+              <input
+                value={resetEmail}
+                onChange={e => setResetEmail(e.target.value)}
+                className="flex-1 px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#FF4D94] outline-none"
+                placeholder="输入用户邮箱"
+                type="email"
+              />
+              <button
+                disabled={!resetEmail.trim() || resetLoading}
+                onClick={handleSendReset}
+                className={`px-5 py-3 rounded-xl text-[11px] font-bold transition-all ${!resetEmail.trim() || resetLoading ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-[#111827] to-[#0F172A] text-white shadow-md shadow-[#0F172A]/20 hover:brightness-110 active:scale-95'}`}
+              >
+                {resetLoading ? '发送中...' : '发送重置邮件'}
+              </button>
+            </div>
+            {resetMessage && <p className="text-[12px] text-gray-500 leading-relaxed">{resetMessage}</p>}
+            <p className="text-[11px] text-gray-400 leading-relaxed">说明：Supabase 将向该邮箱发送重置链接，用户点击邮件后即可设置新密码。若需自定义跳转地址，可调整 redirectTo。</p>
+          </div>
         </div>
       )}
     </div>
