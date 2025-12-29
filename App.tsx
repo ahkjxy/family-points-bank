@@ -20,6 +20,7 @@ import {
   MobileNav,
   AuthGate,
   PasswordResetModal,
+  PasswordResetPage,
 } from './components';
 
 export default function App() {
@@ -602,6 +603,10 @@ export default function App() {
   }
 
   if (!session) {
+    const path = location.pathname;
+    if (path.startsWith('/reset')) {
+      return <PasswordResetPage />;
+    }
     return <AuthGate />;
   }
 
@@ -677,6 +682,7 @@ export default function App() {
 
         <Routes>
           <Route path="/" element={resolvedFamilyId ? <Navigate to={`/${resolvedFamilyId}/dashboard`} replace /> : <AuthGate />} />
+          <Route path="/reset" element={<PasswordResetPage />} />
           <Route path="/:syncId" element={resolvedFamilyId ? <Navigate to={`/${resolvedFamilyId}/dashboard`} replace /> : <AuthGate />} />
           <Route 
             path="/:syncId/dashboard" 

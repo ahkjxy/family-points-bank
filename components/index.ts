@@ -13,3 +13,4 @@ export * from './Icon';
 export * from './MobileNav';
 export * from './AuthGate';
 export * from './PasswordResetModal';
+export * from './PasswordResetPage';

@@ -13,6 +13,11 @@ export const AuthGate: React.FC = () => {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [showReset, setShowReset] = useState(false);
+  const [showResetRequest, setShowResetRequest] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetMsg, setResetMsg] = useState('');
+  const [resetErr, setResetErr] = useState('');
 
   const clearNotice = () => {
     setMessage('');
@@ -89,22 +94,30 @@ export const AuthGate: React.FC = () => {
     }
   };
 
-  const handleResetPassword = async () => {
-    clearNotice();
-    const em = email.trim();
+  const handleResetPassword = () => {
+    setResetEmail(email.trim());
+    setResetMsg('');
+    setResetErr('');
+    setShowResetRequest(true);
+  };
+
+  const handleSendReset = async () => {
+    setResetMsg('');
+    setResetErr('');
+    const em = resetEmail.trim();
     if (!em) {
-      setError('请输入邮箱以重置密码');
+      setResetErr('请输入邮箱');
       return;
     }
-    setLoading(true);
+    setResetLoading(true);
     try {
       const { error: resetErr } = await supabase.auth.resetPasswordForEmail(em, { redirectTo: AUTH_REDIRECT });
       if (resetErr) throw resetErr;
-      setMessage('已发送重置密码邮件，请查收邮箱并按链接修改密码。');
+      setResetMsg('重置邮件已发送，请查收邮箱并按链接设置新密码。');
     } catch (err) {
-      setError((err as Error)?.message || '发送失败');
+      setResetErr((err as Error)?.message || '发送失败，请稍后重试');
     } finally {
-      setLoading(false);
+      setResetLoading(false);
     }
   };
 
@@ -225,6 +238,51 @@ export const AuthGate: React.FC = () => {
       </div>
 
       <PasswordResetModal open={showReset} onClose={() => setShowReset(false)} />
+
+      {showResetRequest && (
+        <div className="fixed inset-0 z-[998] flex items-center justify-center bg-black/50 px-4">
+          <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl border border-gray-100 p-6 space-y-4">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-gray-400">Reset Link</p>
+                <h3 className="text-xl font-bold text-gray-900">发送重置密码邮件</h3>
+                <p className="text-sm text-gray-500">请输入需要重置的邮箱，我们会发送重置链接。</p>
+              </div>
+              <button
+                onClick={() => setShowResetRequest(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >×</button>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-700">邮箱</label>
+              <input
+                type="email"
+                value={resetEmail}
+                onChange={(e) => setResetEmail(e.target.value)}
+                className="w-full rounded-2xl border border-gray-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#FF4D94]/60"
+                placeholder="you@example.com"
+                disabled={resetLoading}
+              />
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={handleSendReset}
+                disabled={resetLoading}
+                className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-[#FF4D94] to-[#7C4DFF] text-white font-bold shadow-lg hover:brightness-110 active:scale-95 transition disabled:opacity-60"
+              >
+                {resetLoading ? '发送中...' : '发送重置邮件'}
+              </button>
+              <button
+                onClick={() => setShowResetRequest(false)}
+                disabled={resetLoading}
+                className="px-4 py-3 rounded-2xl bg-white border border-gray-200 text-gray-700 font-bold hover:border-[#FF4D94] hover:text-[#FF4D94]"
+              >取消</button>
+            </div>
+            {resetMsg && <div className="text-sm text-emerald-600 bg-emerald-50 border border-emerald-100 px-4 py-3 rounded-2xl">{resetMsg}</div>}
+            {resetErr && <div className="text-sm text-red-600 bg-red-50 border border-red-100 px-4 py-3 rounded-2xl">{resetErr}</div>}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
