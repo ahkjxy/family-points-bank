@@ -41,7 +41,7 @@ export function RedeemSection({ rewards, balance, onRedeem }: RedeemSectionProps
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 rounded-full text-[11px] font-bold transition-all min-w-[96px] text-center ${activeTab === tab ? 'bg-[#FF4D94] text-white shadow-md shadow-[#FF4D94]/20' : 'bg-white border border-gray-200 text-gray-600 hover:border-[#FF4D94]/50 hover:text-[#FF4D94]'}`}
+              className={`px-5 py-2.5 rounded-full text-[12px] font-bold transition-all min-w-[110px] min-h-[44px] text-center ${activeTab === tab ? 'bg-[#FF4D94] text-white shadow-md shadow-[#FF4D94]/20' : 'bg-white border border-gray-200 text-gray-600 hover:border-[#FF4D94]/50 hover:text-[#FF4D94]'}`}
             >
               {tab === 'all' ? '全部奖品' : tab}
             </button>
@@ -81,11 +81,11 @@ export function RedeemSection({ rewards, balance, onRedeem }: RedeemSectionProps
                 </div>
 
                 <div className="flex items-center justify-between gap-2 mt-auto">
-                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-[11px] font-black text-[#FF4D94] bg-[#FFF2F7] points-font">{reward.points} pts</span>
+                  <span className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-lg text-[12px] font-black text-[#FF4D94] bg-[#FFF2F7] points-font">{reward.points} pts</span>
                   <button
                     disabled={!canAfford}
                     onClick={() => onRedeem({ title: reward.title, points: -reward.points, type: 'redeem' })}
-                    className={`px-3 py-2 rounded-xl text-[12px] font-bold transition-all ${canAfford ? 'bg-gradient-to-r from-[#FF4D94] to-[#FF7AB5] text-white shadow-md shadow-[#FF4D94]/30 hover:brightness-110 active:scale-95' : 'bg-gray-200 text-gray-500 cursor-not-allowed'}`}
+                    className={`px-4 py-2.5 min-w-[120px] min-h-[44px] rounded-xl text-[13px] font-bold transition-all ${canAfford ? 'bg-gradient-to-r from-[#FF4D94] to-[#FF7AB5] text-white shadow-md shadow-[#FF4D94]/30 hover:brightness-110 active:scale-95' : 'bg-gray-200 text-gray-500 cursor-not-allowed'}`}
                   >
                     {canAfford ? '立即兑换' : '继续加油'}
                   </button>

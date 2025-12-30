@@ -61,7 +61,7 @@ export function EarnSection({ tasks, onSelectTask }: EarnSectionProps) {
               <button
                 key={cat}
                 onClick={() => setActiveTab(cat)}
-                className={`px-4 py-2 rounded-full text-[11px] font-bold transition-all min-w-[104px] text-center ${activeTab === cat ? 'bg-[#FF4D94] text-white shadow-md shadow-[#FF4D94]/20' : 'bg-white border border-gray-200 text-gray-600 hover:border-[#FF4D94]/50 hover:text-[#FF4D94]'}`}
+                className={`px-5 py-2.5 rounded-full text-[12px] font-bold transition-all min-w-[116px] text-center min-h-[44px] ${activeTab === cat ? 'bg-[#FF4D94] text-white shadow-md shadow-[#FF4D94]/20' : 'bg-white border border-gray-200 text-gray-600 hover:border-[#FF4D94]/50 hover:text-[#FF4D94]'}`}
               >
                 {meta.chip} {meta.label}
               </button>

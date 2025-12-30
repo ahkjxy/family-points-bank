@@ -79,6 +79,25 @@ function AppContent() {
   const [pendingError, setPendingError] = useState<string | null>(null);
   const [savingKey, setSavingKey] = useState<string | null>(null);
 
+  const STORAGE_BUCKET = 'fpb';
+
+  const dataUrlToBlob = async (dataUrl: string) => {
+    const res = await fetch(dataUrl);
+    return await res.blob();
+  };
+
+  const uploadImageToBucket = async (dataUrl: string, folder: 'avatars' | 'tasks' | 'rewards') => {
+    const blob = await dataUrlToBlob(dataUrl);
+    const mime = blob.type || 'image/png';
+    const ext = mime.split('/')[1]?.split('+')[0] || 'png';
+    const familyId = resolveFamilyId() || 'demo';
+    const path = `${folder}/${familyId}/${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from(STORAGE_BUCKET).upload(path, blob, { upsert: true, contentType: mime, cacheControl: '3600' });
+    if (error) throw error;
+    const { data } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(path);
+    return data.publicUrl;
+  };
+
   const ensureCurrentProfileId = (profiles: Profile[], preferredId?: string) => {
     if (!profiles.length) return '';
     if (preferredId && profiles.some(p => p.id === preferredId)) return preferredId;
@@ -531,6 +550,9 @@ function AppContent() {
     try {
       if (type === 'task') {
         if (action === 'save') {
+          if (item.imageUrl && typeof item.imageUrl === 'string' && item.imageUrl.startsWith('data:')) {
+            item.imageUrl = await uploadImageToBucket(item.imageUrl, 'tasks');
+          }
           const exists = state.tasks.find(t => t.id === item.id);
           const payload = { ...item, id: item.id || undefined, family_id: familyId };
           if (exists) {
@@ -553,6 +575,9 @@ function AppContent() {
         }
       } else if (type === 'reward') {
         if (action === 'save') {
+          if (item.imageUrl && typeof item.imageUrl === 'string' && item.imageUrl.startsWith('data:')) {
+            item.imageUrl = await uploadImageToBucket(item.imageUrl, 'rewards');
+          }
           const exists = state.rewards.find(r => r.id === item.id);
           const payload = { ...item, id: item.id || undefined, family_id: familyId };
           if (exists) {
@@ -613,14 +638,24 @@ function AppContent() {
 
   const handleUpdateProfileAvatar = async (id: string, avatarUrl: string | null) => {
     if (!isAdmin) return;
+    let finalUrl = avatarUrl;
+    try {
+      if (avatarUrl && avatarUrl.startsWith('data:')) {
+        finalUrl = await uploadImageToBucket(avatarUrl, 'avatars');
+      }
+    } catch (e) {
+      notifyError('上传头像失败', e);
+      return;
+    }
+
     const newState = {
       ...state,
-      profiles: state.profiles.map(p => p.id === id ? { ...p, avatarUrl } : p)
+      profiles: state.profiles.map(p => p.id === id ? { ...p, avatarUrl: finalUrl } : p)
     } as FamilyState;
     setState(newState);
     const familyId = resolveFamilyId();
     try {
-      const { error } = await supabase.from('profiles').update({ avatar_url: avatarUrl }).eq('id', id).eq('family_id', familyId);
+      const { error } = await supabase.from('profiles').update({ avatar_url: finalUrl }).eq('id', id).eq('family_id', familyId);
       if (error) throw error;
       await refreshFamily(familyId);
       showToast({ type: 'success', title: '头像已更新' });
@@ -636,13 +671,23 @@ function AppContent() {
     if (!trimmed) return;
     const familyId = resolveFamilyId();
     const balance = Number.isFinite(initialBalance) ? Number(initialBalance) : 0;
+    let finalAvatar = avatarUrl || null;
+    try {
+      if (avatarUrl && avatarUrl.startsWith('data:')) {
+        finalAvatar = await uploadImageToBucket(avatarUrl, 'avatars');
+      }
+    } catch (e) {
+      notifyError('上传头像失败', e);
+      return;
+    }
+
     const newProfile: Profile = {
       id: `p-${Date.now()}`,
       name: trimmed,
       balance,
       history: [],
       avatarColor: avatarPalette[state.profiles.length % avatarPalette.length],
-      avatarUrl: avatarUrl || null,
+      avatarUrl: finalAvatar,
       role,
     };
     const newState = { ...state, profiles: [...state.profiles, newProfile] } as FamilyState;
@@ -654,7 +699,7 @@ function AppContent() {
         balance: newProfile.balance,
         role: newProfile.role,
         avatar_color: newProfile.avatarColor,
-        avatar_url: avatarUrl || null,
+        avatar_url: finalAvatar,
       }).select().single();
       if (error) throw error;
       if (data) {
@@ -851,7 +896,7 @@ function AppContent() {
         />
       </div>
 
-      <main className="flex-1 w-full lg:p-8 px-4 pt-6 pb-28 lg:pt-5 lg:pb-10 overflow-y-auto no-scrollbar">
+      <main className="flex-1 w-full lg:p-8 px-4 pt-6 pb-32 lg:pt-5 lg:pb-10 overflow-y-auto no-scrollbar">
         <HeaderBar 
           activeTab={activeTab}
           currentProfile={currentProfile}

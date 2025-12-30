@@ -170,7 +170,7 @@ export function HistorySection({ history, isAdmin = false, onDeleteTransactions 
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 rounded-full text-[11px] font-bold transition-all min-w-[96px] text-center ${activeTab === tab ? 'bg-[#FF4D94] text-white shadow-md shadow-[#FF4D94]/20' : 'bg-white border border-gray-200 text-gray-600 hover:border-[#FF4D94]/50 hover:text-[#FF4D94]'}`}
+              className={`px-5 py-2.5 rounded-full text-[12px] font-bold transition-all min-w-[110px] min-h-[44px] text-center ${activeTab === tab ? 'bg-[#FF4D94] text-white shadow-md shadow-[#FF4D94]/20' : 'bg-white border border-gray-200 text-gray-600 hover:border-[#FF4D94]/50 hover:text-[#FF4D94]'}`}
             >
               {TAB_LABELS[tab]}
             </button>
@@ -179,19 +179,19 @@ export function HistorySection({ history, isAdmin = false, onDeleteTransactions 
       </div>
 
       {canDelete && (
-        <div className="flex flex-wrap items-center justify-between gap-3 bg-white rounded-2xl px-4 py-3 border border-gray-100 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 bg-white rounded-2xl px-4 py-3.5 border border-gray-100 shadow-sm">
           <div className="flex items-center gap-3 text-sm text-gray-600">
             <span className="text-xs text-gray-500">已选 {selectedCount} / {filtered.length}</span>
             <button
               onClick={allSelected ? clearSelection : selectAll}
-              className="px-3 py-1.5 rounded-xl text-xs font-semibold border border-gray-200 hover:border-[#FF4D94] hover:text-[#FF4D94] transition-all"
+              className="px-4 py-2 min-h-[40px] rounded-xl text-sm font-semibold border border-gray-200 hover:border-[#FF4D94] hover:text-[#FF4D94] transition-all"
             >
               {allSelected ? '取消全选' : '全选当前筛选'}
             </button>
             {selectedCount > 0 && (
               <button
                 onClick={clearSelection}
-                className="px-3 py-1.5 rounded-xl text-xs font-semibold border border-gray-200 text-gray-600 hover:text-[#FF4D94] hover:border-[#FF4D94]/60 transition-all"
+                className="px-4 py-2 min-h-[40px] rounded-xl text-sm font-semibold border border-gray-200 text-gray-600 hover:text-[#FF4D94] hover:border-[#FF4D94]/60 transition-all"
               >
                 清空选择
               </button>
@@ -201,7 +201,7 @@ export function HistorySection({ history, isAdmin = false, onDeleteTransactions 
             <button
               disabled={selectedCount === 0 || isDeleting}
               onClick={handleBatchDelete}
-              className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-all border ${selectedCount === 0 || isDeleting ? 'bg-gray-50 text-gray-400 border-gray-100 cursor-not-allowed' : 'bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-100'}`}
+              className={`px-5 py-2.5 min-h-[44px] rounded-xl text-sm font-bold flex items-center gap-2 transition-all border ${selectedCount === 0 || isDeleting ? 'bg-gray-50 text-gray-400 border-gray-100 cursor-not-allowed' : 'bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-100'}`}
             >
               {isDeleting ? '删除中...' : `批量删除 (${selectedCount})`}
             </button>
@@ -220,7 +220,7 @@ export function HistorySection({ history, isAdmin = false, onDeleteTransactions 
                     aria-label="全选"
                     checked={allSelected && filtered.length > 0}
                     onChange={() => (allSelected ? clearSelection() : selectAll())}
-                    className="rounded border-gray-300 text-[#FF4D94] focus:ring-[#FF4D94]"
+                    className="w-5 h-5 rounded border-gray-300 text-[#FF4D94] focus:ring-[#FF4D94]"
                   />
                 </th>
               )}
@@ -243,7 +243,7 @@ export function HistorySection({ history, isAdmin = false, onDeleteTransactions 
                       aria-label={`选择账单 ${h.title}`}
                       checked={selectedIds.has(h.id)}
                       onChange={() => toggleSelect(h.id)}
-                      className="rounded border-gray-300 text-[#FF4D94] focus:ring-[#FF4D94]"
+                      className="w-5 h-5 rounded border-gray-300 text-[#FF4D94] focus:ring-[#FF4D94]"
                     />
                   </td>
                 )}
@@ -269,13 +269,14 @@ export function HistorySection({ history, isAdmin = false, onDeleteTransactions 
         {filtered.map((h: Transaction) => (
           <div key={h.id} className="rounded-2xl bg-white border border-gray-100 shadow-sm p-4 flex items-start gap-3">
             {canDelete && (
-              <input
-                type="checkbox"
-                aria-label={`选择账单 ${h.title}`}
-                checked={selectedIds.has(h.id)}
-                onChange={() => toggleSelect(h.id)}
-                className="mt-1 rounded border-gray-300 text-[#FF4D94] focus:ring-[#FF4D94]"
-              />
+                <input
+                  type="checkbox"
+                  aria-label={`选择账单 ${h.title}`}
+                  checked={selectedIds.has(h.id)}
+                  onChange={() => toggleSelect(h.id)}
+                  className="mt-1 w-5 h-5 rounded border-gray-300 text-[#FF4D94] focus:ring-[#FF4D94]"
+                />
+
             )}
             <div className="flex-1 min-w-0 space-y-1">
               <div className="flex items-center justify-between gap-3">

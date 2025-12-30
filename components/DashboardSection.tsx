@@ -240,8 +240,8 @@ export function DashboardSection({ currentProfile, profiles, onGoEarn, onGoRedee
             </div>
 
             <div className="relative z-10 flex flex-wrap gap-3 mt-auto">
-              <button onClick={onGoEarn} className="px-6 py-3 bg-white text-[#FF4D94] rounded-2xl text-xs font-bold hover:translate-y-[-1px] active:scale-95 transition-all shadow-lg shadow-[#FF4D94]/20">进入元气任务</button>
-              <button onClick={onGoRedeem} className="px-6 py-3 bg-white/15 text-white rounded-2xl text-xs font-bold hover:bg-white/25 active:scale-95 transition-all">前往梦想商店</button>
+              <button onClick={onGoEarn} className="px-7 py-3.5 min-h-[46px] bg-white text-[#FF4D94] rounded-2xl text-sm font-bold hover:translate-y-[-1px] active:scale-95 transition-all shadow-lg shadow-[#FF4D94]/20">进入元气任务</button>
+              <button onClick={onGoRedeem} className="px-7 py-3.5 min-h-[46px] bg-white/15 text-white rounded-2xl text-sm font-bold hover:bg-white/25 active:scale-95 transition-all">前往梦想商店</button>
             </div>
           </div>
         </div>

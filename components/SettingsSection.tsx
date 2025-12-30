@@ -505,7 +505,7 @@ export function SettingsSection({
                   type="checkbox"
                   checked={selectedMemberIds.size > 0 && selectedMemberIds.size === profiles.length && profiles.length > 0}
                   onChange={() => setSelectedMemberIds(selectedMemberIds.size === profiles.length ? new Set() : new Set(profiles.map(p => p.id)))}
-                  className="rounded border-gray-300 text-[#FF4D94] focus:ring-[#FF4D94]"
+                  className="w-5 h-5 rounded border-gray-300 text-[#FF4D94] focus:ring-[#FF4D94]"
                 />
                 <span className="font-semibold">全选当前家庭成员</span>
                 <span className="text-gray-400">({selectedMemberIds.size}/{profiles.length})</span>
@@ -529,7 +529,7 @@ export function SettingsSection({
                               type="checkbox"
                               checked={selectedMemberIds.has(p.id)}
                               onChange={() => toggleMember(p.id)}
-                              className="mt-1 rounded border-gray-300 text-[#FF4D94] focus:ring-[#FF4D94]"
+                              className="mt-1 w-5 h-5 rounded border-gray-300 text-[#FF4D94] focus:ring-[#FF4D94]"
                             />
                             <div className="w-12 h-12 rounded-2xl overflow-hidden shadow-inner shrink-0 flex items-center justify-center bg-gray-100">
                               {p.avatarUrl ? (
@@ -608,19 +608,19 @@ export function SettingsSection({
                 <p className="text-xs text-gray-400">分类筛选 + 快速新增任务</p>
               </div>
               <div className="flex flex-wrap gap-2">
-                <button onClick={() => onEdit({ type: 'task', item: { category: 'learning', title: '', description: '', points: 1, frequency: '每日' } })} className="px-4 py-2 bg-gradient-to-r from-[#FF4D94] to-[#7C4DFF] text-white rounded-xl text-[11px] font-bold flex items-center gap-2 hover:brightness-110 active:scale-95 transition-all shadow-md shadow-[#FF4D94]/30">
-                  <Icon name="plus" size={12} /> 新增规则
+                <button onClick={() => onEdit({ type: 'task', item: { category: 'learning', title: '', description: '', points: 1, frequency: '每日' } })} className="px-5 py-2.5 min-h-[44px] bg-gradient-to-r from-[#FF4D94] to-[#7C4DFF] text-white rounded-xl text-[12px] font-bold flex items-center gap-2 hover:brightness-110 active:scale-95 transition-all shadow-md shadow-[#FF4D94]/30">
+                  <Icon name="plus" size={13} /> 新增规则
                 </button>
                 <button
                   disabled={!selectedTaskIds.size || deletingTask}
                   onClick={handleBatchDeleteTasks}
-                  className={`px-4 py-2 rounded-xl text-[11px] font-bold flex items-center gap-2 border transition-all ${!selectedTaskIds.size || deletingTask ? 'bg-gray-100 text-gray-400 border-gray-100 cursor-not-allowed' : 'bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-100'}`}
+                  className={`px-5 py-2.5 min-h-[44px] rounded-xl text-[12px] font-bold flex items-center gap-2 border transition-all ${!selectedTaskIds.size || deletingTask ? 'bg-gray-100 text-gray-400 border-gray-100 cursor-not-allowed' : 'bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-100'}`}
                 >
                   {deletingTask ? '删除中...' : `批量删除 (${selectedTaskIds.size})`}
                 </button>
                 <button
                   onClick={() => setSelectedTaskIds(new Set())}
-                  className="px-4 py-2 rounded-xl text-[11px] font-bold bg-white border border-gray-200 text-gray-600 hover:border-[#FF4D94]/50 hover:text-[#FF4D94] transition-all"
+                  className="px-5 py-2.5 min-h-[44px] rounded-xl text-[12px] font-bold bg-white border border-gray-200 text-gray-600 hover:border-[#FF4D94]/50 hover:text-[#FF4D94] transition-all"
                 >
                   清空选择
                 </button>
@@ -631,7 +631,7 @@ export function SettingsSection({
                 <button 
                   key={cat} 
                   onClick={() => onTaskFilterChange(cat as Category | 'all')}
-                  className={`px-4 py-2 rounded-full text-[11px] font-bold whitespace-nowrap transition-all border ${taskFilter === cat ? 'bg-[#FF4D94] text-white border-[#FF4D94] shadow-md shadow-[#FF4D94]/30' : 'bg-white border-gray-200 text-gray-500 hover:border-[#FF4D94]/50 hover:text-[#FF4D94]'}`}
+                  className={`px-5 py-2.5 rounded-full text-[12px] font-bold whitespace-nowrap transition-all border min-h-[44px] ${taskFilter === cat ? 'bg-[#FF4D94] text-white border-[#FF4D94] shadow-md shadow-[#FF4D94]/30' : 'bg-white border-gray-200 text-gray-500 hover:border-[#FF4D94]/50 hover:text-[#FF4D94]'}`}
                 >
                   {cat === 'all' ? '全部' : cat === 'learning' ? '学习' : cat === 'chores' ? '家务' : cat === 'discipline' ? '自律' : '警告'}
                 </button>
@@ -645,7 +645,7 @@ export function SettingsSection({
                   type="checkbox"
                   checked={selectedTaskIds.size > 0 && selectedTaskIds.size === tasks.length}
                   onChange={() => setSelectedTaskIds(selectedTaskIds.size === tasks.length ? new Set() : new Set(tasks.map(t => t.id)))}
-                  className="rounded border-gray-300 text-[#FF4D94] focus:ring-[#FF4D94]"
+                  className="w-5 h-5 rounded border-gray-300 text-[#FF4D94] focus:ring-[#FF4D94]"
                 />
                 <span>全选任务 ({selectedTaskIds.size}/{tasks.length})</span>
               </div>
@@ -661,7 +661,7 @@ export function SettingsSection({
                       type="checkbox"
                       checked={selectedTaskIds.has(t.id)}
                       onChange={() => toggleTask(t.id)}
-                      className="rounded border-gray-300 text-[#FF4D94] focus:ring-[#FF4D94]"
+                      className="w-5 h-5 rounded border-gray-300 text-[#FF4D94] focus:ring-[#FF4D94]"
                     />
                     <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-[#F1F5F9] text-gray-600 shrink-0 uppercase tracking-wide">{t.category[0]}</span>
                     <div className="overflow-hidden">
@@ -669,10 +669,10 @@ export function SettingsSection({
                       <span className="text-[11px] text-gray-400 truncate block">{t.description || '暂无详细描述'}</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 shrink-0 ml-3">
+                    <div className="flex items-center gap-3 shrink-0 ml-3">
                     <span className="text-sm font-black text-[#FF4D94] points-font bg-[#FFF2F7] px-3 py-1 rounded-xl">{t.points}</span>
                     <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                      <button onClick={() => onEdit({ type: 'task', item: t })} className="p-2 text-gray-300 hover:text-[#FF4D94] hover:bg-pink-50 rounded-lg transition-all"><Icon name="settings" size={16} /></button>
+                      <button onClick={() => onEdit({ type: 'task', item: t })} className="p-2.5 text-gray-300 hover:text-[#FF4D94] hover:bg-pink-50 rounded-lg transition-all"><Icon name="settings" size={17} /></button>
                       <button onClick={() => setConfirmDialog({
                         title: `删除任务 “${t.title || '未命名任务'}”？`,
                         description: '删除后无法恢复。',
@@ -683,9 +683,10 @@ export function SettingsSection({
                           showToast({ type: 'success', title: '任务删除已提交', description: t.title || undefined });
                           closeConfirm();
                         },
-                      })} className="p-2 text-gray-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"><Icon name="trash" size={16} /></button>
+                      })} className="p-2.5 text-gray-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"><Icon name="trash" size={17} /></button>
                     </div>
                   </div>
+
                 </div>
               ))}
             </div>
@@ -702,19 +703,19 @@ export function SettingsSection({
                 <p className="text-xs text-gray-400">筛选类别 / 上架新品</p>
               </div>
               <div className="flex flex-wrap gap-2">
-                <button onClick={() => onEdit({ type: 'reward', item: { title: '', points: 5, type: '实物奖品' } })} className="px-4 py-2 bg-gradient-to-r from-[#111827] to-[#0F172A] text-white rounded-xl text-[11px] font-bold flex items-center gap-2 hover:brightness-110 active:scale-95 transition-all shadow-md shadow-[#0F172A]/20">
-                  <Icon name="plus" size={12} /> 上架新品
+                <button onClick={() => onEdit({ type: 'reward', item: { title: '', points: 5, type: '实物奖品' } })} className="px-5 py-2.5 min-h-[44px] bg-gradient-to-r from-[#111827] to-[#0F172A] text-white rounded-xl text-[12px] font-bold flex items-center gap-2 hover:brightness-110 active:scale-95 transition-all shadow-md shadow-[#0F172A]/20">
+                  <Icon name="plus" size={13} /> 上架新品
                 </button>
                 <button
                   disabled={!selectedRewardIds.size || deletingReward}
                   onClick={handleBatchDeleteRewards}
-                  className={`px-4 py-2 rounded-xl text-[11px] font-bold flex items-center gap-2 border transition-all ${!selectedRewardIds.size || deletingReward ? 'bg-gray-100 text-gray-400 border-gray-100 cursor-not-allowed' : 'bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-100'}`}
+                  className={`px-5 py-2.5 min-h-[44px] rounded-xl text-[12px] font-bold flex items-center gap-2 border transition-all ${!selectedRewardIds.size || deletingReward ? 'bg-gray-100 text-gray-400 border-gray-100 cursor-not-allowed' : 'bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-100'}`}
                 >
                   {deletingReward ? '删除中...' : `批量删除 (${selectedRewardIds.size})`}
                 </button>
                 <button
                   onClick={() => setSelectedRewardIds(new Set())}
-                  className="px-4 py-2 rounded-xl text-[11px] font-bold bg-white border border-gray-200 text-gray-600 hover:border-[#FF4D94]/50 hover:text-[#FF4D94] transition-all"
+                  className="px-5 py-2.5 min-h-[44px] rounded-xl text-[12px] font-bold bg-white border border-gray-200 text-gray-600 hover:border-[#FF4D94]/50 hover:text-[#FF4D94] transition-all"
                 >
                   清空选择
                 </button>
@@ -725,7 +726,7 @@ export function SettingsSection({
                 <button 
                   key={type} 
                   onClick={() => onRewardFilterChange(type as '实物奖品' | '特权奖励' | 'all')}
-                  className={`px-4 py-2 rounded-full text-[11px] font-bold transition-all border ${rewardFilter === type ? 'bg-[#FF4D94] text-white border-[#FF4D94] shadow-md shadow-[#FF4D94]/30' : 'bg-white border-gray-200 text-gray-500 hover:border-[#FF4D94]/50 hover:text-[#FF4D94]'}`}
+                  className={`px-5 py-2.5 rounded-full text-[12px] font-bold transition-all border min-h-[44px] ${rewardFilter === type ? 'bg-[#FF4D94] text-white border-[#FF4D94] shadow-md shadow-[#FF4D94]/30' : 'bg-white border-gray-200 text-gray-500 hover:border-[#FF4D94]/50 hover:text-[#FF4D94]'}`}
                 >
                   {type === 'all' ? '全部' : type}
                 </button>
@@ -739,7 +740,7 @@ export function SettingsSection({
                   type="checkbox"
                   checked={selectedRewardIds.size > 0 && selectedRewardIds.size === rewards.length}
                   onChange={() => setSelectedRewardIds(selectedRewardIds.size === rewards.length ? new Set() : new Set(rewards.map(r => r.id)))}
-                  className="rounded border-gray-300 text-[#FF4D94] focus:ring-[#FF4D94]"
+                  className="w-5 h-5 rounded border-gray-300 text-[#FF4D94] focus:ring-[#FF4D94]"
                 />
                 <span>全选奖品 ({selectedRewardIds.size}/{rewards.length})</span>
               </div>
@@ -755,7 +756,7 @@ export function SettingsSection({
                       type="checkbox"
                       checked={selectedRewardIds.has(r.id)}
                       onChange={() => toggleReward(r.id)}
-                      className="rounded border-gray-300 text-[#FF4D94] focus:ring-[#FF4D94]"
+                      className="w-5 h-5 rounded border-gray-300 text-[#FF4D94] focus:ring-[#FF4D94]"
                     />
                     <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 overflow-hidden ${r.type === '实物奖品' ? 'bg-amber-50 text-amber-500' : 'bg-indigo-50 text-indigo-500'}`}> 
                       <img src={r.imageUrl || `https://ui-avatars.com/api/?background=FF4D94&color=fff&name=${encodeURIComponent(r.title)}`} className="w-full h-full object-cover" />
@@ -765,10 +766,10 @@ export function SettingsSection({
                       <span className="text-[11px] text-gray-400 block tracking-wider uppercase">{r.type}</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 shrink-0 ml-3">
+                    <div className="flex items-center gap-3 shrink-0 ml-3">
                     <span className="text-sm font-black text-[#FF4D94] points-font bg-[#FFF2F7] px-3 py-1 rounded-xl">{r.points}</span>
                     <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                      <button onClick={() => onEdit({ type: 'reward', item: r })} className="p-2 text-gray-300 hover:text-[#FF4D94] hover:bg-pink-50 rounded-lg"><Icon name="settings" size={16} /></button>
+                      <button onClick={() => onEdit({ type: 'reward', item: r })} className="p-2.5 text-gray-300 hover:text-[#FF4D94] hover:bg-pink-50 rounded-lg"><Icon name="settings" size={17} /></button>
                       <button onClick={() => setConfirmDialog({
                         title: `删除奖品 “${r.title || '奖品'}”？`,
                         description: '删除后无法恢复，将从商店下架。',
@@ -779,9 +780,10 @@ export function SettingsSection({
                           showToast({ type: 'success', title: '奖品删除已提交', description: r.title || undefined });
                           closeConfirm();
                         },
-                      })} className="p-2 text-gray-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg"><Icon name="trash" size={16} /></button>
+                      })} className="p-2.5 text-gray-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg"><Icon name="trash" size={17} /></button>
                     </div>
                   </div>
+
                 </div>
               ))}
             </div>

@@ -75,10 +75,10 @@ export function HeaderBar({ activeTab, currentProfile, isAdmin, theme, onToggleT
           <div className="relative" ref={noticeRef}>
             <button
               onClick={() => setOpenNotice((prev: boolean) => !prev)}
-              className="h-9 w-9 rounded-2xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-[#FF4D94] dark:text-[#FF7AB8] hover:border-[#FF4D94] hover:text-[#FF4D94] transition-all flex items-center justify-center shadow-[0_4px_12px_-6px_rgba(255,77,148,0.45)]"
+              className="h-11 w-11 rounded-2xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-[#FF4D94] dark:text-[#FF7AB8] hover:border-[#FF4D94] hover:text-[#FF4D94] transition-all flex items-center justify-center shadow-[0_4px_12px_-6px_rgba(255,77,148,0.45)]"
               aria-label="系统通知"
             >
-              <Icon name="bell" size={13} />
+              <Icon name="bell" size={15} />
               <span className="sr-only">系统通知</span>
               <span className="absolute -top-1 -right-1 text-[9px] text-white bg-[#FF4D94] px-1 py-0.5 rounded-full shadow-sm leading-none">{messageCenter.length}</span>
             </button>
@@ -114,29 +114,29 @@ export function HeaderBar({ activeTab, currentProfile, isAdmin, theme, onToggleT
           {isAdmin && (
             <button
               onClick={onPrint}
-              className="h-9 w-9 rounded-2xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-[#7C4DFF] dark:text-[#BBA5FF] hover:border-[#7C4DFF] hover:text-[#7C4DFF] transition-all flex items-center justify-center shadow-[0_4px_12px_-6px_rgba(124,77,255,0.45)]"
+              className="h-11 w-11 rounded-2xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-[#7C4DFF] dark:text-[#BBA5FF] hover:border-[#7C4DFF] hover:text-[#7C4DFF] transition-all flex items-center justify-center shadow-[0_4px_12px_-6px_rgba(124,77,255,0.45)]"
               aria-label="打印手册"
             >
-              <Icon name="print" size={13} />
+              <Icon name="print" size={15} />
               <span className="sr-only">打印手册</span>
             </button>
           )}
 
           <button
             onClick={onToggleTheme}
-            className="h-9 w-9 rounded-2xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-[#7C4DFF] dark:text-[#BBA5FF] hover:border-[#7C4DFF] hover:text-[#7C4DFF] transition-all flex items-center justify-center shadow-[0_4px_12px_-6px_rgba(124,77,255,0.45)]"
+            className="h-11 w-11 rounded-2xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-[#7C4DFF] dark:text-[#BBA5FF] hover:border-[#7C4DFF] hover:text-[#7C4DFF] transition-all flex items-center justify-center shadow-[0_4px_12px_-6px_rgba(124,77,255,0.45)]"
             aria-label={theme === 'dark' ? '切换到浅色模式' : '切换到夜间模式'}
           >
-            <Icon name={theme === 'dark' ? 'sun' : 'moon'} size={13} />
+            <Icon name={theme === 'dark' ? 'sun' : 'moon'} size={15} />
             <span className="sr-only">{theme === 'dark' ? '浅色模式' : '夜间模式'}</span>
           </button>
 
           <button
             onClick={onLogout}
-            className="h-9 w-9 rounded-2xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-[#FF4D94] dark:text-[#FF7AB8] hover:border-[#FF4D94] hover:text-[#FF4D94] transition-all flex items-center justify-center shadow-[0_4px_12px_-6px_rgba(255,77,148,0.45)]"
+            className="h-11 w-11 rounded-2xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-[#FF4D94] dark:text-[#FF7AB8] hover:border-[#FF4D94] hover:text-[#FF4D94] transition-all flex items-center justify-center shadow-[0_4px_12px_-6px_rgba(255,77,148,0.45)]"
             aria-label="退出登录"
           >
-            <Icon name="logout" size={13} />
+            <Icon name="logout" size={15} />
             <span className="sr-only">退出登录</span>
           </button>
 
