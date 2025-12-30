@@ -48,7 +48,13 @@ export function Sidebar({ activeTab, onChangeTab, isAdmin, currentProfile, onPro
           onClick={onProfileClick}
           className="w-full bg-white border border-gray-100 p-3 rounded-2xl flex items-center gap-3 hover:border-[#FF4D94] hover:shadow-[0_10px_30px_-26px_rgba(255,77,148,0.3)] transition-all shadow-sm"
         >
-          <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-white text-sm ${currentProfile.avatarColor} shadow-inner`}>{currentProfile.name[0]}</div>
+          <div className="w-9 h-9 rounded-xl overflow-hidden flex items-center justify-center bg-gray-100 shadow-inner">
+            {currentProfile.avatarUrl ? (
+              <img src={currentProfile.avatarUrl} className="w-full h-full object-cover" />
+            ) : (
+              <div className={`w-full h-full flex items-center justify-center font-bold text-white text-sm ${currentProfile.avatarColor}`}>{currentProfile.name[0]}</div>
+            )}
+          </div>
           <div className="text-left overflow-hidden">
             <p className="text-xs font-bold text-gray-800 truncate">{currentProfile.name}</p>
             <p className="text-[9px] text-[#FF4D94] font-bold uppercase tracking-wider">{currentProfile.role === 'admin' ? '系统管理员' : '账户成员'}</p>

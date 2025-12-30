@@ -23,7 +23,13 @@ export function ProfileSwitcherModal({ open, profiles, currentProfileId, onSelec
             onClick={() => { onSelect(p.id); onClose(); }}
             className={`w-full flex items-center gap-5 p-4 rounded-[24px] transition-all ${currentProfileId === p.id ? 'bg-[#FF4D94] text-white shadow-xl scale-105' : 'hover:bg-gray-50'}`}
           >
-            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-white text-lg ${p.avatarColor} border-2 border-white/20`}>{p.name[0]}</div>
+            <div className="w-12 h-12 rounded-2xl overflow-hidden flex items-center justify-center bg-gray-100 border-2 border-white/20">
+              {p.avatarUrl ? (
+                <img src={p.avatarUrl} className="w-full h-full object-cover" />
+              ) : (
+                <div className={`w-full h-full flex items-center justify-center font-bold text-white text-lg ${p.avatarColor}`}>{p.name[0]}</div>
+              )}
+            </div>
             <div className="text-left overflow-hidden">
               <p className="text-base font-bold truncate font-display">{p.name}</p>
               <p className={`text-[9px] font-bold uppercase tracking-wider ${currentProfileId === p.id ? 'text-white/60' : 'text-gray-400'}`}>{p.role === 'admin' ? '系统管理员' : '账户成员'}</p>

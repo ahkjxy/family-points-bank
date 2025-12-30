@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Transaction } from '../types';
 import { formatDateTime } from '../utils/datetime';
+import { useToast } from './Toast';
+import { ConfirmDialog } from './ConfirmDialog';
 
 type HistoryTab = 'all' | 'earn' | 'penalty' | 'redeem';
 const TAB_LABELS: Record<HistoryTab, string> = {
@@ -17,11 +19,21 @@ interface HistorySectionProps {
 }
 
 export function HistorySection({ history, isAdmin = false, onDeleteTransactions }: HistorySectionProps) {
+  const { showToast } = useToast();
+  const [confirmDialog, setConfirmDialog] = useState<{
+    title: string;
+    description?: string;
+    confirmText?: string;
+    cancelText?: string;
+    tone?: 'primary' | 'danger';
+    onConfirm: () => void;
+  } | null>(null);
   const [activeTab, setActiveTab] = useState<HistoryTab>('all');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isDeleting, setIsDeleting] = useState(false);
 
   const canDelete = isAdmin && typeof onDeleteTransactions === 'function';
+  const closeConfirm = () => setConfirmDialog(null);
 
   const filtered = useMemo(() => {
     const sorted = [...history].sort((a, b) => b.timestamp - a.timestamp);
@@ -95,14 +107,26 @@ export function HistorySection({ history, isAdmin = false, onDeleteTransactions 
   const handleBatchDelete = async () => {
     if (!canDelete || !onDeleteTransactions) return;
     if (selectedIds.size === 0) return;
-    const confirmed = window.confirm(`确认删除选中的 ${selectedIds.size} 条账单吗？这将同步更新余额。`);
-    if (!confirmed) return;
-    setIsDeleting(true);
-    const ok = await onDeleteTransactions(Array.from(selectedIds));
-    if (ok) {
-      setSelectedIds(new Set());
-    }
-    setIsDeleting(false);
+    const idsToDelete = Array.from(selectedIds);
+    setConfirmDialog({
+      title: `删除选中的 ${idsToDelete.length} 条账单？`,
+      description: '删除后会同步更新余额，且不可恢复。',
+      confirmText: '确认删除',
+      tone: 'danger',
+      onConfirm: async () => {
+        showToast({ type: 'info', title: `正在删除 ${idsToDelete.length} 条账单`, description: '请稍候...' });
+        setIsDeleting(true);
+        const ok = await onDeleteTransactions(idsToDelete);
+        if (ok) {
+          setSelectedIds(new Set());
+          showToast({ type: 'success', title: '账单已删除', description: '余额已同步更新' });
+        } else {
+          showToast({ type: 'error', title: '删除失败', description: '请稍后重试' });
+        }
+        setIsDeleting(false);
+        closeConfirm();
+      },
+    });
   };
 
   const selectedCount = selectedIds.size;
@@ -272,6 +296,19 @@ export function HistorySection({ history, isAdmin = false, onDeleteTransactions 
           <div className="p-6 text-center text-gray-400 font-semibold rounded-2xl border border-dashed border-gray-200">暂无该分类的账单</div>
         )}
       </div>
+
+      {confirmDialog && (
+        <ConfirmDialog
+          open
+          title={confirmDialog.title}
+          description={confirmDialog.description}
+          confirmText={confirmDialog.confirmText}
+          cancelText={confirmDialog.cancelText}
+          tone={confirmDialog.tone}
+          onConfirm={confirmDialog.onConfirm}
+          onCancel={closeConfirm}
+        />
+      )}
     </div>
   );
 }

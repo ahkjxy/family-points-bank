@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">FamilyPointsBank</string>
+    <string name="title_activity_main">FamilyPointsBank</string>
+    <string name="package_name">com.wly.familypointsbank</string>
+    <string name="custom_url_scheme">com.wly.familypointsbank</string>
+</resources>

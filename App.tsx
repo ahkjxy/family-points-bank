@@ -62,6 +62,8 @@ function AppContent() {
 
   const [editingItem, setEditingItem] = useState<{ type: 'task' | 'reward'; item: any } | null>(null);
   const [pendingAction, setPendingAction] = useState<{ title: string; points: number; type: 'earn' | 'penalty' | 'redeem' } | null>(null);
+  const [crudSaving, setCrudSaving] = useState(false);
+  const [transactionLoading, setTransactionLoading] = useState(false);
   const [showProfileSwitcher, setShowProfileSwitcher] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -213,7 +215,7 @@ function AppContent() {
             type: t.type,
           }))
           .sort((a: any, b: any) => b.timestamp - a.timestamp);
-        return { ...p, avatarColor: p.avatar_color || p.avatarColor, history };
+        return { ...p, avatarColor: p.avatar_color || p.avatarColor, avatarUrl: p.avatar_url || p.avatarUrl || null, history } as Profile;
       });
 
       const normalizedRemote: FamilyState = {
@@ -341,7 +343,7 @@ function AppContent() {
   };
 
   const handleTransaction = async () => {
-    if (!pendingAction) return;
+    if (!pendingAction || transactionLoading) return;
     setPendingError(null);
     const { title, points, type } = pendingAction;
 
@@ -351,6 +353,8 @@ function AppContent() {
       showToast({ type: 'error', title: msg, description: '请先完成任务赚取元气值' });
       return;
     }
+
+    setTransactionLoading(true);
 
     const txId = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `tx-${Date.now()}`;
     const transaction: Transaction = {
@@ -370,7 +374,6 @@ function AppContent() {
       } : p)
     };
 
-    setPendingAction(null);
     setState(newState);
 
     const familyId = resolveFamilyId();
@@ -401,6 +404,8 @@ function AppContent() {
       notifyError('积分变动失败', e);
     } finally {
       if (loadingId) dismissToast(loadingId);
+      setTransactionLoading(false);
+      setPendingAction(null);
     }
     await syncToCloud(newState);
     if (!synced) {
@@ -516,6 +521,8 @@ function AppContent() {
 
   const crudAction = async (type: 'task' | 'reward', action: 'save' | 'delete', item: any) => {
     if (!isAdmin) return;
+    if (action === 'save' && crudSaving) return;
+    if (action === 'save') setCrudSaving(true);
     const familyId = resolveFamilyId();
     let newState = { ...state } as FamilyState;
     let success = false;
@@ -569,6 +576,8 @@ function AppContent() {
       }
     } catch (e) {
       notifyError(`${typeLabel}${action === 'save' ? '保存' : '删除'}失败`, e);
+    } finally {
+      if (action === 'save') setCrudSaving(false);
     }
 
     if (!success) return;
@@ -602,17 +611,38 @@ function AppContent() {
     await syncToCloud(newState);
   };
 
-  const handleAddProfile = async (name: string, role: 'admin' | 'child') => {
+  const handleUpdateProfileAvatar = async (id: string, avatarUrl: string | null) => {
+    if (!isAdmin) return;
+    const newState = {
+      ...state,
+      profiles: state.profiles.map(p => p.id === id ? { ...p, avatarUrl } : p)
+    } as FamilyState;
+    setState(newState);
+    const familyId = resolveFamilyId();
+    try {
+      const { error } = await supabase.from('profiles').update({ avatar_url: avatarUrl }).eq('id', id).eq('family_id', familyId);
+      if (error) throw error;
+      await refreshFamily(familyId);
+      showToast({ type: 'success', title: '头像已更新' });
+    } catch (e) {
+      notifyError('更新头像失败', e);
+    }
+    await syncToCloud(newState);
+  };
+
+  const handleAddProfile = async (name: string, role: 'admin' | 'child', initialBalance?: number, avatarUrl?: string | null) => {
     if (!isAdmin) return;
     const trimmed = name.trim();
     if (!trimmed) return;
     const familyId = resolveFamilyId();
+    const balance = Number.isFinite(initialBalance) ? Number(initialBalance) : 0;
     const newProfile: Profile = {
       id: `p-${Date.now()}`,
       name: trimmed,
-      balance: 0,
+      balance,
       history: [],
       avatarColor: avatarPalette[state.profiles.length % avatarPalette.length],
+      avatarUrl: avatarUrl || null,
       role,
     };
     const newState = { ...state, profiles: [...state.profiles, newProfile] } as FamilyState;
@@ -624,6 +654,7 @@ function AppContent() {
         balance: newProfile.balance,
         role: newProfile.role,
         avatar_color: newProfile.avatarColor,
+        avatar_url: avatarUrl || null,
       }).select().single();
       if (error) throw error;
       if (data) {
@@ -820,7 +851,7 @@ function AppContent() {
         />
       </div>
 
-      <main className="flex-1 w-full lg:p-8 px-4 pt-6 pb-28 lg:pt-10 lg:pb-10 overflow-y-auto no-scrollbar">
+      <main className="flex-1 w-full lg:p-8 px-4 pt-6 pb-28 lg:pt-5 lg:pb-10 overflow-y-auto no-scrollbar">
         <HeaderBar 
           activeTab={activeTab}
           currentProfile={currentProfile}
@@ -891,7 +922,8 @@ function AppContent() {
                 onSync={() => refreshFamily()}
                 onPrint={() => printReport(state)}
                 onProfileNameChange={(id, name) => handleProfileNameChange(id, name)}
-                onAddProfile={(name, role) => handleAddProfile(name, role)}
+                onUpdateProfileAvatar={(id, avatarUrl) => handleUpdateProfileAvatar(id, avatarUrl)}
+                onAddProfile={(name, role, balance, avatarUrl) => handleAddProfile(name, role, balance, avatarUrl)}
                 onDeleteProfile={(id) => handleDeleteProfile(id)}
                 onAdjustBalance={(profileId, payload) => handleAdjustBalance(profileId, payload)}
                 isSyncing={isSyncing}
@@ -927,12 +959,14 @@ function AppContent() {
           onUpdate={setEditingItem}
           fileInputRef={fileInputRef}
           onImageChange={handleImageUpload}
+          saving={crudSaving}
         />
       )}
 
       <PendingActionModal 
         pendingAction={pendingAction}
         error={pendingError}
+        loading={transactionLoading}
         onCancel={() => {
           setPendingError(null);
           setPendingAction(null);

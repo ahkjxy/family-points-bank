@@ -8,9 +8,10 @@ interface EditModalProps {
   onUpdate: (payload: { type: 'task' | 'reward'; item: any }) => void;
   fileInputRef: RefObject<HTMLInputElement>;
   onImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  saving?: boolean;
 }
 
-export function EditModal({ editingItem, onClose, onSave, onUpdate, fileInputRef, onImageChange }: EditModalProps) {
+export function EditModal({ editingItem, onClose, onSave, onUpdate, fileInputRef, onImageChange, saving = false }: EditModalProps) {
   if (!editingItem) return null;
 
   const { type, item } = editingItem;
@@ -30,7 +31,7 @@ export function EditModal({ editingItem, onClose, onSave, onUpdate, fileInputRef
           <button onClick={onClose} className="text-gray-300 hover:text-[#FF4D94] transition-all p-2 rounded-full hover:bg-gray-100"><Icon name="plus" size={32} className="rotate-45" /></button>
         </div>
 
-        <form onSubmit={(e) => { e.preventDefault(); onSave(type, item); }} className="space-y-5">
+        <form onSubmit={(e) => { e.preventDefault(); if (saving) return; onSave(type, item); }} className="space-y-5">
           {type === 'reward' && (
             <div className="space-y-2">
               <label className="text-[10px] font-bold uppercase text-gray-400 ml-4 tracking-widest">奖品图片 Reward Image</label>
@@ -104,7 +105,14 @@ export function EditModal({ editingItem, onClose, onSave, onUpdate, fileInputRef
 
           <div className="pt-4 flex gap-4">
             <button type="button" onClick={onClose} className="flex-1 py-4 text-[10px] font-bold uppercase text-gray-400 hover:bg-gray-100 rounded-2xl transition-all">放弃</button>
-            <button type="submit" className="flex-[2] py-4 btn-pop rounded-2xl text-[10px] font-bold uppercase tracking-widest">确认保存</button>
+            <button
+              type="submit"
+              disabled={saving}
+              className={`flex-[2] py-4 btn-pop rounded-2xl text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2 ${saving ? 'opacity-80 cursor-not-allowed' : ''}`}
+            >
+              {saving && <span className="w-4 h-4 border-2 border-white/70 border-t-transparent rounded-full animate-spin" />}
+              {saving ? '保存中...' : '确认保存'}
+            </button>
           </div>
         </form>
       </div>

@@ -1,0 +1,15 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF4D94" />
+      <stop offset="100%" stop-color="#7C4DFF" />
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="28" stdDeviation="40" flood-color="rgba(0,0,0,0.18)" />
+    </filter>
+  </defs>
+  <rect x="96" y="96" width="832" height="832" rx="180" fill="url(#g)" filter="url(#shadow)" />
+  <path d="M340 514c0-95 77-172 172-172h0c95 0 172 77 172 172h0c0 95-77 172-172 172h0c-95 0-172-77-172-172Z" fill="white" fill-opacity="0.08" />
+  <path d="M398 512c0-63.5 51.5-115 115-115h0c63.5 0 115 51.5 115 115h0c0 63.5-51.5 115-115 115h0c-63.5 0-115-51.5-115-115Z" fill="none" stroke="white" stroke-width="36" stroke-linecap="round" stroke-linejoin="round" />
+  <text x="512" y="548" text-anchor="middle" fill="white" font-family="'Inter','Quicksand','Segoe UI',sans-serif" font-size="188" font-weight="800" letter-spacing="6">FP</text>
+</svg>

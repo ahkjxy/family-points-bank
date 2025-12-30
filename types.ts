@@ -33,6 +33,7 @@ export interface Profile {
   balance: number;
   history: Transaction[];
   avatarColor: string;
+  avatarUrl?: string | null;
   role: UserRole;
 }
 

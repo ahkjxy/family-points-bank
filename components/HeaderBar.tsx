@@ -50,10 +50,10 @@ export function HeaderBar({ activeTab, currentProfile, isAdmin, theme, onToggleT
   const hasMessages = messageCenter.length > 0;
 
   return (
-    <header className="sticky top-3 z-20 mb-6 bg-white/90 backdrop-blur-xl rounded-3xl px-4 py-3 border border-white/80 shadow-[0_24px_80px_-38px_rgba(124,77,255,0.55)]">
-      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
-        <div className="space-y-1">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 font-display">
+    <header className="sticky top-0 z-30 bg-white/96 dark:bg-[#0F172A]/92 backdrop-blur-md border-b border-gray-100/80 dark:border-white/10 px-4 py-2.5 mb-4 lg:mb-6 shadow-[0_8px_30px_-20px_rgba(0,0,0,0.35)]">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+        <div className="space-y-0.5">
+          <h2 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white font-display leading-tight tracking-tight">
             {activeTab === 'dashboard' && `您好, ${currentProfile.name}!`}
             {activeTab === 'earn' && '元气任务'}
             {activeTab === 'redeem' && '梦想商店'}
@@ -61,7 +61,7 @@ export function HeaderBar({ activeTab, currentProfile, isAdmin, theme, onToggleT
             {activeTab === 'settings' && '系统配置中心'}
             {activeTab === 'doc' && '使用说明与文档'}
           </h2>
-          <p className="text-gray-500 text-sm md:text-base">
+          <p className="text-gray-500 dark:text-gray-300 text-xs md:text-sm leading-snug">
             {activeTab === 'dashboard' && '查看您的当前元气值状态'}
             {activeTab === 'earn' && '完成元气任务来获得更多元气值奖励'}
             {activeTab === 'redeem' && '兑换心仪的奖品与特权'}
@@ -71,19 +71,19 @@ export function HeaderBar({ activeTab, currentProfile, isAdmin, theme, onToggleT
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center justify-start lg:justify-end gap-2 lg:gap-3">
+        <div className="flex flex-wrap items-center justify-start lg:justify-end gap-1.5 lg:gap-2">
           <div className="relative" ref={noticeRef}>
             <button
               onClick={() => setOpenNotice((prev: boolean) => !prev)}
-              className="h-11 w-11 rounded-2xl bg-white border border-gray-200 text-[#FF4D94] hover:border-[#FF4D94] hover:text-[#FF4D94] transition-all flex items-center justify-center shadow-sm"
+              className="h-9 w-9 rounded-2xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-[#FF4D94] dark:text-[#FF7AB8] hover:border-[#FF4D94] hover:text-[#FF4D94] transition-all flex items-center justify-center shadow-[0_4px_12px_-6px_rgba(255,77,148,0.45)]"
               aria-label="系统通知"
             >
-              <Icon name="bell" size={16} />
+              <Icon name="bell" size={13} />
               <span className="sr-only">系统通知</span>
-              <span className="absolute -top-1 -right-1 text-[10px] text-white bg-[#FF4D94] px-1.5 py-0.5 rounded-full shadow-sm leading-none">{messageCenter.length}</span>
+              <span className="absolute -top-1 -right-1 text-[9px] text-white bg-[#FF4D94] px-1 py-0.5 rounded-full shadow-sm leading-none">{messageCenter.length}</span>
             </button>
             {openNotice && (
-              <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-100 rounded-2xl shadow-2xl z-30 overflow-hidden">
+              <div className="absolute right-0 mt-2 w-72 bg-white border border-gray-100 rounded-2xl shadow-2xl z-30 overflow-hidden">
                 <div className="px-4 py-3 border-b border-gray-50 flex items-center justify-between">
                   <div>
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.25em]">消息中心</p>
@@ -91,13 +91,13 @@ export function HeaderBar({ activeTab, currentProfile, isAdmin, theme, onToggleT
                   </div>
                   <button onClick={() => setOpenNotice(false)} className="text-xs text-gray-400 hover:text-[#FF4D94]">收起</button>
                 </div>
-                <ul className="max-h-80 overflow-y-auto divide-y divide-gray-50">
+                <ul className="max-h-72 overflow-y-auto divide-y divide-gray-50">
                   {hasMessages ? (
                     messageCenter.map((msg: HeaderMessage, idx: number) => (
                       <li key={idx} className="px-4 py-3 flex items-start gap-3 hover:bg-gray-50 transition-colors">
-                        <span className={`mt-0.5 w-2.5 h-2.5 rounded-full ${msg.tone === 'rose' ? 'bg-rose-400' : msg.tone === 'indigo' ? 'bg-indigo-400' : msg.tone === 'slate' ? 'bg-gray-400' : 'bg-emerald-400'}`}></span>
+                        <span className={`mt-0.5 w-2 h-2 rounded-full ${msg.tone === 'rose' ? 'bg-rose-400' : msg.tone === 'indigo' ? 'bg-indigo-400' : msg.tone === 'slate' ? 'bg-gray-400' : 'bg-emerald-400'}`}></span>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-bold text-gray-800 leading-tight truncate">{msg.title}</p>
+                          <p className="text-sm font-semibold text-gray-800 leading-tight truncate">{msg.title}</p>
                           <p className="text-[12px] text-gray-500 truncate">{msg.desc}</p>
                           <p className="text-[11px] text-gray-400 tabular-nums">{msg.time}</p>
                         </div>
@@ -114,37 +114,37 @@ export function HeaderBar({ activeTab, currentProfile, isAdmin, theme, onToggleT
           {isAdmin && (
             <button
               onClick={onPrint}
-              className="h-11 w-11 rounded-2xl bg-white border border-gray-200 text-[#7C4DFF] hover:border-[#7C4DFF] hover:text-[#7C4DFF] transition-all flex items-center justify-center shadow-sm"
+              className="h-9 w-9 rounded-2xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-[#7C4DFF] dark:text-[#BBA5FF] hover:border-[#7C4DFF] hover:text-[#7C4DFF] transition-all flex items-center justify-center shadow-[0_4px_12px_-6px_rgba(124,77,255,0.45)]"
               aria-label="打印手册"
             >
-              <Icon name="print" size={16} />
+              <Icon name="print" size={13} />
               <span className="sr-only">打印手册</span>
             </button>
           )}
 
           <button
             onClick={onToggleTheme}
-            className="h-11 w-11 rounded-2xl bg-white border border-gray-200 text-[#7C4DFF] hover:border-[#7C4DFF] hover:text-[#7C4DFF] transition-all flex items-center justify-center shadow-sm"
+            className="h-9 w-9 rounded-2xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-[#7C4DFF] dark:text-[#BBA5FF] hover:border-[#7C4DFF] hover:text-[#7C4DFF] transition-all flex items-center justify-center shadow-[0_4px_12px_-6px_rgba(124,77,255,0.45)]"
             aria-label={theme === 'dark' ? '切换到浅色模式' : '切换到夜间模式'}
           >
-            <Icon name={theme === 'dark' ? 'sun' : 'moon'} size={16} />
+            <Icon name={theme === 'dark' ? 'sun' : 'moon'} size={13} />
             <span className="sr-only">{theme === 'dark' ? '浅色模式' : '夜间模式'}</span>
           </button>
 
           <button
             onClick={onLogout}
-            className="h-11 w-11 rounded-2xl bg-white border border-gray-200 text-[#FF4D94] hover:border-[#FF4D94] hover:text-[#FF4D94] transition-all flex items-center justify-center shadow-sm"
+            className="h-9 w-9 rounded-2xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-[#FF4D94] dark:text-[#FF7AB8] hover:border-[#FF4D94] hover:text-[#FF4D94] transition-all flex items-center justify-center shadow-[0_4px_12px_-6px_rgba(255,77,148,0.45)]"
             aria-label="退出登录"
           >
-            <Icon name="logout" size={16} />
+            <Icon name="logout" size={13} />
             <span className="sr-only">退出登录</span>
           </button>
 
-          <div className="flex-1 lg:flex-none px-4 py-3 bg-white rounded-2xl border border-white/80 shadow-[0_18px_50px_-28px_rgba(0,0,0,0.45)] flex items-center gap-3 min-w-[200px]">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#FF4D94]/15 to-[#7C4DFF]/15 text-[#FF4D94] flex items-center justify-center font-bold points-font">∞</div>
+          <div className="flex-1 lg:flex-none px-3 py-2 bg-gradient-to-br from-[#FFF5FB] via-white to-[#EEF2FF] dark:from-[#0F172A] dark:via-[#0B1224] dark:to-[#0B1224] rounded-2xl border border-gray-100 dark:border-white/10 shadow-[0_10px_30px_-24px_rgba(15,23,42,0.25)] flex items-center gap-2 min-w-[180px]">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#FF4D94]/18 to-[#7C4DFF]/18 text-[#FF4D94] flex items-center justify-center font-bold points-font">∞</div>
             <div className="flex flex-col leading-tight">
-              <span className="text-[10px] font-bold text-[#FF4D94] uppercase tracking-[0.3em]">可用元气值</span>
-              <span className="text-3xl font-black text-gray-900 points-font">{currentProfile.balance}</span>
+              <span className="text-[9px] font-semibold text-[#FF4D94] uppercase tracking-[0.28em]">可用元气值</span>
+              <span className="text-2xl font-black text-gray-900 dark:text-white points-font">{currentProfile.balance}</span>
             </div>
           </div>
         </div>
