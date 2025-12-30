@@ -75,6 +75,7 @@ function AppContent() {
   const { showToast, dismissToast } = useToast();
   const { theme, toggleTheme } = useTheme();
   const [pendingError, setPendingError] = useState<string | null>(null);
+  const [savingKey, setSavingKey] = useState<string | null>(null);
 
   const ensureCurrentProfileId = (profiles: Profile[], preferredId?: string) => {
     if (!profiles.length) return '';
@@ -404,6 +405,112 @@ function AppContent() {
     await syncToCloud(newState);
     if (!synced) {
       showToast({ type: 'info', title: '本地已保存', description: '同步遇到问题，请稍后刷新重试' });
+    }
+  };
+
+  const handleDeleteTransactions = async (ids: string[]): Promise<boolean> => {
+    if (!isAdmin || !ids.length) return false;
+    const familyId = resolveFamilyId();
+    const profileId = state.currentProfileId;
+    const profile = state.profiles.find(p => p.id === profileId);
+    if (!familyId || !profile) return false;
+
+    const toRemove = profile.history.filter(h => ids.includes(h.id));
+    if (!toRemove.length) return false;
+
+    const delta = toRemove.reduce((sum, tx) => sum + tx.points, 0);
+    const newBalance = profile.balance - delta;
+
+    const newState = {
+      ...state,
+      profiles: state.profiles.map(p => p.id === profileId ? {
+        ...p,
+        balance: newBalance,
+        history: p.history.filter(h => !ids.includes(h.id)),
+      } : p)
+    } as FamilyState;
+
+    setState(newState);
+    const loadingId = showToast({ type: 'loading', title: '正在删除账单...', duration: 0 });
+
+    try {
+      const { error: delErr } = await supabase
+        .from('transactions')
+        .delete()
+        .eq('family_id', familyId)
+        .in('id', ids);
+      if (delErr) throw delErr;
+      const { error: balErr } = await supabase
+        .from('profiles')
+        .update({ balance: newBalance })
+        .eq('id', profileId)
+        .eq('family_id', familyId);
+      if (balErr) throw balErr;
+      await refreshFamily(familyId);
+      showToast({ type: 'success', title: '已删除账单', description: `共删除 ${toRemove.length} 条记录，余额已更新` });
+      return true;
+    } catch (e) {
+      notifyError('删除账单失败', e);
+      await refreshFamily(familyId);
+      return false;
+    } finally {
+      if (loadingId) dismissToast(loadingId);
+      await syncToCloud(newState);
+    }
+  };
+
+  const handleAdjustBalance = async (profileId: string, payload: { title: string; points: number; type: 'earn' | 'penalty' }) => {
+    if (!isAdmin) return;
+    const familyId = resolveFamilyId();
+    const profile = state.profiles.find(p => p.id === profileId);
+    if (!familyId || !profile) return;
+
+    const adjPoints = payload.type === 'penalty' ? -Math.abs(payload.points) : Math.abs(payload.points);
+    const txId = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `tx-${Date.now()}`;
+    const transaction: Transaction = {
+      id: txId,
+      title: payload.title,
+      points: adjPoints,
+      timestamp: Date.now(),
+      type: payload.type,
+    };
+
+    const newState = {
+      ...state,
+      profiles: state.profiles.map(p => p.id === profileId ? {
+        ...p,
+        balance: p.balance + adjPoints,
+        history: [transaction, ...p.history].slice(0, 50),
+      } : p)
+    } as FamilyState;
+
+    setState(newState);
+    const loadingId = showToast({ type: 'loading', title: '正在调整元气值...', duration: 0 });
+    try {
+      const { error: txErr } = await supabase.from('transactions').insert({
+        id: transaction.id,
+        family_id: familyId,
+        profile_id: profileId,
+        title: transaction.title,
+        points: transaction.points,
+        type: transaction.type,
+        timestamp: new Date(transaction.timestamp).toISOString(),
+      });
+      if (txErr) throw txErr;
+      const { error: balErr } = await supabase
+        .from('profiles')
+        .update({ balance: profile.balance + adjPoints })
+        .eq('id', profileId)
+        .eq('family_id', familyId);
+      if (balErr) throw balErr;
+      await refreshFamily(familyId);
+      showToast({ type: 'success', title: '已调整元气值', description: `${profile.name}: ${adjPoints > 0 ? '+' : ''}${adjPoints}` });
+    } catch (e) {
+      notifyError('调整元气值失败', e);
+      await refreshFamily(familyId);
+    } finally {
+      if (loadingId) dismissToast(loadingId);
+      await syncToCloud(newState);
     }
   };
 
@@ -760,7 +867,13 @@ function AppContent() {
           />
           <Route 
             path="/:syncId/history" 
-            element={<HistorySection history={currentProfile.history} />}
+            element={
+              <HistorySection 
+                history={currentProfile.history} 
+                isAdmin={isAdmin} 
+                onDeleteTransactions={handleDeleteTransactions} 
+              />
+            }
           />
           <Route 
             path="/:syncId/settings" 
@@ -780,6 +893,7 @@ function AppContent() {
                 onProfileNameChange={(id, name) => handleProfileNameChange(id, name)}
                 onAddProfile={(name, role) => handleAddProfile(name, role)}
                 onDeleteProfile={(id) => handleDeleteProfile(id)}
+                onAdjustBalance={(profileId, payload) => handleAdjustBalance(profileId, payload)}
                 isSyncing={isSyncing}
                 currentSyncId={resolveFamilyId()}
               />

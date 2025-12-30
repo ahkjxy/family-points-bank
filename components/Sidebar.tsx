@@ -32,21 +32,21 @@ export function Sidebar({ activeTab, onChangeTab, isAdmin, currentProfile, onPro
           { id: 'doc', icon: 'info', label: '使用说明' },
           ...(isAdmin ? [{ id: 'settings', icon: 'settings', label: '系统配置' }] : [])
         ].map(tab => (
-          <button 
+          <button
             key={tab.id}
             onClick={() => onChangeTab(tab.id as SidebarProps['activeTab'])}
-            className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl transition-all font-display font-semibold text-sm ${activeTab === tab.id ? 'bg-[#FF4D94] text-white shadow-md' : 'text-gray-400 hover:bg-white hover:text-[#FF4D94]'}`}
+            className={`w-full h-11 flex items-center gap-3 px-4 rounded-xl transition-all font-display font-semibold text-sm border border-transparent ${activeTab === tab.id ? 'bg-[#FF4D94] text-white shadow-md shadow-[#FF4D94]/30' : 'text-gray-400 hover:bg-white hover:text-[#FF4D94] hover:border-[#FF4D94]/30'}`}
           >
             <Icon name={tab.icon} size={18} />
-            <span>{tab.label}</span>
+            <span className="truncate">{tab.label}</span>
           </button>
         ))}
       </nav>
 
       <div className="mt-auto pt-6 border-t border-gray-100">
-        <button 
+        <button
           onClick={onProfileClick}
-          className="w-full bg-white border border-gray-100 p-3 rounded-2xl flex items-center gap-3 hover:border-[#FF4D94] transition-all shadow-sm"
+          className="w-full bg-white border border-gray-100 p-3 rounded-2xl flex items-center gap-3 hover:border-[#FF4D94] hover:shadow-[0_10px_30px_-26px_rgba(255,77,148,0.3)] transition-all shadow-sm"
         >
           <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-white text-sm ${currentProfile.avatarColor} shadow-inner`}>{currentProfile.name[0]}</div>
           <div className="text-left overflow-hidden">

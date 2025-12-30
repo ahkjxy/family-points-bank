@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Profile, Transaction } from '../types';
 import { Icon } from './Icon';
 import { formatDateTime } from '../utils/datetime';
@@ -21,6 +21,8 @@ type ProfileInsight = {
   net7d: number;
   trend7d: ChartPoint[];
 };
+
+type MessageItem = { title: string; desc: string; time: string; tone: 'indigo' | 'rose' | 'emerald' | 'slate' };
 
 function buildTrend(transactions: (Transaction & { profileId: string })[], days: number): ChartPoint[] {
   const end = new Date();
@@ -54,6 +56,12 @@ export function DashboardSection({ currentProfile, profiles, onGoEarn, onGoRedee
     },
     { earned: 0, spent: 0, count: 0 }
   );
+  const systemReward = useMemo(() =>
+    currentProfile.history
+      .filter(h => h.type === 'earn' && /奖励/.test(h.title))
+      .reduce((s, h) => s + h.points, 0),
+  [currentProfile.history]);
+  const lastTx = currentProfile.history[0];
 
   const allTransactions = useMemo<(Transaction & { profileId: string; profileName: string })[]>(() =>
     profiles.flatMap(p => p.history.map(tx => ({ ...tx, profileId: p.id, profileName: p.name }))),
@@ -77,15 +85,6 @@ export function DashboardSection({ currentProfile, profiles, onGoEarn, onGoRedee
       .slice(0, 3);
   }, [profiles]);
 
-  const funnel = useMemo(() => {
-    const earnCount = allTransactions.filter((t: Transaction) => t.type === 'earn').length;
-    const penaltyCount = allTransactions.filter((t: Transaction) => t.type === 'penalty').length;
-    const redeemCount = allTransactions.filter((t: Transaction) => t.type === 'redeem').length;
-    const totalTask = earnCount + penaltyCount;
-    const toRedeemRate = totalTask ? Math.round((redeemCount / totalTask) * 100) : 0;
-    const earnRate = totalTask ? Math.round((earnCount / totalTask) * 100) : 0;
-    return { earnCount, penaltyCount, redeemCount, totalTask, toRedeemRate, earnRate };
-  }, [allTransactions]);
 
   const profileInsights = useMemo<ProfileInsight[]>(() => {
     const now = Date.now();
@@ -118,7 +117,7 @@ export function DashboardSection({ currentProfile, profiles, onGoEarn, onGoRedee
       flags.push(`24小时内积分波动异常（${recentNames || '成员'}）：净变动 ${lastDayNet}，绝对值 ${lastDayAbs}`);
     }
     if (lastDayRedeem >= 3) {
-      const redeemNames = Array.from(new Set(lastDayRedeemList.map(t => t.profileName || '未知'))).join('、');
+      const redeemNames = Array.from(new Set(lastDayRedeemList.map((t: Transaction & { profileName?: string }) => t.profileName || '未知'))).join('、');
       flags.push(`24小时内兑换 ${lastDayRedeem} 次（${redeemNames}），请确认是否正常`);
     }
     if (largePenalty) {
@@ -127,9 +126,9 @@ export function DashboardSection({ currentProfile, profiles, onGoEarn, onGoRedee
     return flags;
   }, [allTransactions]);
 
-  const messageCenter = useMemo(() => {
+  const messageCenter = useMemo<MessageItem[]>(() => {
     const sorted = [...allTransactions].sort((a, b) => b.timestamp - a.timestamp).slice(0, 5);
-    const items = sorted.map((t: Transaction & { profileName?: string }) => ({
+    const items: MessageItem[] = sorted.map((t: Transaction & { profileName?: string }) => ({
       title: t.type === 'redeem' ? '兑换提醒' : t.type === 'penalty' ? '扣减提醒' : '任务完成',
       desc: `${t.title} · ${t.points > 0 ? '+' : ''}${t.points} · ${t.profileName || ''}`.trim(),
       time: formatDateTime(t.timestamp),
@@ -140,118 +139,176 @@ export function DashboardSection({ currentProfile, profiles, onGoEarn, onGoRedee
     return items;
   }, [allTransactions, anomalies]);
 
-  const renderBars = (data: ChartPoint[], max: number) => (
-    <div className="flex gap-2 items-end h-28">
-      {data.map((d: ChartPoint, idx: number) => (
-        <div key={idx} className="flex flex-col items-center gap-1">
-          <div
-            className={`w-3 sm:w-4 rounded-full transition-all duration-500 ${d.value >= 0 ? 'bg-emerald-400/80 dark:bg-emerald-500' : 'bg-rose-400/80 dark:bg-rose-500'}`}
-            style={{ height: `${Math.max(8, Math.abs(d.value) / max * 100)}%` }}
-            title={`${d.label} : ${d.value}`}
-          ></div>
-          <span className="text-[10px] text-gray-400 dark:text-gray-300 tabular-nums">{d.label}</span>
-        </div>
-      ))}
-    </div>
-  );
+  const [openNotice, setOpenNotice] = useState<boolean>(false);
+  const displayMessages = useMemo<MessageItem[]>(() => (openNotice ? messageCenter : messageCenter.slice(0, 4)), [messageCenter, openNotice]);
+
+  const renderLineChart = (data: ChartPoint[], max: number) => {
+    if (!data.length) return <div className="text-sm text-gray-400">暂无数据</div>;
+    const height = 120;
+    const maxValue = Math.max(max, 1);
+    const step = data.length === 1 ? 0 : Math.max(22, 260 / (data.length - 1));
+    const points = data.map((d, i) => {
+      const x = i * step;
+      const y = (1 - (d.value / (maxValue * 2) + 0.5)) * height;
+      return `${x},${y}`;
+    }).join(' ');
+    const zeroY = height / 2;
+    const width = (data.length - 1) * step || 1;
+
+    return (
+      <div className="overflow-x-auto no-scrollbar">
+        <svg viewBox={`0 0 ${Math.max(width, 1)} ${height}`} className="w-full min-w-[320px]" preserveAspectRatio="xMidYMid meet">
+          <line x1={0} y1={zeroY} x2={width} y2={zeroY} className="stroke-gray-200 dark:stroke-gray-700" strokeWidth={1} strokeDasharray="4 4" />
+          <polyline points={points} fill="none" className="stroke-[#FF4D94]" strokeWidth={3} strokeLinecap="round" />
+          {data.map((d, i) => {
+            const x = i * step;
+            const y = (1 - (d.value / (maxValue * 2) + 0.5)) * height;
+            return (
+              <g key={i}>
+                <circle cx={x} cy={y} r={5} className={`fill-white stroke-2 ${d.value >= 0 ? 'stroke-emerald-400' : 'stroke-rose-400'}`} title={`${d.label}: ${d.value}`} />
+                <text x={x} y={y - 10} textAnchor="middle" className="text-[10px] fill-gray-500">{d.value}</text>
+                <text x={x} y={height + 12} textAnchor="middle" className="text-[10px] fill-gray-400 tabular-nums">{d.label}</text>
+              </g>
+            );
+          })}
+        </svg>
+      </div>
+    );
+  };
+
+  const renderMiniTrend = (data: ChartPoint[]) => {
+    if (!data.length) return <div className="text-[12px] text-gray-400">暂无</div>;
+    const height = 70;
+    const maxVal = Math.max(...data.map(d => Math.abs(d.value)), 1);
+    const step = data.length === 1 ? 0 : Math.max(16, 160 / (data.length - 1));
+    const width = (data.length - 1) * step || 1;
+    const zeroY = height / 2;
+    const points = data.map((d, i) => {
+      const x = i * step;
+      const y = zeroY - (d.value / (maxVal * 1.4)) * (height / 2);
+      return `${x},${y}`;
+    }).join(' ');
+
+    return (
+      <svg viewBox={`0 0 ${Math.max(width, 1)} ${height}`} className="w-full min-w-[200px]" preserveAspectRatio="xMidYMid meet">
+        <line x1={0} y1={zeroY} x2={width} y2={zeroY} className="stroke-gray-200 dark:stroke-gray-700" strokeWidth={1} strokeDasharray="4 4" />
+        <polyline points={points} fill="none" className="stroke-[#22C55E]" strokeWidth={2} strokeLinecap="round" />
+        {data.map((d, i) => {
+          const x = i * step;
+          const y = zeroY - (d.value / (maxVal * 1.4)) * (height / 2);
+          return <circle key={i} cx={x} cy={y} r={4} className={`fill-white stroke-2 ${d.value >= 0 ? 'stroke-emerald-400' : 'stroke-rose-400'}`} title={`${d.label}: ${d.value}`} />;
+        })}
+      </svg>
+    );
+  };
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-2 bg-gradient-to-br from-[#FF4D94] to-[#7C4DFF] p-8 rounded-[32px] text-white shadow-xl relative overflow-hidden flex flex-col justify-between min-h-[220px]">
-          <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full blur-[60px] -mr-16 -mt-16"></div>
-          <div className="relative z-10">
-            <h3 className="text-xs font-bold uppercase tracking-[0.2em] opacity-80 mb-2">VITALITY BALANCE</h3>
-            <div className="flex items-baseline gap-2">
-              <span className="text-7xl font-bold points-font tracking-tighter">{currentProfile.balance}</span>
+      <div className="grid gap-4 lg:grid-cols-12 items-stretch">
+        <div className="lg:col-span-8 bg-gradient-to-br from-[#FF4D94] via-[#FF7AB5] to-[#7C4DFF] p-8 rounded-[32px] text-white shadow-2xl relative overflow-hidden flex flex-col min-h-[260px]">
+          <div className="absolute inset-0 opacity-60" style={{background:"radial-gradient(circle at 20% 20%, rgba(255,255,255,0.14), transparent 35%), radial-gradient(circle at 80% 0%, rgba(255,255,255,0.12), transparent 30%), radial-gradient(circle at 50% 80%, rgba(255,255,255,0.1), transparent 32%)"}}></div>
+          <div className="relative z-10 flex flex-col gap-5 h-full">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-white/70">账户概览</p>
+                <h3 className="text-4xl md:text-5xl font-black points-font leading-tight tracking-tight">{currentProfile.balance}</h3>
+                <p className="text-sm text-white/80 mt-1">当前元气值 · {currentProfile.name}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="px-3 py-2 rounded-2xl bg-white/15 text-white text-xs font-bold">今日 +{todayGain}</span>
+                <span className="px-3 py-2 rounded-2xl bg-white/10 text-white text-xs font-bold">记录 {totals.count}</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="rounded-2xl bg-white/10 border border-white/15 p-3">
+                <p className="text-[11px] text-white/70 font-semibold">累计获得</p>
+                <p className="text-2xl font-black points-font">+{totals.earned}</p>
+              </div>
+              <div className="rounded-2xl bg-white/10 border border-white/15 p-3">
+                <p className="text-[11px] text-white/70 font-semibold">已消费 / 扣减</p>
+                <p className="text-2xl font-black points-font text-rose-50">-{totals.spent}</p>
+              </div>
+              <div className="rounded-2xl bg-white/10 border border-white/15 p-3">
+                <p className="text-[11px] text-white/70 font-semibold">系统奖励</p>
+                <p className="text-2xl font-black points-font">+{systemReward}</p>
+              </div>
+              <div className="rounded-2xl bg-white/10 border border-white/15 p-3">
+                <p className="text-[11px] text-white/70 font-semibold">当前余额</p>
+                <p className="text-2xl font-black points-font">{currentProfile.balance}</p>
+              </div>
+            </div>
+
+            <div className="relative z-10 flex flex-wrap gap-3 mt-auto">
+              <button onClick={onGoEarn} className="px-6 py-3 bg-white text-[#FF4D94] rounded-2xl text-xs font-bold hover:translate-y-[-1px] active:scale-95 transition-all shadow-lg shadow-[#FF4D94]/20">进入元气任务</button>
+              <button onClick={onGoRedeem} className="px-6 py-3 bg-white/15 text-white rounded-2xl text-xs font-bold hover:bg-white/25 active:scale-95 transition-all">前往梦想商店</button>
             </div>
           </div>
-          <div className="flex gap-3 relative z-10">
-            <button onClick={onGoEarn} className="px-6 py-3 bg-white text-[#FF4D94] rounded-2xl text-xs font-bold hover:scale-105 active:scale-95 transition-all shadow-lg">进入元气任务</button>
-            <button onClick={onGoRedeem} className="px-6 py-3 bg-white/10 text-white rounded-2xl text-xs font-bold hover:bg-white/20 active:scale-95 transition-all">前往梦想商店</button>
-          </div>
         </div>
-        <div className="bg-white dark:bg-[var(--surface)] p-6 vibrant-card flex flex-col justify-center items-center text-center border border-gray-100 dark:border-[var(--border-subtle)]">
-          <div className="w-14 h-14 bg-[#FFF0F6] text-[#FF4D94] rounded-2xl flex items-center justify-center mb-4 shadow-inner">
-            <Icon name="history" size={28} />
+        <div className="lg:col-span-4 space-y-4">
+          <div className="bg-white dark:bg-[var(--surface)] p-5 rounded-2xl border border-gray-100 dark:border-[var(--border-subtle)] shadow-sm">
+            <div className="flex items-center justify-between">
+              <p className="text-[11px] font-bold text-gray-500 dark:text-gray-300 uppercase tracking-[0.2em]">今日收益</p>
+              <span className="text-xs px-2 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100">+{todayGain}</span>
+            </div>
+            <p className="text-xl font-black text-gray-900 dark:text-gray-100 points-font mt-3">+{todayGain} pts</p>
+            <p className="text-[12px] text-gray-500 dark:text-gray-300">继续完成任务提升余额</p>
           </div>
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">今日累计收益</p>
-          <p className="text-4xl font-bold text-gray-900 points-font">
-            +{todayGain}
-          </p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-[var(--surface)] p-5 rounded-2xl border border-gray-100 dark:border-[var(--border-subtle)] shadow-sm">
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em] mb-1">累计获得</p>
-          <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-bold text-emerald-600 points-font">+{totals.earned}</span>
-          </div>
-        </div>
-        <div className="bg-white dark:bg-[var(--surface)] p-5 rounded-2xl border border-gray-100 dark:border-[var(--border-subtle)] shadow-sm">
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em] mb-1">已消费 / 扣减</p>
-          <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-bold text-rose-500 points-font">-{totals.spent}</span>
-          </div>
-        </div>
-        <div className="bg-white dark:bg-[var(--surface)] p-5 rounded-2xl border border-gray-100 dark:border-[var(--border-subtle)] shadow-sm">
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em] mb-1">当前元气值</p>
-          <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-bold text-gray-900 points-font">{currentProfile.balance}</span>
-          </div>
-        </div>
-        <div className="bg-white dark:bg-[var(--surface)] p-5 rounded-2xl border border-gray-100 dark:border-[var(--border-subtle)] shadow-sm">
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em] mb-1">记录总数</p>
-          <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-bold text-indigo-600 points-font">{totals.count}</span>
+          <div className="bg-white dark:bg-[var(--surface)] p-5 rounded-2xl border border-gray-100 dark:border-[var(--border-subtle)] shadow-sm">
+            <div className="flex items-center justify-between">
+              <p className="text-[11px] font-bold text-gray-500 dark:text-gray-300 uppercase tracking-[0.2em]">最近记录</p>
+              <span className="text-[11px] text-gray-400 dark:text-gray-300">{lastTx ? formatDateTime(lastTx.timestamp) : '暂无'}</span>
+            </div>
+            {lastTx ? (
+              <div className="mt-3 flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${lastTx.points > 0 ? 'bg-emerald-50 text-emerald-500' : 'bg-rose-50 text-rose-500'}`}>
+                  <Icon name={lastTx.type === 'redeem' ? 'reward' : 'plus'} size={16} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-gray-800 dark:text-gray-100 truncate">{lastTx.title}</p>
+                  <p className="text-[12px] text-gray-500 dark:text-gray-300 points-font">{lastTx.points > 0 ? '+' : ''}{lastTx.points} pts</p>
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-gray-400 dark:text-gray-300 mt-2">暂无记录</p>
+            )}
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-3 bg-white dark:bg-[var(--surface)] p-6 rounded-[24px] border border-gray-100 dark:border-[var(--border-subtle)] shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.25em]">成员画像</p>
-              <h3 className="text-lg font-bold text-gray-900">活跃度 / 完成率 / 走势</h3>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {profileInsights.map((p: ProfileInsight) => {
-              const maxTrend = Math.max(...p.trend7d.map(t => Math.abs(t.value)), 1);
-              return (
-                <div key={p.id} className="rounded-2xl border border-gray-100 dark:border-[var(--border-subtle)] bg-white dark:bg-[var(--surface)] p-3 shadow-[0_10px_30px_-26px_rgba(15,23,42,0.45)] transition-colors">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold ${p.avatarColor}`}>{p.name[0]}</div>
-                      <div>
-                        <p className="text-sm font-bold text-gray-800 dark:text-gray-100 leading-tight">{p.name}</p>
-                        <p className="text-[11px] text-gray-500 dark:text-gray-300">余额 {p.balance}</p>
-                      </div>
-                    </div>
-                    <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold ${p.net7d >= 0 ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-100' : 'bg-rose-50 text-rose-600 dark:bg-rose-900/40 dark:text-rose-100'}`}>
-                      7天 {p.net7d >= 0 ? '+' : ''}{p.net7d}
-                    </span>
-                  </div>
-                  <div className="mt-2 flex items-center justify-between text-[11px] text-gray-500 dark:text-gray-300 font-semibold">
-                    <span>活跃 {p.activity7d} 次</span>
-                    <span>完成率 {p.completionRate}%</span>
-                  </div>
-                  <div className="mt-2 flex gap-1 items-end h-12">
-                    {p.trend7d.map((d: ChartPoint, idx: number) => (
-                      <div key={idx} className="flex-1 flex flex-col items-center">
-                        <div
-                          className={`w-full rounded-full transition-all duration-500 ${d.value >= 0 ? 'bg-emerald-400/80 dark:bg-emerald-500' : 'bg-rose-400/80 dark:bg-rose-500'}`}
-                          style={{ height: `${Math.max(4, Math.abs(d.value) / maxTrend * 100)}%` }}
-                          title={`${d.label} : ${d.value}`}
-                        ></div>
-                      </div>
-                    ))}
-                  </div>
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <p className="text-[10px] font-bold text-gray-400 dark:text-gray-300 uppercase tracking-[0.25em]">成员画像</p>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">活跃度 / 完成率 / 走势</h3>
                 </div>
-              );
-            })}
+              </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {profileInsights.map((p: ProfileInsight) => (
+              <div key={p.id} className="rounded-2xl border border-gray-100 dark:border-[var(--border-subtle)] bg-white dark:bg-[var(--surface)] p-3 shadow-[0_10px_30px_-26px_rgba(15,23,42,0.45)] transition-colors">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold ${p.avatarColor}`}>{p.name[0]}</div>
+                    <div>
+                      <p className="text-sm font-bold text-gray-800 dark:text-gray-100 leading-tight">{p.name}</p>
+                      <p className="text-[11px] text-gray-500 dark:text-gray-300">余额 {p.balance}</p>
+                    </div>
+                  </div>
+                  <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold ${p.net7d >= 0 ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-100' : 'bg-rose-50 text-rose-600 dark:bg-rose-900/40 dark:text-rose-100'}`}>
+                    7天 {p.net7d >= 0 ? '+' : ''}{p.net7d}
+                  </span>
+                </div>
+                <div className="mt-2 flex items-center justify-between text-[11px] text-gray-500 dark:text-gray-300 font-semibold">
+                  <span>活跃 {p.activity7d} 次</span>
+                  <span>完成率 {p.completionRate}%</span>
+                </div>
+                <div className="mt-3 bg-gray-50/80 dark:bg-white/5 rounded-xl p-2 border border-gray-100 dark:border-[var(--border-subtle)]">
+                  {renderMiniTrend(p.trend7d)}
+                </div>
+              </div>
+            ))}
             {profileInsights.length === 0 && <div className="text-sm text-gray-400">暂无成员</div>}
           </div>
         </div>
@@ -261,20 +318,18 @@ export function DashboardSection({ currentProfile, profiles, onGoEarn, onGoRedee
         <div className="bg-white dark:bg-[var(--surface)] p-6 rounded-[24px] border border-gray-100 dark:border-[var(--border-subtle)] shadow-sm lg:col-span-2">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.25em]">趋势图</p>
-              <h3 className="text-lg font-bold text-gray-900">周 / 月净流入</h3>
+              <p className="text-[10px] font-bold text-gray-400 dark:text-gray-300 uppercase tracking-[0.25em]">趋势图</p>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">周 / 月净流入</h3>
             </div>
           </div>
           <div className="space-y-4">
             <div>
-              <div className="flex items-center justify-between text-xs text-gray-500 mb-2"><span>最近7天</span><span>净变动</span></div>
-              {renderBars(weekly, maxWeek)}
+              <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-300 mb-2"><span>最近7天</span><span>净变动</span></div>
+              {renderLineChart(weekly, maxWeek)}
             </div>
             <div className="border-t border-gray-50 pt-3">
-              <div className="flex items-center justify-between text-xs text-gray-500 mb-2"><span>最近30天</span><span>净变动</span></div>
-              <div className="overflow-x-auto no-scrollbar">
-                <div className="min-w-[360px]">{renderBars(monthly.slice(-14), maxMonth)}</div>
-              </div>
+              <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-300 mb-2"><span>最近30天</span><span>净变动</span></div>
+              {renderLineChart(monthly.slice(-14), maxMonth)}
             </div>
           </div>
         </div>
@@ -303,32 +358,6 @@ export function DashboardSection({ currentProfile, profiles, onGoEarn, onGoRedee
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="bg-white dark:bg-[var(--surface)] p-6 rounded-[24px] border border-gray-100 dark:border-[var(--border-subtle)] shadow-sm lg:col-span-2">
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.25em]">任务 / 兑换漏斗</p>
-              <h3 className="text-lg font-bold text-gray-900">任务完成 → 兑换</h3>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="rounded-2xl border border-gray-100 dark:border-[var(--border-subtle)] p-4 bg-gray-50/60 dark:bg-white/5">
-              <p className="text-xs text-gray-500 font-semibold">任务（含扣分）</p>
-              <p className="text-2xl font-black text-gray-900 points-font mt-1">{funnel.totalTask}</p>
-              <p className="text-[11px] text-gray-400">Earn {funnel.earnCount} / Penalty {funnel.penaltyCount}</p>
-            </div>
-            <div className="rounded-2xl border border-gray-100 dark:border-[var(--border-subtle)] p-4 bg-gray-50/80 dark:bg-white/5">
-              <p className="text-xs text-gray-500 font-semibold">Earn 占比</p>
-              <p className="text-2xl font-black text-emerald-600 points-font mt-1">{funnel.earnRate}%</p>
-              <p className="text-[11px] text-gray-400">正向完成的比例</p>
-            </div>
-            <div className="rounded-2xl border border-gray-100 dark:border-[var(--border-subtle)] p-4 bg-gray-50 dark:bg-white/5">
-              <p className="text-xs text-gray-500 font-semibold">兑换次数</p>
-              <p className="text-2xl font-black text-indigo-600 points-font mt-1">{funnel.redeemCount}</p>
-              <p className="text-[11px] text-gray-400">兑换率 {funnel.toRedeemRate}%</p>
-            </div>
-          </div>
-        </div>
-
         <div className="bg-white dark:bg-[var(--surface)] p-6 rounded-[24px] border border-gray-100 dark:border-[var(--border-subtle)] shadow-sm">
           <div className="flex items-center justify-between mb-3">
             <div>
@@ -337,28 +366,27 @@ export function DashboardSection({ currentProfile, profiles, onGoEarn, onGoRedee
             </div>
           </div>
           <div className="space-y-3">
-            {currentProfile.history.slice(0, 4).map(h => (
+              {currentProfile.history.slice(0, 4).map(h => (
               <div key={h.id} className="p-3 flex items-center justify-between bg-gray-50/70 dark:bg-white/5 rounded-2xl hover:bg-white dark:hover:bg-white/10 border border-transparent hover:border-gray-100 dark:hover:border-[var(--border-subtle)] transition-all group">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 min-w-0">
                   <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${h.points > 0 ? 'bg-emerald-50 text-emerald-500' : 'bg-rose-50 text-rose-500'} shadow-sm`}>
                     <Icon name={h.type === 'redeem' ? 'reward' : 'plus'} size={16} />
                   </div>
-                  <div>
-                    <p className="text-sm font-bold text-gray-800 leading-tight">{h.title}</p>
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold text-gray-800 leading-tight truncate">{h.title}</p>
                     <p className="text-[10px] text-gray-400 tabular-nums">{formatDateTime(h.timestamp)}</p>
                   </div>
                 </div>
-                <span className={`text-base font-bold points-font ${h.points > 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                <span className={`text-base font-bold points-font w-16 text-right shrink-0 ${h.points > 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
                   {h.points > 0 ? '+' : ''}{h.points}
                 </span>
               </div>
             ))}
+
             {currentProfile.history.length === 0 && <div className="text-sm text-gray-400">暂无记录</div>}
           </div>
         </div>
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="bg-white dark:bg-[var(--surface)] p-6 rounded-[24px] border border-gray-100 dark:border-[var(--border-subtle)] shadow-sm">
           <div className="flex items-center justify-between mb-3">
             <div>
@@ -384,21 +412,33 @@ export function DashboardSection({ currentProfile, profiles, onGoEarn, onGoRedee
           <div className="flex items-center justify-between mb-3">
             <div>
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.25em]">消息中心</p>
-              <h3 className="text-lg font-bold text-gray-900">重置 / 任务 / 兑换 / 反馈</h3>
+              <h3 className="text-lg font-bold text-gray-900">提醒 / 公告</h3>
             </div>
+            <button
+              onClick={() => setOpenNotice((prev: boolean) => !prev)}
+              className="text-[11px] font-semibold text-[#FF4D94] hover:underline"
+            >
+              {openNotice ? '收起' : '展开更多'}
+            </button>
           </div>
-          <ul className="space-y-2">
-            {messageCenter.map((msg: { title: string; desc: string; time: string; tone: string }, idx: number) => (
-              <li key={idx} className="rounded-2xl border border-gray-100 dark:border-[var(--border-subtle)] bg-gray-50/70 dark:bg-white/5 px-4 py-3 flex items-start gap-3">
-                <span className={`mt-0.5 w-2.5 h-2.5 rounded-full ${msg.tone === 'rose' ? 'bg-rose-400' : msg.tone === 'indigo' ? 'bg-indigo-400' : msg.tone === 'emerald' ? 'bg-emerald-400' : 'bg-gray-400'}`}></span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-gray-800 leading-tight">{msg.title}</p>
-                  <p className="text-[12px] text-gray-500 truncate">{msg.desc}</p>
+          <div className="space-y-3">
+            {displayMessages.map((msg: MessageItem, idx: number) => (
+              <div key={idx} className="p-3 rounded-2xl bg-gray-50/70 dark:bg-white/5 border border-gray-100 dark:border-[var(--border-subtle)] flex items-start gap-3">
+                <span className={`mt-1 w-2.5 h-2.5 rounded-full ${msg.tone === 'rose' ? 'bg-rose-400' : msg.tone === 'indigo' ? 'bg-indigo-400' : msg.tone === 'slate' ? 'bg-gray-400' : 'bg-emerald-400'}`}></span>
+                <div className="flex-1 min-w-0 space-y-0.5">
+                  <p className="text-sm font-bold text-gray-800 dark:text-gray-100 leading-tight truncate">{msg.title}</p>
+                  <p className="text-[12px] text-gray-500 dark:text-gray-300 truncate">{msg.desc}</p>
                   <p className="text-[11px] text-gray-400 tabular-nums">{msg.time}</p>
                 </div>
-              </li>
+              </div>
             ))}
-          </ul>
+
+            {messageCenter.length === 0 && (
+              <div className="text-sm text-gray-400 bg-gray-50 border border-gray-100 rounded-2xl p-4 text-center">
+                暂无提醒，继续保持良好习惯！
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
