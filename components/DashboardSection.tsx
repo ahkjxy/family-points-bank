@@ -210,9 +210,9 @@ export function DashboardSection({ currentProfile, profiles, onGoEarn, onGoRedee
           <div className="relative z-10 flex flex-col gap-5 h-full">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-white/70">账户概览</p>
+                <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-white">账户概览</p>
                 <h3 className="text-4xl md:text-5xl font-black points-font leading-tight tracking-tight">{currentProfile.balance}</h3>
-                <p className="text-sm text-white/80 mt-1">当前元气值 · {currentProfile.name}</p>
+                <p className="text-sm text-white mt-1">当前元气值 · {currentProfile.name}</p>
               </div>
               <div className="flex items-center gap-2">
                 <span className="px-3 py-2 rounded-2xl bg-white/15 text-white text-xs font-bold">今日 +{todayGain}</span>
@@ -222,19 +222,19 @@ export function DashboardSection({ currentProfile, profiles, onGoEarn, onGoRedee
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="rounded-2xl bg-white/10 border border-white/15 p-3">
-                <p className="text-[11px] text-white/70 font-semibold">累计获得</p>
+                <p className="text-[11px] text-white font-semibold">累计获得</p>
                 <p className="text-2xl font-black points-font">+{totals.earned}</p>
               </div>
               <div className="rounded-2xl bg-white/10 border border-white/15 p-3">
-                <p className="text-[11px] text-white/70 font-semibold">已消费 / 扣减</p>
+                <p className="text-[11px] text-white font-semibold">已消费 / 扣减</p>
                 <p className="text-2xl font-black points-font text-rose-50">-{totals.spent}</p>
               </div>
               <div className="rounded-2xl bg-white/10 border border-white/15 p-3">
-                <p className="text-[11px] text-white/70 font-semibold">系统奖励</p>
+                <p className="text-[11px] text-white font-semibold">系统奖励</p>
                 <p className="text-2xl font-black points-font">+{systemReward}</p>
               </div>
               <div className="rounded-2xl bg-white/10 border border-white/15 p-3">
-                <p className="text-[11px] text-white/70 font-semibold">当前余额</p>
+                <p className="text-[11px] text-white font-semibold">当前余额</p>
                 <p className="text-2xl font-black points-font">{currentProfile.balance}</p>
               </div>
             </div>
@@ -246,7 +246,7 @@ export function DashboardSection({ currentProfile, profiles, onGoEarn, onGoRedee
           </div>
         </div>
         <div className="lg:col-span-4 space-y-4">
-          <div className="bg-white dark:bg-[var(--surface)] p-5 rounded-2xl border border-gray-100 dark:border-[var(--border-subtle)] shadow-sm">
+          <div className="bg-white dark:bg-[var(--surface)] p-5 rounded-2xl border border-gray-100 dark:border-[var(--border-subtle)] shadow-sm mobile-card">
             <div className="flex items-center justify-between">
               <p className="text-[11px] font-bold text-gray-500 dark:text-gray-300 uppercase tracking-[0.2em]">今日收益</p>
               <span className="text-xs px-2 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100">+{todayGain}</span>
@@ -254,7 +254,7 @@ export function DashboardSection({ currentProfile, profiles, onGoEarn, onGoRedee
             <p className="text-xl font-black text-gray-900 dark:text-gray-100 points-font mt-3">+{todayGain} pts</p>
             <p className="text-[12px] text-gray-500 dark:text-gray-300">继续完成任务提升余额</p>
           </div>
-          <div className="bg-white dark:bg-[var(--surface)] p-5 rounded-2xl border border-gray-100 dark:border-[var(--border-subtle)] shadow-sm">
+          <div className="bg-white dark:bg-[var(--surface)] p-5 rounded-2xl border border-gray-100 dark:border-[var(--border-subtle)] shadow-sm mobile-card">
             <div className="flex items-center justify-between">
               <p className="text-[11px] font-bold text-gray-500 dark:text-gray-300 uppercase tracking-[0.2em]">最近记录</p>
               <span className="text-[11px] text-gray-400 dark:text-gray-300">{lastTx ? formatDateTime(lastTx.timestamp) : '暂无'}</span>
@@ -277,10 +277,10 @@ export function DashboardSection({ currentProfile, profiles, onGoEarn, onGoRedee
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-3 bg-white dark:bg-[var(--surface)] p-6 rounded-[24px] border border-gray-100 dark:border-[var(--border-subtle)] shadow-sm">
+        <div className="lg:col-span-3 bg-white dark:bg-[var(--surface)] p-6 rounded-[24px] border border-gray-100 dark:border-[var(--border-subtle)] shadow-sm mobile-card">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <p className="text-[10px] font-bold text-gray-400 dark:text-gray-300 uppercase tracking-[0.25em]">成员画像</p>
+                  <p className="text-[10px] font-bold text-gray-600 dark:text-gray-300 uppercase tracking-[0.25em]">成员画像</p>
                   <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">活跃度 / 完成率 / 走势</h3>
                 </div>
               </div>
@@ -315,7 +315,7 @@ export function DashboardSection({ currentProfile, profiles, onGoEarn, onGoRedee
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="bg-white dark:bg-[var(--surface)] p-6 rounded-[24px] border border-gray-100 dark:border-[var(--border-subtle)] shadow-sm lg:col-span-2">
+        <div className="bg-white dark:bg-[var(--surface)] p-6 rounded-[24px] border border-gray-100 dark:border-[var(--border-subtle)] shadow-sm lg:col-span-2 mobile-card">
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="text-[10px] font-bold text-gray-400 dark:text-gray-300 uppercase tracking-[0.25em]">趋势图</p>
@@ -324,17 +324,17 @@ export function DashboardSection({ currentProfile, profiles, onGoEarn, onGoRedee
           </div>
           <div className="space-y-4">
             <div>
-              <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-300 mb-2"><span>最近7天</span><span>净变动</span></div>
+              <div className="flex items-center justify-between text-xs text-gray-700 dark:text-gray-300 mb-2"><span>最近7天</span><span>净变动</span></div>
               {renderLineChart(weekly, maxWeek)}
             </div>
             <div className="border-t border-gray-50 pt-3">
-              <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-300 mb-2"><span>最近30天</span><span>净变动</span></div>
+              <div className="flex items-center justify-between text-xs text-gray-700 dark:text-gray-300 mb-2"><span>最近30天</span><span>净变动</span></div>
               {renderLineChart(monthly.slice(-14), maxMonth)}
             </div>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-[var(--surface)] p-6 rounded-[24px] border border-gray-100 dark:border-[var(--border-subtle)] shadow-sm">
+        <div className="bg-white dark:bg-[var(--surface)] p-6 rounded-[24px] border border-gray-100 dark:border-[var(--border-subtle)] shadow-sm mobile-card">
           <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.25em]">Top 成员榜</p>
           <h3 className="text-lg font-bold text-gray-900 mb-4">累计净得分</h3>
           <div className="space-y-3">
@@ -358,7 +358,7 @@ export function DashboardSection({ currentProfile, profiles, onGoEarn, onGoRedee
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="bg-white dark:bg-[var(--surface)] p-6 rounded-[24px] border border-gray-100 dark:border-[var(--border-subtle)] shadow-sm">
+        <div className="bg-white dark:bg-[var(--surface)] p-6 rounded-[24px] border border-gray-100 dark:border-[var(--border-subtle)] shadow-sm mobile-card">
           <div className="flex items-center justify-between mb-3">
             <div>
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.25em]">最近账单摘要</p>
@@ -387,7 +387,7 @@ export function DashboardSection({ currentProfile, profiles, onGoEarn, onGoRedee
           </div>
         </div>
 
-        <div className="bg-white dark:bg-[var(--surface)] p-6 rounded-[24px] border border-gray-100 dark:border-[var(--border-subtle)] shadow-sm">
+        <div className="bg-white dark:bg-[var(--surface)] p-6 rounded-[24px] border border-gray-100 dark:border-[var(--border-subtle)] shadow-sm mobile-card">
           <div className="flex items-center justify-between mb-3">
             <div>
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.25em]">异常监控</p>
@@ -408,7 +408,7 @@ export function DashboardSection({ currentProfile, profiles, onGoEarn, onGoRedee
           )}
         </div>
 
-        <div className="bg-white dark:bg-[var(--surface)] p-6 rounded-[24px] border border-gray-100 dark:border-[var(--border-subtle)] shadow-sm">
+        <div className="bg-white dark:bg-[var(--surface)] p-6 rounded-[24px] border border-gray-100 dark:border-[var(--border-subtle)] shadow-sm mobile-card">
           <div className="flex items-center justify-between mb-3">
             <div>
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.25em]">消息中心</p>

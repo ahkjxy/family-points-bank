@@ -41,7 +41,7 @@ export function EarnSection({ tasks, onSelectTask }: EarnSectionProps) {
 
   return (
     <div className="space-y-6 pb-14 animate-in slide-in-from-bottom-4 duration-500">
-      <div className="rounded-[28px] bg-gradient-to-br from-[#FFF1F7] via-white to-[#F4F0FF] border border-white shadow-[0_18px_60px_-36px_rgba(255,77,148,0.35)] p-5 sm:p-6 flex flex-col gap-4">
+      <div className="rounded-[28px] bg-gradient-to-br from-[#FFF1F7] via-white to-[#F4F0FF] border border-white shadow-[0_18px_60px_-36px_rgba(255,77,148,0.35)] p-5 sm:p-6 flex flex-col gap-4 mobile-card">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-[#FF4D94]">元气任务</p>
@@ -70,15 +70,15 @@ export function EarnSection({ tasks, onSelectTask }: EarnSectionProps) {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm text-gray-700">
-          <div className="rounded-2xl bg-white border border-gray-100 px-4 py-3 flex items-center justify-between">
+          <div className="rounded-2xl bg-white border border-gray-100 px-4 py-3 flex items-center justify-between mobile-card">
             <span className="text-gray-500">全部任务</span>
             <span className="text-lg font-black text-[#FF4D94]">{stats.total}</span>
           </div>
-          <div className="rounded-2xl bg-white border border-gray-100 px-4 py-3 flex items-center justify-between">
+          <div className="rounded-2xl bg-white border border-gray-100 px-4 py-3 flex items-center justify-between mobile-card">
             <span className="text-gray-500">每日必做</span>
             <span className="text-lg font-black text-emerald-600">{stats.daily}</span>
           </div>
-          <div className="rounded-2xl bg-white border border-gray-100 px-4 py-3 flex items-center justify-between">
+          <div className="rounded-2xl bg-white border border-gray-100 px-4 py-3 flex items-center justify-between mobile-card">
             <span className="text-gray-500">警示项</span>
             <span className="text-lg font-black text-rose-600">{stats.penalty}</span>
           </div>
@@ -93,7 +93,7 @@ export function EarnSection({ tasks, onSelectTask }: EarnSectionProps) {
             <button
               key={task.id}
               onClick={() => onSelectTask({ title: task.title, points: task.points, type: isPenalty ? 'penalty' : 'earn' })}
-              className={`w-full text-left group rounded-2xl border bg-white p-4 flex flex-col gap-3 transition-all ${isPenalty ? 'border-rose-100 hover:border-rose-200 hover:shadow-[0_16px_38px_-26px_rgba(225,29,72,0.45)]' : 'border-gray-100 hover:border-[#FF4D94]/30 hover:shadow-[0_16px_38px_-26px_rgba(255,77,148,0.35)]'} hover:-translate-y-0.5 active:scale-[0.99]`}
+              className={`w-full text-left group rounded-2xl border bg-white p-4 flex flex-col gap-3 transition-all ${isPenalty ? 'border-rose-100 hover:border-rose-200 hover:shadow-[0_16px_38px_-26px_rgba(225,29,72,0.45)]' : 'border-gray-100 hover:border-[#FF4D94]/30 hover:shadow-[0_16px_38px_-26px_rgba(255,77,148,0.35)]'} hover:-translate-y-0.5 active:scale-[0.99] mobile-card`}
             >
               <div className="flex items-start gap-3">
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold ${isPenalty ? 'bg-rose-50 text-rose-500' : 'bg-emerald-50 text-emerald-600'}`}> {meta.chip} </div>

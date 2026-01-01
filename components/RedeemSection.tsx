@@ -23,7 +23,7 @@ export function RedeemSection({ rewards, balance, onRedeem }: RedeemSectionProps
 
   return (
     <div className="space-y-6 pb-16 animate-in zoom-in-95 duration-500">
-      <div className="rounded-[28px] bg-gradient-to-br from-[#FFF1F7] via-white to-[#F4F0FF] border border-white shadow-[0_18px_60px_-36px_rgba(255,77,148,0.35)] p-5 sm:p-6 flex flex-col gap-4">
+      <div className="rounded-[28px] bg-gradient-to-br from-[#FFF1F7] via-white to-[#F4F0FF] border border-white shadow-[0_18px_60px_-36px_rgba(255,77,148,0.35)] p-5 sm:p-6 flex flex-col gap-4 mobile-card">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-[#FF4D94]">梦想商店</p>
@@ -56,7 +56,7 @@ export function RedeemSection({ rewards, balance, onRedeem }: RedeemSectionProps
           return (
             <div 
               key={reward.id} 
-              className={`group relative h-full rounded-2xl border bg-white p-3 sm:p-4 flex flex-col gap-3 shadow-sm transition-all ${canAfford ? 'hover:-translate-y-1 hover:shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)] hover:border-[#FF4D94]/30' : 'border-gray-100 bg-gradient-to-br from-gray-50 via-white to-gray-50'}`}
+              className={`group relative h-full rounded-2xl border bg-white p-3 sm:p-4 flex flex-col gap-3 shadow-sm transition-all ${canAfford ? 'hover:-translate-y-1 hover:shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)] hover:border-[#FF4D94]/30' : 'border-gray-100 bg-gradient-to-br from-gray-50 via-white to-gray-50'} mobile-card`}
             >
               <div className="relative overflow-hidden rounded-xl aspect-[4/3] bg-gray-50">
                 <img src={getRewardImage(reward)} alt={reward.title} className="w-full h-full object-cover" />
@@ -97,7 +97,7 @@ export function RedeemSection({ rewards, balance, onRedeem }: RedeemSectionProps
       </div>
 
       {filtered.length === 0 && (
-        <div className="bg-white p-8 rounded-[24px] border border-dashed border-gray-200 text-center text-gray-400 font-semibold">
+        <div className="bg-white p-8 rounded-[24px] border border-dashed border-gray-200 text-center text-gray-400 font-semibold mobile-card">
           暂无该分类的奖品
         </div>
       )}

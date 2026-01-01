@@ -108,6 +108,13 @@
         [data-theme='dark'] .border-gray-200, [data-theme='dark'] .border-gray-100, [data-theme='dark'] .border-gray-300 { border-color: var(--border-subtle) !important; }
         [data-theme='dark'] .shadow-\[0_24px_80px_-38px_rgba\(124,77,255,0.55\)\] { box-shadow: 0 24px 80px -38px rgba(0,0,0,0.55) !important; }
 
+        .mobile-card {}
+        @media (max-width: 768px) {
+            .mobile-card { border-color: transparent !important; box-shadow: 0 12px 40px -28px rgba(0,0,0,0.25) !important; padding: 16px !important; border-radius: 18px !important; background: var(--surface); }
+            .mobile-tight { gap: 12px !important; }
+            .mobile-no-border { border-color: transparent !important; }
+        }
+
         @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0px); } }
         .animate-float { animation: float 4s ease-in-out infinite; }
 
@@ -129,6 +136,11 @@
     "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2"
   }
 }
+</script>
+<script>
+  tailwind.config = {
+    darkMode: ["class", "[data-theme='dark']"],
+  };
 </script>
 <script src="https://cdn.tailwindcss.com"></script>
 </head>

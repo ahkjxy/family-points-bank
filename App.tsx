@@ -108,6 +108,12 @@ function AppContent() {
   const [fatalError, setFatalError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (fatalError) {
+      showToast({ type: 'error', title: '同步失败', description: fatalError, duration: 4500 });
+    }
+  }, [fatalError, showToast]);
+
+  useEffect(() => {
     if (pendingAction) setPendingError(null);
   }, [pendingAction]);
 
@@ -898,46 +904,6 @@ function AppContent() {
     return <AuthGate />;
   }
 
-  const displayFatal = fatalError;
-
-  if (displayFatal) {
-    return (
-      <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-[#FFF5F9] via-white to-[#F2ECFF] px-6 py-12">
-        <div className="w-full max-w-md bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/60 p-8 text-center space-y-5">
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-[#FF4D94]/15 to-[#7C4DFF]/15 text-[#FF4D94] flex items-center justify-center text-2xl shadow-inner">!</div>
-          <div className="space-y-2">
-            <p className="text-xs font-bold uppercase tracking-[0.25em] text-gray-400">Access Limited</p>
-            <h2 className="text-2xl font-black text-gray-900">家庭未开通或链接失效</h2>
-            <p className="text-sm text-gray-600">请联系管理员开通后再访问，开通过的家庭将获得完整的积分银行功能。</p>
-          </div>
-          <div className="bg-gray-50 rounded-2xl p-4 text-left space-y-2 border border-gray-100">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-gray-800">购买联系人</span>
-              <span className="text-sm font-bold text-[#FF4D94]">微信：liaoyuan3256</span>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-600">价格</span>
-              <span className="font-bold text-gray-900">66 元 · 终身</span>
-            </div>
-            <div className="text-sm text-gray-600 leading-relaxed">
-              <p className="font-semibold text-gray-800 mb-1">主要功能</p>
-              <ul className="list-disc list-inside space-y-1">
-                <li>多成员积分 / 扣分与历史记录</li>
-                <li>任务与奖品配置，实时存入 Supabase</li>
-                <li>兑换记录与打印制度手册</li>
-                <li>按家庭 ID（Supabase families.id）独立的家庭空间</li>
-              </ul>
-            </div>
-          </div>
-          <div className="flex flex-col gap-3">
-            <a href="weixin://" className="block w-full px-5 py-3 rounded-xl bg-[#FF4D94] text-white font-bold text-sm shadow-lg hover:brightness-110 active:scale-95">打开微信添加 liaoyuan3256</a>
-            <button onClick={() => window.location.reload()} className="px-5 py-3 rounded-xl bg-white border border-gray-200 text-gray-700 font-bold text-sm hover:border-[#FF4D94] hover:text-[#FF4D94]">刷新重试</button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div
       className="min-h-screen flex flex-col lg:flex-row transition-colors"
@@ -947,6 +913,16 @@ function AppContent() {
         <div className="fixed top-4 right-4 z-50 flex items-center gap-2 px-3 py-2 rounded-full bg-white/90 dark:bg-gray-900/85 border border-white/80 dark:border-gray-700 shadow-lg backdrop-blur-md">
           <div className="w-4 h-4 border-2 border-[#FF4D94] border-t-transparent rounded-full animate-spin" />
           <span className="text-sm font-semibold text-[#FF4D94]">正在加载系统...</span>
+        </div>
+      )}
+
+      {fatalError && (
+        <div className="mx-3 sm:mx-0 mb-4 rounded-2xl bg-rose-50 dark:bg-rose-900/40 text-rose-700 dark:text-rose-100 border border-rose-100 dark:border-rose-800 px-4 py-3 flex items-start gap-3 mobile-card">
+          <span className="mt-0.5 text-base">⚠️</span>
+          <div className="text-sm leading-relaxed">
+            <p className="font-bold">同步失败</p>
+            <p className="text-rose-600 dark:text-rose-100/80 break-words">{fatalError}</p>
+          </div>
         </div>
       )}
 
@@ -960,7 +936,7 @@ function AppContent() {
         />
       </div>
 
-      <main className="flex-1 w-full lg:p-8 px-4 pt-12 pb-32 lg:pt-5 lg:pb-10 overflow-y-auto no-scrollbar">
+      <main className="flex-1 w-full lg:p-8 px-3 sm:px-4 pt-8 pb-28 lg:pt-5 lg:pb-10 overflow-y-auto no-scrollbar">
         <HeaderBar 
           activeTab={activeTab}
           currentProfile={currentProfile}

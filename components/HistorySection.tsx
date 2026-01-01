@@ -134,7 +134,7 @@ export function HistorySection({ history, isAdmin = false, onDeleteTransactions 
 
   return (
     <div className="space-y-6 pb-16 animate-in zoom-in-95 duration-500">
-      <div className="rounded-[28px] bg-gradient-to-br from-[#F9FBFF] via-white to-[#FFF1F7] border border-white shadow-[0_18px_60px_-36px_rgba(124,77,255,0.25)] p-5 sm:p-6 flex flex-col gap-4">
+      <div className="rounded-[28px] bg-gradient-to-br from-[#F9FBFF] via-white to-[#FFF1F7] border border-white shadow-[0_18px_60px_-36px_rgba(124,77,255,0.25)] p-5 sm:p-6 flex flex-col gap-4 mobile-card">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-[#FF4D94]">能量账单</p>
@@ -147,25 +147,25 @@ export function HistorySection({ history, isAdmin = false, onDeleteTransactions 
             <div className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-indigo-400"></span> 兑换</div>
           </div>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm text-gray-700">
-          <div className="rounded-2xl bg-white border border-gray-100 px-4 py-3 flex items-center justify-between">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm text-gray-700 mobile-tight">
+          <div className="rounded-2xl bg-white border border-gray-100 px-4 py-3 flex items-center justify-between mobile-card">
             <span className="text-gray-500">全部记录</span>
             <span className="text-lg font-black text-[#FF4D94]">{stats.total}</span>
           </div>
-          <div className="rounded-2xl bg-white border border-gray-100 px-4 py-3 flex items-center justify-between">
+          <div className="rounded-2xl bg-white border border-gray-100 px-4 py-3 flex items-center justify-between mobile-card">
             <span className="text-gray-500">近7天</span>
             <span className="text-lg font-black text-indigo-600">{stats.week}</span>
           </div>
-          <div className="rounded-2xl bg-white border border-gray-100 px-4 py-3 flex items-center justify-between">
+          <div className="rounded-2xl bg-white border border-gray-100 px-4 py-3 flex items-center justify-between mobile-card">
             <span className="text-gray-500">净变动</span>
             <span className={`text-lg font-black ${stats.net >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>{stats.net >= 0 ? '+' : ''}{stats.net}</span>
           </div>
-          <div className="rounded-2xl bg-white border border-gray-100 px-4 py-3 flex items-center justify-between">
+          <div className="rounded-2xl bg-white border border-gray-100 px-4 py-3 flex items-center justify-between mobile-card">
             <span className="text-gray-500">兑换次数</span>
             <span className="text-lg font-black text-indigo-600">{stats.redeemCount}</span>
           </div>
         </div>
-        <div className="flex flex-wrap gap-2 bg-white/80 backdrop-blur rounded-2xl p-2 border border-gray-100 shadow-sm">
+        <div className="flex flex-wrap gap-2 bg-white/80 backdrop-blur rounded-2xl p-2 border border-gray-100 shadow-sm mobile-card">
           {(['all', 'earn', 'penalty', 'redeem'] as HistoryTab[]).map(tab => (
             <button
               key={tab}
@@ -179,7 +179,7 @@ export function HistorySection({ history, isAdmin = false, onDeleteTransactions 
       </div>
 
       {canDelete && (
-        <div className="flex flex-wrap items-center justify-between gap-3 bg-white rounded-2xl px-4 py-3.5 border border-gray-100 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 bg-white rounded-2xl px-4 py-3.5 border border-gray-100 shadow-sm mobile-card">
           <div className="flex items-center gap-3 text-sm text-gray-600">
             <span className="text-xs text-gray-500">已选 {selectedCount} / {filtered.length}</span>
             <button
@@ -209,7 +209,7 @@ export function HistorySection({ history, isAdmin = false, onDeleteTransactions 
         </div>
       )}
 
-      <div className="bg-white rounded-[32px] shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)] border border-gray-100 overflow-hidden hidden lg:block">
+      <div className="bg-white rounded-[32px] shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)] border border-gray-100 overflow-hidden hidden lg:block mobile-card">
         <table className="w-full text-left text-sm">
           <thead className="bg-gray-50/80 border-b border-gray-100">
             <tr>

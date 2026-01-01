@@ -428,7 +428,7 @@ export function SettingsSection({
       </div>
 
 
-      <div className="flex flex-wrap gap-2 bg-white/60 backdrop-blur rounded-2xl p-2 border border-gray-100 shadow-sm">
+      <div className="flex flex-wrap gap-2 bg-white/60 backdrop-blur rounded-2xl p-2 border border-gray-100 shadow-sm mobile-card">
         {tabs.map(tab => (
           <button
             key={tab.id}
@@ -440,27 +440,27 @@ export function SettingsSection({
         ))}
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
-        <div className="rounded-2xl bg-white border border-gray-100 px-4 py-3 flex items-center justify-between text-sm text-gray-600">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mobile-tight">
+        <div className="rounded-2xl bg-white border border-gray-100 px-4 py-3 flex items-center justify-between text-sm text-gray-600 mobile-card">
           <span>成员总数</span>
           <span className="text-lg font-black text-gray-900">{overview.members}</span>
         </div>
-        <div className="rounded-2xl bg-white border border-gray-100 px-4 py-3 flex items-center justify-between text-sm text-gray-600">
+        <div className="rounded-2xl bg-white border border-gray-100 px-4 py-3 flex items-center justify-between text-sm text-gray-600 mobile-card">
           <span>管理员</span>
           <span className="text-lg font-black text-indigo-600">{overview.admins}</span>
         </div>
-        <div className="rounded-2xl bg-white border border-gray-100 px-4 py-3 flex items-center justify-between text-sm text-gray-600">
+        <div className="rounded-2xl bg-white border border-gray-100 px-4 py-3 flex items-center justify-between text-sm text-gray-600 mobile-card">
           <span>任务规则</span>
           <span className="text-lg font-black text-[#FF4D94]">{overview.tasks}</span>
         </div>
-        <div className="rounded-2xl bg-white border border-gray-100 px-4 py-3 flex items-center justify-between text-sm text-gray-600">
+        <div className="rounded-2xl bg-white border border-gray-100 px-4 py-3 flex items-center justify-between text-sm text-gray-600 mobile-card">
           <span>商店奖品</span>
           <span className="text-lg font-black text-emerald-600">{overview.rewards}</span>
         </div>
       </div>
 
       {activeTab === 'members' && (
-        <div className="bg-white p-6 rounded-[32px] shadow-sm border border-gray-100 space-y-4">
+        <div className="bg-white p-6 rounded-[32px] shadow-sm border border-gray-100 space-y-4 mobile-card">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">成员管理</p>
@@ -628,7 +628,7 @@ export function SettingsSection({
       )}
 
       {activeTab === 'tasks' && (
-        <div className="bg-white p-6 rounded-[32px] shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)] border border-gray-100 flex flex-col h-[650px]">
+        <div className="bg-white p-6 rounded-[32px] shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)] border border-gray-100 flex flex-col h-[650px] mobile-card">
           <div className="flex flex-col gap-6 mb-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
               <div className="space-y-1">
@@ -723,7 +723,7 @@ export function SettingsSection({
       )}
 
       {activeTab === 'rewards' && (
-        <div className="bg-white p-6 rounded-[32px] shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)] border border-gray-100 flex flex-col h-[650px]">
+        <div className="bg-white p-6 rounded-[32px] shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)] border border-gray-100 flex flex-col h-[650px] mobile-card">
           <div className="flex flex-col gap-6 mb-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
               <div className="space-y-1">
@@ -821,7 +821,7 @@ export function SettingsSection({
       )}
 
       {activeTab === 'sync' && (
-        <div className="bg-white p-6 rounded-[32px] shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)] border border-gray-100 space-y-4">
+        <div className="bg-white p-6 rounded-[32px] shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)] border border-gray-100 space-y-4 mobile-card">
           <div className="flex items-center justify-between gap-4">
             <div className="space-y-1">
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">同步与打印</p>

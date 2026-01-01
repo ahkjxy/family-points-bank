@@ -2,7 +2,7 @@ import React from 'react';
 
 export function DocsPage() {
   const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
-    <section className="bg-white rounded-[28px] shadow-sm border border-gray-100 p-6 space-y-3">
+    <section className="bg-white rounded-[28px] shadow-sm border border-gray-100 p-6 space-y-3 mobile-card">
       <h3 className="text-lg font-bold text-gray-900 font-display flex items-center gap-2">
         <span className="w-1.5 h-6 rounded-full bg-gradient-to-b from-[#FF4D94] to-[#7C4DFF]"></span>
         {title}
