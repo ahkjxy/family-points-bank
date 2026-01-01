@@ -399,7 +399,7 @@ export function SettingsSection({
 
   return (
     <div className="space-y-8 pb-20 animate-in fade-in slide-in-from-bottom-4">
-        <div className="bg-gradient-to-r from-[#0F172A] via-[#111827] to-[#1F2937] p-8 rounded-[32px] text-white flex flex-col md:flex-row md:justify-between md:items-center shadow-2xl relative overflow-hidden border border-white/10 gap-4">
+        <div className="bg-gradient-to-r from-[#0F172A] via-[#111827] to-[#1F2937] p-5 sm:p-8 rounded-[32px] text-white flex flex-col md:flex-row md:justify-between md:items-center shadow-2xl relative overflow-hidden border border-white/10 gap-4">
         <div className="absolute top-0 right-0 w-48 h-48 bg-purple-500/25 rounded-full blur-[60px]"></div>
         <div className="relative z-10 space-y-1">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-[10px] font-bold uppercase tracking-[0.25em]">
@@ -428,7 +428,7 @@ export function SettingsSection({
       </div>
 
 
-      <div className="flex flex-wrap gap-2 bg-white/60 backdrop-blur rounded-2xl p-2 border border-gray-100 shadow-sm mobile-card">
+      <div className="flex flex-wrap gap-2 bg-white/60 backdrop-blur rounded-2xl p-2 border border-gray-100 shadow-sm mobile-card overflow-x-auto no-scrollbar">
         {tabs.map(tab => (
           <button
             key={tab.id}
@@ -440,7 +440,7 @@ export function SettingsSection({
         ))}
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mobile-tight">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mobile-tight">
         <div className="rounded-2xl bg-white border border-gray-100 px-4 py-3 flex items-center justify-between text-sm text-gray-600 mobile-card">
           <span>成员总数</span>
           <span className="text-lg font-black text-gray-900">{overview.members}</span>
@@ -628,7 +628,7 @@ export function SettingsSection({
       )}
 
       {activeTab === 'tasks' && (
-        <div className="bg-white p-6 rounded-[32px] shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)] border border-gray-100 flex flex-col h-[650px] mobile-card">
+        <div className="bg-white p-6 rounded-[32px] shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)] border border-gray-100 flex flex-col lg:h-[650px] mobile-card">
           <div className="flex flex-col gap-6 mb-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
               <div className="space-y-1">
@@ -699,7 +699,7 @@ export function SettingsSection({
                   </div>
                     <div className="flex items-center gap-3 shrink-0 ml-3">
                     <span className="text-sm font-black text-[#FF4D94] points-font bg-[#FFF2F7] px-3 py-1 rounded-xl">{t.points}</span>
-                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                    <div className="flex gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all">
                       <button onClick={() => onEdit({ type: 'task', item: t })} className="p-2.5 text-gray-300 hover:text-[#FF4D94] hover:bg-pink-50 rounded-lg transition-all"><Icon name="settings" size={17} /></button>
                       <button onClick={() => setConfirmDialog({
                         title: `删除任务 “${t.title || '未命名任务'}”？`,
@@ -723,7 +723,7 @@ export function SettingsSection({
       )}
 
       {activeTab === 'rewards' && (
-        <div className="bg-white p-6 rounded-[32px] shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)] border border-gray-100 flex flex-col h-[650px] mobile-card">
+        <div className="bg-white p-6 rounded-[32px] shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)] border border-gray-100 flex flex-col lg:h-[650px] mobile-card">
           <div className="flex flex-col gap-6 mb-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
               <div className="space-y-1">
@@ -796,7 +796,7 @@ export function SettingsSection({
                   </div>
                     <div className="flex items-center gap-3 shrink-0 ml-3">
                     <span className="text-sm font-black text-[#FF4D94] points-font bg-[#FFF2F7] px-3 py-1 rounded-xl">{r.points}</span>
-                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                    <div className="flex gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all">
                       <button onClick={() => onEdit({ type: 'reward', item: r })} className="p-2.5 text-gray-300 hover:text-[#FF4D94] hover:bg-pink-50 rounded-lg"><Icon name="settings" size={17} /></button>
                       <button onClick={() => setConfirmDialog({
                         title: `删除奖品 “${r.title || '奖品'}”？`,

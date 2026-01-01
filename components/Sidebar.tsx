@@ -19,7 +19,7 @@ export function Sidebar({ activeTab, onChangeTab, isAdmin, currentProfile, onPro
         </div>
         <div>
           <h1 className="text-xl font-bold font-display leading-tight">元气银行</h1>
-          <p className="text-[10px] font-bold text-[#FF4D94] uppercase tracking-widest opacity-60">Family Bank System</p>
+          <p className="text-[10px] font-bold text-[#FF4D94] uppercase tracking-widest opacity-80">Family Bank System</p>
         </div>
       </div>
 
@@ -29,13 +29,13 @@ export function Sidebar({ activeTab, onChangeTab, isAdmin, currentProfile, onPro
           { id: 'earn', icon: 'plus', label: '元气任务' },
           { id: 'redeem', icon: 'reward', label: '梦想商店' },
           { id: 'history', icon: 'history', label: '能量账单' },
-          { id: 'doc', icon: 'info', label: '使用说明' },
+          // { id: 'doc', icon: 'info', label: '使用说明' },
           ...(isAdmin ? [{ id: 'settings', icon: 'settings', label: '系统配置' }] : [])
         ].map(tab => (
           <button
             key={tab.id}
             onClick={() => onChangeTab(tab.id as SidebarProps['activeTab'])}
-            className={`w-full h-11 flex items-center gap-3 px-4 rounded-xl transition-all font-display font-semibold text-sm border border-transparent ${activeTab === tab.id ? 'bg-[#FF4D94] text-white shadow-md shadow-[#FF4D94]/30' : 'text-gray-400 hover:bg-white hover:text-[#FF4D94] hover:border-[#FF4D94]/30'}`}
+            className={`w-full h-11 flex items-center gap-3 px-4 rounded-xl transition-all font-display font-semibold text-sm border border-transparent ${activeTab === tab.id ? 'bg-[#FF4D94] text-white shadow-md shadow-[#FF4D94]/30' : 'text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-white/10 hover:text-[#FF4D94] hover:border-[#FF4D94]/30'}`}
           >
             <Icon name={tab.icon} size={18} />
             <span className="truncate">{tab.label}</span>
@@ -43,12 +43,12 @@ export function Sidebar({ activeTab, onChangeTab, isAdmin, currentProfile, onPro
         ))}
       </nav>
 
-      <div className="mt-auto pt-6 border-t border-gray-100">
+      <div className="mt-auto pt-6 border-t border-gray-100 dark:border-white/10">
         <button
           onClick={onProfileClick}
-          className="w-full bg-white border border-gray-100 p-3 rounded-2xl flex items-center gap-3 hover:border-[#FF4D94] hover:shadow-[0_10px_30px_-26px_rgba(255,77,148,0.3)] transition-all shadow-sm"
+          className="w-full bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 p-3 rounded-2xl flex items-center gap-3 hover:border-[#FF4D94] hover:shadow-[0_10px_30px_-26px_rgba(255,77,148,0.3)] transition-all shadow-sm"
         >
-          <div className="w-9 h-9 rounded-xl overflow-hidden flex items-center justify-center bg-gray-100 shadow-inner">
+          <div className="w-9 h-9 rounded-xl overflow-hidden flex items-center justify-center bg-gray-100 dark:bg-white/10 shadow-inner">
             {currentProfile.avatarUrl ? (
               <img src={currentProfile.avatarUrl} className="w-full h-full object-cover" />
             ) : (
@@ -56,7 +56,7 @@ export function Sidebar({ activeTab, onChangeTab, isAdmin, currentProfile, onPro
             )}
           </div>
           <div className="text-left overflow-hidden">
-            <p className="text-xs font-bold text-gray-800 truncate">{currentProfile.name}</p>
+            <p className="text-xs font-bold truncate">{currentProfile.name}</p>
             <p className="text-[9px] text-[#FF4D94] font-bold uppercase tracking-wider">{currentProfile.role === 'admin' ? '系统管理员' : '账户成员'}</p>
           </div>
         </button>

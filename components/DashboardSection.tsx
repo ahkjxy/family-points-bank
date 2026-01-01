@@ -281,7 +281,7 @@ export function DashboardSection({ currentProfile, profiles, onGoEarn, onGoRedee
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <p className="text-[10px] font-bold text-gray-600 dark:text-gray-300 uppercase tracking-[0.25em]">成员画像</p>
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">活跃度 / 完成率 / 走势</h3>
+                  <h3 className="text-lg font-bold">活跃度 / 完成率 / 走势</h3>
                 </div>
               </div>
 
@@ -319,7 +319,7 @@ export function DashboardSection({ currentProfile, profiles, onGoEarn, onGoRedee
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="text-[10px] font-bold text-gray-400 dark:text-gray-300 uppercase tracking-[0.25em]">趋势图</p>
-              <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">周 / 月净流入</h3>
+              <h3 className="text-lg font-bold">周 / 月净流入</h3>
             </div>
           </div>
           <div className="space-y-4">
@@ -361,8 +361,8 @@ export function DashboardSection({ currentProfile, profiles, onGoEarn, onGoRedee
         <div className="bg-white dark:bg-[var(--surface)] p-6 rounded-[24px] border border-gray-100 dark:border-[var(--border-subtle)] shadow-sm mobile-card">
           <div className="flex items-center justify-between mb-3">
             <div>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.25em]">最近账单摘要</p>
-              <h3 className="text-lg font-bold text-gray-900">最近 4 条</h3>
+              <p className="text-[10px] font-bold text-gray-500 dark:text-gray-300 uppercase tracking-[0.25em]">最近账单摘要</p>
+              <h3 className="text-lg font-bold">最近 4 条</h3>
             </div>
           </div>
           <div className="space-y-3">
@@ -373,8 +373,8 @@ export function DashboardSection({ currentProfile, profiles, onGoEarn, onGoRedee
                     <Icon name={h.type === 'redeem' ? 'reward' : 'plus'} size={16} />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-bold text-gray-800 leading-tight truncate">{h.title}</p>
-                    <p className="text-[10px] text-gray-400 tabular-nums">{formatDateTime(h.timestamp)}</p>
+                    <p className="text-sm font-bold text-gray-800 dark:text-gray-100 leading-tight truncate">{h.title}</p>
+                    <p className="text-[10px] text-gray-500 dark:text-gray-400 tabular-nums">{formatDateTime(h.timestamp)}</p>
                   </div>
                 </div>
                 <span className={`text-base font-bold points-font w-16 text-right shrink-0 ${h.points > 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
@@ -383,15 +383,15 @@ export function DashboardSection({ currentProfile, profiles, onGoEarn, onGoRedee
               </div>
             ))}
 
-            {currentProfile.history.length === 0 && <div className="text-sm text-gray-400">暂无记录</div>}
+            {currentProfile.history.length === 0 && <div className="text-sm text-gray-500 dark:text-gray-400">暂无记录</div>}
           </div>
         </div>
 
         <div className="bg-white dark:bg-[var(--surface)] p-6 rounded-[24px] border border-gray-100 dark:border-[var(--border-subtle)] shadow-sm mobile-card">
           <div className="flex items-center justify-between mb-3">
             <div>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.25em]">异常监控</p>
-              <h3 className="text-lg font-bold text-gray-900">积分波动 / 兑换</h3>
+              <p className="text-[10px] font-bold text-gray-500 dark:text-gray-300 uppercase tracking-[0.25em]">异常监控</p>
+              <h3 className="text-lg font-bold">积分波动 / 兑换</h3>
             </div>
           </div>
           {anomalies.length === 0 ? (
@@ -411,8 +411,8 @@ export function DashboardSection({ currentProfile, profiles, onGoEarn, onGoRedee
         <div className="bg-white dark:bg-[var(--surface)] p-6 rounded-[24px] border border-gray-100 dark:border-[var(--border-subtle)] shadow-sm mobile-card">
           <div className="flex items-center justify-between mb-3">
             <div>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.25em]">消息中心</p>
-              <h3 className="text-lg font-bold text-gray-900">提醒 / 公告</h3>
+              <p className="text-[10px] font-bold text-gray-500 dark:text-gray-300 uppercase tracking-[0.25em]">消息中心</p>
+              <h3 className="text-lg font-bold">提醒 / 公告</h3>
             </div>
             <button
               onClick={() => setOpenNotice((prev: boolean) => !prev)}
@@ -428,13 +428,13 @@ export function DashboardSection({ currentProfile, profiles, onGoEarn, onGoRedee
                 <div className="flex-1 min-w-0 space-y-0.5">
                   <p className="text-sm font-bold text-gray-800 dark:text-gray-100 leading-tight truncate">{msg.title}</p>
                   <p className="text-[12px] text-gray-500 dark:text-gray-300 truncate">{msg.desc}</p>
-                  <p className="text-[11px] text-gray-400 tabular-nums">{msg.time}</p>
+                  <p className="text-[11px] text-gray-500 dark:text-gray-400 tabular-nums">{msg.time}</p>
                 </div>
               </div>
             ))}
 
             {messageCenter.length === 0 && (
-              <div className="text-sm text-gray-400 bg-gray-50 border border-gray-100 rounded-2xl p-4 text-center">
+              <div className="text-sm text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-[var(--border-subtle)] rounded-2xl p-4 text-center">
                 暂无提醒，继续保持良好习惯！
               </div>
             )}

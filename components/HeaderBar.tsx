@@ -53,21 +53,21 @@ export function HeaderBar({ activeTab, currentProfile, isAdmin, theme, onToggleT
     <header className="sticky top-0 z-30 bg-white/96 dark:bg-[#0F172A]/92 backdrop-blur-md border-b border-gray-100/80 dark:border-white/10 px-4 py-2.5 mb-4 lg:mb-6 shadow-[0_8px_30px_-20px_rgba(0,0,0,0.35)]">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
         <div className="space-y-0.5">
-          <h2 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white font-display leading-tight tracking-tight">
+          <h2 className="text-lg md:text-xl font-semibold text-gray-900 font-display leading-tight tracking-tight">
             {activeTab === 'dashboard' && `您好, ${currentProfile.name}!`}
             {activeTab === 'earn' && '元气任务'}
             {activeTab === 'redeem' && '梦想商店'}
             {activeTab === 'history' && '能量账单'}
             {activeTab === 'settings' && '系统配置中心'}
-            {activeTab === 'doc' && '使用说明与文档'}
+            {/* {activeTab === 'doc' && '使用说明与文档'} */}
           </h2>
-          <p className="text-gray-500 dark:text-gray-300 text-xs md:text-sm leading-snug">
+          <p className="text-gray-600 dark:text-gray-300 text-xs md:text-sm leading-snug">
             {activeTab === 'dashboard' && '查看您的当前元气值状态'}
             {activeTab === 'earn' && '完成元气任务来获得更多元气值奖励'}
             {activeTab === 'redeem' && '兑换心仪的奖品与特权'}
             {activeTab === 'history' && '查看您的历史交易'}
             {activeTab === 'settings' && '调整银行运行规则与商店货架'}
-            {activeTab === 'doc' && '阅读项目说明、路由与操作指引'}
+            {/* {activeTab === 'doc' && '阅读项目说明、路由与操作指引'} */}
           </p>
         </div>
 
@@ -128,7 +128,6 @@ export function HeaderBar({ activeTab, currentProfile, isAdmin, theme, onToggleT
             aria-label={theme === 'dark' ? '切换到浅色模式' : '切换到夜间模式'}
           >
             <Icon name={theme === 'dark' ? 'sun' : 'moon'} size={15} />
-            <span className="sr-only">{theme === 'dark' ? '浅色模式' : '夜间模式'}</span>
           </button>
 
           <button

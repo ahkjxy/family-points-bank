@@ -41,7 +41,7 @@ export function EarnSection({ tasks, onSelectTask }: EarnSectionProps) {
 
   return (
     <div className="space-y-6 pb-14 animate-in slide-in-from-bottom-4 duration-500">
-      <div className="rounded-[28px] bg-gradient-to-br from-[#FFF1F7] via-white to-[#F4F0FF] border border-white shadow-[0_18px_60px_-36px_rgba(255,77,148,0.35)] p-5 sm:p-6 flex flex-col gap-4 mobile-card">
+      <div className="rounded-[28px] bg-gradient-to-br via-white to-[#F4F0FF] border border-white shadow-[0_18px_60px_-36px_rgba(255,77,148,0.35)] p-5 sm:p-6 flex flex-col gap-4 mobile-card">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-[#FF4D94]">元气任务</p>

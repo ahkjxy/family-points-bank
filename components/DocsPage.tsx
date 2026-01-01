@@ -17,7 +17,7 @@ export function DocsPage() {
 
   return (
     <div className="space-y-6 pb-12 animate-in fade-in duration-500">
-      <div className="bg-gradient-to-br from-[#FF4D94]/10 via-white to-[#7C4DFF]/10 border border-white rounded-[32px] p-6 shadow-[0_18px_50px_-28px_rgba(0,0,0,0.35)] flex flex-col gap-3">
+      <div className="via-white border border-white rounded-[32px] p-6 shadow-[0_18px_50px_-28px_rgba(0,0,0,0.35)] flex flex-col gap-3">
         <p className="text-xs font-bold text-[#FF4D94] uppercase tracking-[0.3em]">Docs & API</p>
         <h2 className="text-2xl md:text-3xl font-black text-gray-900 font-display">家庭元气银行 · 使用指南</h2>
         <p className="text-sm text-gray-600 max-w-3xl">本页汇总应用的路由、页面功能、操作流程与同步策略，可用于新用户上手或内部分发。</p>

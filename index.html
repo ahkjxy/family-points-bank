@@ -20,18 +20,35 @@
             --app-bg: radial-gradient(120% 120% at 0% 0%, #FFF5F9 0%, #FDFCFD 50%, #EAF6FF 100%);
             --text-primary: #0F172A;
             --text-muted: #6B7280;
+            --text-secondary: #475569;
             --border-subtle: rgba(0,0,0,0.06);
+            --border: #e2e8f0;
+            color-scheme: light;
+        }
+
+        [data-theme='light'] {
+            --surface: #FFFFFF;
+            --surface-strong: #F7F8FC;
+            --bg: #FDFCFD;
+            --app-bg: radial-gradient(120% 120% at 0% 0%, #FFF5F9 0%, #FDFCFD 50%, #EAF6FF 100%);
+            --text-primary: #0F172A;
+            --text-muted: #6B7280;
+            --text-secondary: #475569;
+            --border-subtle: rgba(0,0,0,0.06);
+            --border: #e2e8f0;
             color-scheme: light;
         }
 
         :root[data-theme='dark'] {
-            --surface: rgba(15, 23, 42, 0.92);
-            --surface-strong: #0b1220;
+            --surface: #1e293b;
+            --surface-strong: #0f172a;
             --bg: #0b1220;
             --app-bg: radial-gradient(120% 120% at 0% 0%, #0b1220 0%, #0c1526 40%, #0b1220 100%);
-            --text-primary: #E5E7EB;
-            --text-muted: #9CA3AF;
+            --text-primary: #F1F5F9;
+            --text-muted: #94a3b8;
+            --text-secondary: #cbd5e1;
             --border-subtle: rgba(255,255,255,0.08);
+            --border: #334155;
             color-scheme: dark;
         }
         
@@ -41,6 +58,10 @@
             color: var(--text-primary);
             letter-spacing: -0.01em;
             transition: background-color 0.2s ease, color 0.2s ease;
+        }
+        [data-theme='light'] body {
+            background: var(--app-bg);
+            color: var(--text-primary);
         }
 
         .font-display {
@@ -107,12 +128,26 @@
         [data-theme='dark'] .text-gray-600, [data-theme='dark'] .text-gray-500, [data-theme='dark'] .text-gray-400 { color: var(--text-muted) !important; }
         [data-theme='dark'] .border-gray-200, [data-theme='dark'] .border-gray-100, [data-theme='dark'] .border-gray-300 { border-color: var(--border-subtle) !important; }
         [data-theme='dark'] .shadow-\[0_24px_80px_-38px_rgba\(124,77,255,0.55\)\] { box-shadow: 0 24px 80px -38px rgba(0,0,0,0.55) !important; }
-
+        
+        /* Mobile optimizations */
         .mobile-card {}
         @media (max-width: 768px) {
-            .mobile-card { border-color: transparent !important; box-shadow: 0 12px 40px -28px rgba(0,0,0,0.25) !important; padding: 16px !important; border-radius: 18px !important; background: var(--surface); }
+            .mobile-card { 
+                border-color: transparent !important; 
+                box-shadow: 0 12px 40px -28px rgba(0,0,0,0.25) !important; 
+                padding: 16px !important; 
+                border-radius: 18px !important; 
+                background: var(--surface); 
+            }
             .mobile-tight { gap: 12px !important; }
             .mobile-no-border { border-color: transparent !important; }
+            /* Reduce padding on mobile for more content space */
+            .p-6 { padding: 1rem !important; }
+            .p-8 { padding: 1.5rem !important; }
+            .space-y-8 > * { margin-bottom: 1.5rem !important; }
+            .space-y-4 > * { margin-bottom: 1rem !important; }
+            .text-lg { font-size: 1.125rem !important; }
+            .text-xl { font-size: 1.25rem !important; }
         }
 
         @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0px); } }
@@ -129,11 +164,14 @@
     const storageKey = 'fpb-theme';
     try {
       const root = document.documentElement;
+      const body = document.body;
       const saved = localStorage.getItem(storageKey);
       const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       const resolved = saved === 'light' || saved === 'dark' ? saved : systemPrefersDark ? 'dark' : 'light';
       root.dataset.theme = resolved;
+      body.dataset.theme = resolved;
       root.classList.toggle('dark', resolved === 'dark');
+      body.classList.toggle('dark', resolved === 'dark');
     } catch (e) {
       // ignore
     }

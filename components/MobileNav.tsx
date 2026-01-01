@@ -14,7 +14,7 @@ export function MobileNav({ activeTab, onChangeTab, isAdmin, onProfileClick }: M
     { id: 'earn', label: '任务', icon: 'plus' },
     { id: 'redeem', label: '商店', icon: 'reward' },
     { id: 'history', label: '账单', icon: 'history' },
-    { id: 'doc', label: '文档', icon: 'info' },
+    // { id: 'doc', label: '文档', icon: 'info' },
     ...(isAdmin ? [{ id: 'settings', label: '配置', icon: 'settings' }] : []),
   ];
 
