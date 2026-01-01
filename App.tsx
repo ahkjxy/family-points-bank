@@ -814,6 +814,7 @@ function AppContent() {
   };
 
   const resolvedFamilyId = resolveFamilyId();
+  const showInlineBooting = isLoading || bootingFamily;
 
   if (!authReady) {
     return (
@@ -830,15 +831,6 @@ function AppContent() {
       return <PasswordResetPage />;
     }
     return <AuthGate />;
-  }
-
-  if (isLoading || bootingFamily) {
-    return (
-      <div className="h-screen w-full flex flex-col items-center justify-center bg-[#FDFCFD]">
-        <div className="w-12 h-12 border-4 border-[#FF4D94] border-t-transparent rounded-full animate-spin mb-6"></div>
-        <h2 className="text-xl font-bold text-[#FF4D94] font-display">正在启动系统...</h2>
-      </div>
-    );
   }
 
   const displayFatal = fatalError;
@@ -886,6 +878,13 @@ function AppContent() {
       className="min-h-screen flex flex-col lg:flex-row transition-colors"
       style={{ background: 'var(--app-bg)', color: 'var(--text-primary)' }}
     >
+      {showInlineBooting && (
+        <div className="fixed top-4 right-4 z-50 flex items-center gap-2 px-3 py-2 rounded-full bg-white/90 dark:bg-gray-900/85 border border-white/80 dark:border-gray-700 shadow-lg backdrop-blur-md">
+          <div className="w-4 h-4 border-2 border-[#FF4D94] border-t-transparent rounded-full animate-spin" />
+          <span className="text-sm font-semibold text-[#FF4D94]">正在加载系统...</span>
+        </div>
+      )}
+
       <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen">
         <Sidebar 
           activeTab={activeTab}

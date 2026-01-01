@@ -70,14 +70,18 @@ export function SettingsSection({
   const [memberModal, setMemberModal] = useState<{ mode: 'create' | 'edit'; profile?: Profile } | null>(null);
   const [modalName, setModalName] = useState('');
   const [modalRole, setModalRole] = useState<UserRole>('child');
-  const [modalAdjustPoints, setModalAdjustPoints] = useState<number>(0);
-  const [modalAdjustMemo, setModalAdjustMemo] = useState('');
-  const [modalType, setModalType] = useState<'earn' | 'penalty'>('earn');
   const [modalInitialBalance, setModalInitialBalance] = useState<number | ''>('');
   const [modalAvatar, setModalAvatar] = useState<string | null>(null);
   const [modalInitialAvatar, setModalInitialAvatar] = useState<string | null>(null);
   const [modalError, setModalError] = useState<string | null>(null);
   const [modalSaving, setModalSaving] = useState(false);
+
+  const [adjustModal, setAdjustModal] = useState<Profile | null>(null);
+  const [adjustPoints, setAdjustPoints] = useState<number>(0);
+  const [adjustMemo, setAdjustMemo] = useState('');
+  const [adjustType, setAdjustType] = useState<'earn' | 'penalty'>('earn');
+  const [adjustError, setAdjustError] = useState<string | null>(null);
+  const [adjustLoading, setAdjustLoading] = useState(false);
 
   useEffect(() => {
     setSelectedTaskIds(prev => new Set([...prev].filter(id => tasks.some(t => t.id === id))));
@@ -246,9 +250,6 @@ export function SettingsSection({
     setMemberModal({ mode: 'create' });
     setModalName('');
     setModalRole('child');
-    setModalAdjustPoints(0);
-    setModalAdjustMemo('');
-    setModalType('earn');
     setModalInitialBalance('');
     setModalAvatar(null);
     setModalInitialAvatar(null);
@@ -259,9 +260,6 @@ export function SettingsSection({
     setMemberModal({ mode: 'edit', profile });
     setModalName(profile.name);
     setModalRole(profile.role);
-    setModalAdjustPoints(0);
-    setModalAdjustMemo('');
-    setModalType('earn');
     setModalInitialBalance('');
     setModalAvatar(profile.avatarUrl || null);
     setModalInitialAvatar(profile.avatarUrl || null);
@@ -325,17 +323,41 @@ export function SettingsSection({
     reader.readAsDataURL(file);
   };
 
+  const openAdjustModal = (profile: Profile) => {
+    setAdjustModal(profile);
+    setAdjustPoints(0);
+    setAdjustMemo('');
+    setAdjustType('earn');
+    setAdjustError(null);
+  };
+
+  const closeAdjustModal = () => {
+    setAdjustModal(null);
+    setAdjustPoints(0);
+    setAdjustMemo('');
+    setAdjustType('earn');
+    setAdjustError(null);
+    setAdjustLoading(false);
+  };
+
   const handleModalAdjust = async () => {
-    if (!memberModal?.profile) return;
-    const amount = Math.abs(Number(modalAdjustPoints));
+    if (!adjustModal) return;
+    setAdjustError(null);
+    const amount = Math.abs(Number(adjustPoints));
     if (!amount) {
-      setModalError('请输入大于 0 的元气值');
+      setAdjustError('请输入大于 0 的元气值');
       return;
     }
-    const title = modalAdjustMemo.trim() || (modalType === 'earn' ? '管理员加分' : '管理员扣分');
-    await onAdjustBalance(memberModal.profile.id, { title, points: amount, type: modalType });
-    setModalAdjustMemo('');
-    setModalAdjustPoints(0);
+    const title = adjustMemo.trim() || (adjustType === 'earn' ? '管理员加分' : '管理员扣分');
+    try {
+      setAdjustLoading(true);
+      await onAdjustBalance(adjustModal.id, { title, points: amount, type: adjustType });
+      showToast({ type: 'success', title: '已记录元气值', description: `${adjustModal.name}: ${adjustType === 'earn' ? '+' : '-'}${amount}` });
+      closeAdjustModal();
+    } catch (e) {
+      setAdjustError((e as Error)?.message || '调整失败，请稍后重试');
+      setAdjustLoading(false);
+    }
   };
 
   const handleModalDelete = () => {
@@ -558,12 +580,18 @@ export function SettingsSection({
                               </div>
                             </div>
                           </div>
-                          <div className="flex items-center gap-2 shrink-0">
+                          <div className="flex flex-col sm:flex-row lg:flex-col items-stretch gap-2 shrink-0 min-w-[190px]">
                             <button
                               onClick={() => openEditModal(p)}
                               className="px-4 py-2 rounded-xl text-[12px] font-bold bg-white border border-gray-200 text-gray-700 hover:border-[#FF4D94] hover:text-[#FF4D94] transition-all shadow-sm"
                             >
-                              管理
+                              编辑头像 / 资料
+                            </button>
+                            <button
+                              onClick={() => openAdjustModal(p)}
+                              className="px-4 py-2 rounded-xl text-[12px] font-bold bg-gradient-to-r from-[#FF4D94] to-[#7C4DFF] text-white shadow-md shadow-[#FF4D94]/30 hover:brightness-110 active:scale-95"
+                            >
+                              调整元气值
                             </button>
                             <button
                               disabled={isOnlyAdmin}
@@ -908,49 +936,6 @@ export function SettingsSection({
                 )}
               </div>
 
-              {memberModal.mode === 'edit' && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="flex flex-col gap-1">
-                    <label className="text-[11px] text-gray-500 font-semibold">元气值调整</label>
-                    <input
-                      type="number"
-                      value={modalAdjustPoints || ''}
-                      onChange={e => setModalAdjustPoints(Number(e.target.value) || 0)}
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#FF4D94] outline-none"
-                      placeholder="输入数值"
-                    />
-                    <div className="flex gap-2 text-[11px] font-bold mt-2">
-                      <button
-                        onClick={() => setModalType('earn')}
-                        className={`px-3 py-2 rounded-xl border ${modalType === 'earn' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-white text-gray-600 border-gray-200'}`}
-                      >
-                        增加
-                      </button>
-                      <button
-                        onClick={() => setModalType('penalty')}
-                        className={`px-3 py-2 rounded-xl border ${modalType === 'penalty' ? 'bg-rose-50 text-rose-600 border-rose-100' : 'bg-white text-gray-600 border-gray-200'}`}
-                      >
-                        扣减
-                      </button>
-                      <button
-                        onClick={handleModalAdjust}
-                        className="ml-auto px-4 py-2 rounded-xl text-[11px] font-bold bg-gradient-to-r from-[#FF4D94] to-[#7C4DFF] text-white shadow-md shadow-[#FF4D94]/30 hover:brightness-110 active:scale-95"
-                      >
-                        记录
-                      </button>
-                    </div>
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <label className="text-[11px] text-gray-500 font-semibold">说明</label>
-                    <input
-                      value={modalAdjustMemo}
-                      onChange={e => setModalAdjustMemo(e.target.value)}
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#FF4D94] outline-none"
-                      placeholder="如：奖励完成作业 / 迟到扣分"
-                    />
-                  </div>
-                </div>
-              )}
             </div>
 
             <div className="flex items-center justify-between gap-3 pt-1">
@@ -975,6 +960,73 @@ export function SettingsSection({
                   {modalSaving ? '保存中...' : '保存'}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {adjustModal && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center px-4 py-6">
+          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={closeAdjustModal}></div>
+          <div className="relative w-full max-w-[420px] bg-white rounded-[24px] shadow-2xl border border-gray-100 p-6 space-y-5">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.25em]">元气值调整</p>
+                <h3 className="text-xl font-black text-gray-900">{adjustModal.name}</h3>
+              </div>
+              <button onClick={closeAdjustModal} className="text-gray-400 hover:text-[#FF4D94]">✕</button>
+            </div>
+
+            {adjustError && <div className="text-[12px] text-rose-500 font-semibold bg-rose-50 border border-rose-100 rounded-2xl px-3 py-2">{adjustError}</div>}
+
+            <div className="space-y-3">
+              <div className="flex flex-col gap-1">
+                <label className="text-[11px] text-gray-500 font-semibold">元气值</label>
+                <input
+                  type="number"
+                  value={adjustPoints || ''}
+                  onChange={e => setAdjustPoints(Number(e.target.value) || 0)}
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#FF4D94] outline-none"
+                  placeholder="输入数值"
+                />
+              </div>
+              <div className="flex flex-wrap items-center gap-2 text-[11px] font-bold">
+                <button
+                  onClick={() => setAdjustType('earn')}
+                  className={`px-3 py-2 rounded-xl border ${adjustType === 'earn' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-white text-gray-600 border-gray-200'}`}
+                >
+                  增加
+                </button>
+                <button
+                  onClick={() => setAdjustType('penalty')}
+                  className={`px-3 py-2 rounded-xl border ${adjustType === 'penalty' ? 'bg-rose-50 text-rose-600 border-rose-100' : 'bg-white text-gray-600 border-gray-200'}`}
+                >
+                  扣减
+                </button>
+                <span className="px-3 py-1 rounded-xl bg-gray-50 border border-gray-100 text-gray-500 points-font">当前余额：{adjustModal.balance}</span>
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-[11px] text-gray-500 font-semibold">说明</label>
+                <input
+                  value={adjustMemo}
+                  onChange={e => setAdjustMemo(e.target.value)}
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#FF4D94] outline-none"
+                  placeholder="如：奖励完成作业 / 迟到扣分"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-1">
+              <button onClick={closeAdjustModal} className="px-4 py-2 rounded-xl text-[11px] font-bold bg-gray-100 text-gray-600 border border-gray-200 hover:text-[#FF4D94] hover:border-[#FF4D94]/40">
+                取消
+              </button>
+              <button
+                onClick={handleModalAdjust}
+                disabled={adjustLoading}
+                className={`px-5 py-2 rounded-xl text-[11px] font-bold transition-all ${adjustLoading ? 'bg-gray-200 text-gray-400' : 'bg-gradient-to-r from-[#FF4D94] to-[#7C4DFF] text-white shadow-md shadow-[#FF4D94]/30 hover:brightness-110 active:scale-95'}`}
+              >
+                {adjustLoading ? '保存中...' : '记录'}
+              </button>
             </div>
           </div>
         </div>
