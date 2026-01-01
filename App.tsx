@@ -195,6 +195,70 @@ function AppContent() {
     return targetFamilyId;
   };
 
+  const grantDailyEnergyIfNeeded = async (familyId: string, profiles: Profile[], transactions: any[]) => {
+    if (!familyId || !profiles.length) return;
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const cutoff = todayStart.getTime();
+    const dailyTitle = '每日元气+1';
+
+    const credited = new Set<string>((transactions || [])
+      .filter((t: any) => t?.title === dailyTitle && t?.timestamp && new Date(t.timestamp).getTime() >= cutoff)
+      .map((t: any) => t.profile_id)
+    );
+
+    const targets = profiles.filter(p => !credited.has(p.id));
+    if (!targets.length) return;
+
+    const now = Date.now();
+    const txList = targets.map((p, idx) => ({
+      id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `daily-${now}-${idx}-${p.id}`,
+      family_id: familyId,
+      profile_id: p.id,
+      title: dailyTitle,
+      points: 1,
+      type: 'earn',
+      timestamp: new Date(now + idx).toISOString(),
+    }));
+
+    const loadingId = showToast({ type: 'loading', title: '正在发放每日元气...', duration: 0 });
+    try {
+      const { error: txErr } = await supabase.from('transactions').insert(txList);
+      if (txErr) throw txErr;
+
+      await Promise.all(targets.map(p =>
+        supabase
+          .from('profiles')
+          .update({ balance: p.balance + 1 })
+          .eq('id', p.id)
+          .eq('family_id', familyId)
+      ));
+
+      setState(s => ({
+        ...s,
+        profiles: s.profiles.map(p => {
+          const bonus = txList.find(t => t.profile_id === p.id);
+          if (!bonus) return p;
+          const ts = new Date(bonus.timestamp).getTime();
+          return {
+            ...p,
+            balance: p.balance + 1,
+            history: [
+              { id: bonus.id, title: bonus.title, points: 1, timestamp: ts, type: 'earn' },
+              ...p.history,
+            ].slice(0, 50),
+          } as Profile;
+        }),
+      }));
+
+      showToast({ type: 'success', title: '每日元气 +1', description: `已为 ${targets.length} 位成员发放` });
+    } catch (e) {
+      notifyError('发放每日元气失败', e);
+    } finally {
+      if (loadingId) dismissToast(loadingId);
+    }
+  };
+
   const fetchData = async (targetSyncId: string) => {
     const normalized = targetSyncId?.trim();
     if (!normalized) {
@@ -246,6 +310,7 @@ function AppContent() {
       };
       setState(normalizedRemote);
       setFatalError(null);
+      await grantDailyEnergyIfNeeded(targetSyncId, profiles, tx);
     } catch (e) {
       console.warn('Sync failed', e);
       if (!fatalError) setFatalError((e as Error)?.message || '同步失败');

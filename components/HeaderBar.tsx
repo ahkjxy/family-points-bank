@@ -83,7 +83,7 @@ export function HeaderBar({ activeTab, currentProfile, isAdmin, theme, onToggleT
               <span className="absolute -top-1 -right-1 text-[9px] text-white bg-[#FF4D94] px-1 py-0.5 rounded-full shadow-sm leading-none">{messageCenter.length}</span>
             </button>
             {openNotice && (
-              <div className="absolute right-0 mt-2 w-72 bg-white border border-gray-100 rounded-2xl shadow-2xl z-30 overflow-hidden">
+              <div className="absolute top-full mt-2 left-[-20px] -translate-x-0 w-[calc(100vw-20px)] max-w-[calc(100vw-20px)] md:left-auto md:translate-x-0 md:right-0 md:w-72 bg-white border border-gray-100 rounded-2xl shadow-2xl z-40 overflow-hidden transform origin-top-right">
                 <div className="px-4 py-3 border-b border-gray-50 flex items-center justify-between">
                   <div>
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.25em]">消息中心</p>
@@ -91,7 +91,7 @@ export function HeaderBar({ activeTab, currentProfile, isAdmin, theme, onToggleT
                   </div>
                   <button onClick={() => setOpenNotice(false)} className="text-xs text-gray-400 hover:text-[#FF4D94]">收起</button>
                 </div>
-                <ul className="max-h-72 overflow-y-auto divide-y divide-gray-50">
+                <ul className="max-h-[60vh] overflow-y-auto divide-y divide-gray-50">
                   {hasMessages ? (
                     messageCenter.map((msg: HeaderMessage, idx: number) => (
                       <li key={idx} className="px-4 py-3 flex items-start gap-3 hover:bg-gray-50 transition-colors">
