@@ -124,6 +124,21 @@
             body { background: white !important; color: #111 !important; }
         }
     </style>
+<script>
+  (() => {
+    const storageKey = 'fpb-theme';
+    try {
+      const root = document.documentElement;
+      const saved = localStorage.getItem(storageKey);
+      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const resolved = saved === 'light' || saved === 'dark' ? saved : systemPrefersDark ? 'dark' : 'light';
+      root.dataset.theme = resolved;
+      root.classList.toggle('dark', resolved === 'dark');
+    } catch (e) {
+      // ignore
+    }
+  })();
+</script>
 <script type="importmap">
 {
   "imports": {
@@ -139,7 +154,7 @@
 </script>
 <script>
   tailwind.config = {
-    darkMode: ["class", "[data-theme='dark']"],
+    darkMode: 'class',
   };
 </script>
 <script src="https://cdn.tailwindcss.com"></script>
