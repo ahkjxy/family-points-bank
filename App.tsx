@@ -960,7 +960,7 @@ function AppContent() {
         />
       </div>
 
-      <main className="flex-1 w-full lg:p-8 px-4 pt-6 pb-32 lg:pt-5 lg:pb-10 overflow-y-auto no-scrollbar">
+      <main className="flex-1 w-full lg:p-8 px-4 pt-12 pb-32 lg:pt-5 lg:pb-10 overflow-y-auto no-scrollbar">
         <HeaderBar 
           activeTab={activeTab}
           currentProfile={currentProfile}
