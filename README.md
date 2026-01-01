@@ -56,6 +56,11 @@
 - 构建：`yarn build`
 - 浏览器访问：`http://localhost:5173`
 
+## 安卓打包/调试（Capacitor）
+- 同步 Web 资源与原生依赖：`yarn android:sync`
+- 打开 Android Studio 工程：`yarn android:open`
+- 前置：已安装 Android Studio/SDK，首次需在 Android Studio 同步 Gradle 并配置签名（发布版）。
+
 ## 常见操作流程
 - 录入任务：进入“任务中心”点击行 -> 确认弹窗 -> 确认后入账并同步。
 - 兑换奖品：进入“梦想商店”点击可负担的奖品 -> 确认弹窗 -> 扣减余额并同步。
