@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Profile } from '../types';
 import { Icon } from './Icon';
 import { ThemeMode } from './ThemeProvider';
@@ -139,7 +139,7 @@ export function HeaderBar({ activeTab, currentProfile, isAdmin, theme, onToggleT
             <span className="sr-only">退出登录</span>
           </button>
 
-          <div className="flex-1 lg:flex-none px-3 py-2 bg-gradient-to-br from-[#FFF5FB] via-white to-[#EEF2FF] dark:from-[#0F172A] dark:via-[#0B1224] dark:to-[#0B1224] rounded-2xl border border-gray-100 dark:border-white/10 shadow-[0_10px_30px_-24px_rgba(15,23,42,0.25)] flex items-center gap-2 min-w-[180px]">
+          <div className="flex-1 lg:flex-none px-3 py-2 via-white to-[#EEF2FF] dark:from-[#0F172A] dark:via-[#0B1224] dark:to-[#0B1224] rounded-2xl border border-gray-100 dark:border-white/10 shadow-[0_10px_30px_-24px_rgba(15,23,42,0.25)] flex items-center gap-2 min-w-[180px]">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#FF4D94]/18 to-[#7C4DFF]/18 text-[#FF4D94] flex items-center justify-center font-bold points-font">∞</div>
             <div className="flex flex-col leading-tight">
               <span className="text-[9px] font-semibold text-[#FF4D94] uppercase tracking-[0.28em]">可用元气值</span>

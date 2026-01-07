@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Profile, Transaction } from '../types';
 import { Icon } from './Icon';
 import { formatDateTime } from '../utils/datetime';
@@ -160,17 +160,19 @@ export function DashboardSection({ currentProfile, profiles, onGoEarn, onGoRedee
         <svg viewBox={`0 0 ${Math.max(width, 1)} ${height}`} className="w-full min-w-[320px]" preserveAspectRatio="xMidYMid meet">
           <line x1={0} y1={zeroY} x2={width} y2={zeroY} className="stroke-gray-200 dark:stroke-gray-700" strokeWidth={1} strokeDasharray="4 4" />
           <polyline points={points} fill="none" className="stroke-[#FF4D94]" strokeWidth={3} strokeLinecap="round" />
-          {data.map((d, i) => {
-            const x = i * step;
-            const y = (1 - (d.value / (maxValue * 2) + 0.5)) * height;
-            return (
-              <g key={i}>
-                <circle cx={x} cy={y} r={5} className={`fill-white stroke-2 ${d.value >= 0 ? 'stroke-emerald-400' : 'stroke-rose-400'}`} title={`${d.label}: ${d.value}`} />
-                <text x={x} y={y - 10} textAnchor="middle" className="text-[10px] fill-gray-500">{d.value}</text>
-                <text x={x} y={height + 12} textAnchor="middle" className="text-[10px] fill-gray-400 tabular-nums">{d.label}</text>
-              </g>
-            );
-          })}
+           {data.map((d, i) => {
+             const x = i * step;
+             const y = (1 - (d.value / (maxValue * 2) + 0.5)) * height;
+             return (
+               <g key={i}>
+                 <circle cx={x} cy={y} r={5} className={`fill-white stroke-2 ${d.value >= 0 ? 'stroke-emerald-400' : 'stroke-rose-400'}`}>
+                   <title>{`${d.label}: ${d.value}`}</title>
+                 </circle>
+                 <text x={x} y={y - 10} textAnchor="middle" className="text-[10px] fill-gray-500">{d.value}</text>
+                 <text x={x} y={height + 12} textAnchor="middle" className="text-[10px] fill-gray-400 tabular-nums">{d.label}</text>
+               </g>
+             );
+           })}
         </svg>
       </div>
     );
@@ -196,7 +198,11 @@ export function DashboardSection({ currentProfile, profiles, onGoEarn, onGoRedee
         {data.map((d, i) => {
           const x = i * step;
           const y = zeroY - (d.value / (maxVal * 1.4)) * (height / 2);
-          return <circle key={i} cx={x} cy={y} r={4} className={`fill-white stroke-2 ${d.value >= 0 ? 'stroke-emerald-400' : 'stroke-rose-400'}`} title={`${d.label}: ${d.value}`} />;
+          return (
+            <circle key={i} cx={x} cy={y} r={4} className={`fill-white stroke-2 ${d.value >= 0 ? 'stroke-emerald-400' : 'stroke-rose-400'}`}>
+              <title>{`${d.label}: ${d.value}`}</title>
+            </circle>
+          );
         })}
       </svg>
     );
@@ -399,7 +405,7 @@ export function DashboardSection({ currentProfile, profiles, onGoEarn, onGoRedee
           ) : (
             <ul className="space-y-2">
               {anomalies.map((msg: string, idx: number) => (
-                <li key={idx} className="flex items-start gap-2 rounded-2xl border border-rose-100 dark:border-rose-800 bg-rose-50/60 dark:bg-rose-900/30 px-4 py-3 text-sm text-rose-600 dark:text-rose-100">
+                <li key={idx} className="flex items-start gap-2 rounded-2xl px-4 py-3 text-sm">
                   <span className="mt-0.5 w-2 h-2 rounded-full bg-rose-400"></span>
                   <span>{msg}</span>
                 </li>

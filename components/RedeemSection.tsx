@@ -1,6 +1,5 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Reward } from '../types';
-import { Icon } from './Icon';
 
 interface RedeemSectionProps {
   rewards: Reward[];

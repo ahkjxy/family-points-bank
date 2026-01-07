@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AUTH_REDIRECT } from '../constants';
 import { supabase } from '../supabaseClient';
 import { PasswordResetModal } from './PasswordResetModal';

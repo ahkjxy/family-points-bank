@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { Routes, Route, Navigate, useNavigate, useLocation, useMatch } from 'react-router-dom';
 import { FamilyState, Transaction, Profile, Category } from './types';
-import { INITIAL_TASKS, INITIAL_REWARDS, INITIAL_PROFILES, FIXED_SYNC_ID } from './constants';
+import { INITIAL_TASKS, INITIAL_REWARDS, INITIAL_PROFILES } from './constants';
 import { supabase } from './supabaseClient';
 import { printReport } from './utils/export';
 import {
@@ -77,7 +77,6 @@ function AppContent() {
   const { showToast, dismissToast } = useToast();
   const { theme, toggleTheme } = useTheme();
   const [pendingError, setPendingError] = useState<string | null>(null);
-  const [savingKey, setSavingKey] = useState<string | null>(null);
 
   const STORAGE_BUCKET = 'fpb';
 
@@ -332,9 +331,46 @@ function AppContent() {
   };
 
   useEffect(() => {
+    let mounted = true;
+    let authStateResolved = false;
+    
+    const readyTimeout = setTimeout(() => {
+      if (mounted && !authStateResolved) {
+        console.warn('INITIAL_SESSION event did not fire, forcing authReady');
+        setAuthReady(true);
+        authStateResolved = true;
+      }
+    }, 2000);
+
+    const { data: sub } = supabase.auth.onAuthStateChange((event, sess) => {
+      if (!mounted) return;
+
+      setSession(sess);
+
+      if (event === 'INITIAL_SESSION') {
+        setAuthReady(true);
+        authStateResolved = true;
+        clearTimeout(readyTimeout);
+
+        if (!sess) {
+          setIsLoading(false);
+        }
+      }
+
+      if (event === 'PASSWORD_RECOVERY') {
+        setShowPasswordReset(true);
+      }
+
+      if (!sess && authStateResolved) {
+        setFatalError(null);
+        setIsLoading(false);
+        setState(s => ({ ...s, syncId: fallbackSyncId }));
+      }
+    });
+
     const init = async () => {
       const url = window.location.href;
-      if (url.includes('code=')) { // 仅 OAuth/PKCE 使用 code 交换；magiclink 不需要
+      if (url.includes('code=')) {
         try {
           await supabase.auth.exchangeCodeForSession(url);
           const cleaned = new URL(url);
@@ -343,31 +379,26 @@ function AppContent() {
           cleaned.searchParams.delete('type');
           if (cleaned.hash) cleaned.hash = '';
           window.history.replaceState({}, document.title, cleaned.toString());
+          
+          setTimeout(() => {
+            if (mounted && !authStateResolved) {
+              setAuthReady(true);
+              authStateResolved = true;
+            }
+          }, 500);
         } catch (e) {
           console.warn('exchangeCodeForSession failed', e);
         }
       }
-
-      const { data } = await supabase.auth.getSession();
-      setSession(data.session);
-      setAuthReady(true);
-      if (!data.session) {
-        setIsLoading(false);
-      }
     };
+
     init();
-    const { data: sub } = supabase.auth.onAuthStateChange((event, sess) => {
-      setSession(sess);
-      if (event === 'PASSWORD_RECOVERY') {
-        setShowPasswordReset(true);
-      }
-      if (!sess) {
-        setFatalError(null);
-        setIsLoading(false);
-        setState(s => ({ ...s, syncId: fallbackSyncId }));
-      }
-    });
-    return () => sub?.subscription?.unsubscribe();
+
+    return () => {
+      mounted = false;
+      clearTimeout(readyTimeout);
+      sub?.subscription?.unsubscribe();
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

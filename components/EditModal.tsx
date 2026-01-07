@@ -1,4 +1,3 @@
-import React, { RefObject } from 'react';
 import { Icon } from './Icon';
 
 interface EditModalProps {
@@ -6,7 +5,7 @@ interface EditModalProps {
   onClose: () => void;
   onSave: (type: 'task' | 'reward', item: any) => void;
   onUpdate: (payload: { type: 'task' | 'reward'; item: any }) => void;
-  fileInputRef: RefObject<HTMLInputElement>;
+  fileInputRef: React.RefObject<HTMLInputElement | null>;
   onImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   saving?: boolean;
 }

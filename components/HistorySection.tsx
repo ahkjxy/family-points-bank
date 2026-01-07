@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Transaction } from '../types';
 import { formatDateTime } from '../utils/datetime';
 import { useToast } from './Toast';

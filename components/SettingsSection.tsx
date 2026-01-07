@@ -1,9 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Task, Reward, Category, Profile, UserRole } from '../types';
 import { Icon } from './Icon';
 import { ConfirmDialog } from './ConfirmDialog';
 import { useToast } from './Toast';
-import { FIXED_SYNC_ID } from '../constants';
+
 import { supabase } from '../supabaseClient';
 
 interface SettingsSectionProps {
@@ -470,10 +470,10 @@ export function SettingsSection({
           </div>
 
           <div className="grid gap-4">
-            <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-gray-100 shadow-[0_10px_30px_-24px_rgba(15,23,42,0.45)] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="p-4 rounded-2xl border border-gray-100 shadow-[0_10px_30px_-24px_rgba(15,23,42,0.45)] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
-                <p className="text-sm font-bold text-gray-900">快速新增成员</p>
-                <p className="text-[12px] text-gray-500">点击打开弹窗，录入姓名与角色</p>
+                <p className="text-sm font-bold">快速新增成员</p>
+                <p className="text-[12px]">点击打开弹窗，录入姓名与角色</p>
               </div>
               <button
                 onClick={openCreateModal}

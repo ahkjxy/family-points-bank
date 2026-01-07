@@ -1,4 +1,3 @@
-import React from 'react';
 
 export function DocsPage() {
   const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (

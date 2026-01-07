@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import { Icon } from './Icon';
 
 export type ToastType = 'info' | 'success' | 'error' | 'loading';
