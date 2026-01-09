@@ -17,6 +17,7 @@ import {
   EditModal,
   PendingActionModal,
   DocsPage,
+  ChatWidget,
   MobileNav,
   AuthGate,
   PasswordResetModal,
@@ -1254,6 +1255,14 @@ function AppContent() {
         isAdmin={isAdmin}
         onProfileClick={() => setShowProfileSwitcher(true)}
       />
+
+      {resolvedFamilyId && (
+        <ChatWidget
+          currentProfile={currentProfile}
+          familyId={resolvedFamilyId}
+          profiles={state.profiles}
+        />
+      )}
 
       <ProfileSwitcherModal
         open={showProfileSwitcher}
