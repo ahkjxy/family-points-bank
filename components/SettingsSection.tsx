@@ -398,234 +398,183 @@ export function SettingsSection({
   ] as const;
 
   return (
-    <div className="space-y-8 pb-20 animate-in fade-in slide-in-from-bottom-4">
-        <div className="bg-gradient-to-r from-[#0F172A] via-[#111827] to-[#1F2937] p-5 sm:p-8 rounded-[32px] text-white flex flex-col md:flex-row md:justify-between md:items-center shadow-2xl relative overflow-hidden border border-white/10 gap-4">
-        <div className="absolute top-0 right-0 w-48 h-48 bg-purple-500/25 rounded-full blur-[60px]"></div>
-        <div className="relative z-10 space-y-1">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-[10px] font-bold uppercase tracking-[0.25em]">
-            <span className="w-2 h-2 rounded-full bg-[#FF4D94] shadow-[0_0_0_4px_rgba(255,77,148,0.15)]" />
-            System Hub
+    <div className="space-y-8 pb-24 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      {/* Settings Hub Header */}
+      <div className="relative overflow-hidden rounded-[40px] bg-[#1A1A1A] dark:bg-[#0F172A] p-8 lg:p-10 text-white shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] border border-white/5 mobile-card">
+        <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[120%] bg-gradient-to-br from-[#7C4DFF]/30 to-[#FF4D94]/30 blur-[100px] rounded-full"></div>
+        
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-[#FF4D94] text-[10px] font-black uppercase tracking-[0.2em] mb-4">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#FF4D94] animate-pulse"></div>
+              管理中心
+            </div>
+            <h3 className="text-3xl lg:text-4xl font-black leading-tight tracking-tight mb-2">系统配置与权限管理</h3>
+            <p className="text-white/50 font-medium max-w-lg tracking-wide">在这里调整银行的核心运行规则，管理家庭成员及其元气权限。</p>
           </div>
-          <h3 className="text-xl font-bold font-display">系统配置核心</h3>
-          <p className="text-[10px] text-white/60 font-mono tracking-wider">SYNC ID: {currentSyncId || '未指定'}</p>
-        </div>
-        {activeTab === 'sync' ? (
-          <div className="flex flex-wrap gap-3 relative z-10">
+          
+          <div className="flex flex-wrap gap-3">
             <button 
               onClick={onSync} 
               disabled={isSyncing}
-              className={`px-6 py-3 rounded-2xl text-[11px] font-bold transition-all flex items-center gap-2 shadow-lg shadow-black/20 ${isSyncing ? 'bg-white/10 text-white/60 cursor-not-allowed' : 'bg-white/15 text-white hover:bg-white/25 active:scale-95'}`}
+              className={`flex-1 sm:flex-none px-8 py-4 rounded-[20px] text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-3 ${
+                isSyncing ? 'bg-white/5 text-white/40 cursor-not-allowed' : 'bg-white/10 hover:bg-white/20 text-white border border-white/10 backdrop-blur-md'
+              }`}
             >
-              {isSyncing && <span className="w-3.5 h-3.5 border-2 border-white/60 border-t-transparent rounded-full animate-spin" />}同步云端
+              {isSyncing && <span className="w-3 h-3 border-2 border-white/60 border-t-transparent rounded-full animate-spin" />}
+              同步数据
             </button>
-            <button onClick={onPrint} className="px-6 py-3 bg-[#FF4D94] rounded-2xl text-[11px] font-bold shadow-lg shadow-[#FF4D94]/40 hover:brightness-110 active:scale-95 transition-all">打印制度手册</button>
+            <button onClick={onPrint} className="flex-1 sm:flex-none px-8 py-4 bg-gradient-to-r from-[#FF4D94] to-[#7C4DFF] rounded-[20px] text-xs font-black uppercase tracking-widest shadow-[0_20px_40px_-12px_rgba(255,77,148,0.4)] hover:scale-[1.02] active:scale-95 transition-all">
+              打印报表
+            </button>
           </div>
-        ) : (
-          <div className="relative z-10 text-xs text-white/70 space-y-1">
-            <p>请先进入“同步 / 打印”页签以执行同步或打印操作。</p>
-          </div>
-        )}
+        </div>
+
+        <div className="relative z-10 mt-10 flex flex-wrap gap-2 p-1.5 bg-white/5 rounded-[28px] border border-white/5">
+          {tabs.map(tab => {
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex-1 min-w-[100px] px-6 py-3.5 rounded-[22px] text-[11px] font-black uppercase tracking-widest transition-all duration-300 ${
+                  isActive 
+                    ? 'bg-white text-gray-900 shadow-xl' 
+                    : 'text-white/40 hover:text-white/70 hover:bg-white/5'
+                }`}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-
-      <div className="flex flex-wrap gap-2 bg-white/60 backdrop-blur rounded-2xl p-2 border border-gray-100 shadow-sm mobile-card overflow-x-auto no-scrollbar">
-        {tabs.map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-2 rounded-full text-[11px] font-bold transition-all min-w-[96px] text-center ${activeTab === tab.id ? 'bg-[#FF4D94] text-white shadow-md shadow-[#FF4D94]/20' : 'bg-white border border-gray-200 text-gray-600 hover:border-[#FF4D94]/50 hover:text-[#FF4D94]'}`}
-          >
-            {tab.label}
-          </button>
+      {/* Overview Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          { label: '成员总数', val: overview.members, color: 'text-gray-900 dark:text-white', sub: '活跃' },
+          { label: '系统管理员', val: overview.admins, color: 'text-indigo-500', sub: '拥有者' },
+          { label: '任务规则', val: overview.tasks, color: 'text-[#FF4D94]', sub: '任务规则' },
+          { label: '商店奖品', val: overview.rewards, color: 'text-emerald-500', sub: '已上架' },
+        ].map((s, i) => (
+          <div key={i} className="bg-white dark:bg-[#0F172A] p-6 rounded-[32px] border border-gray-100 dark:border-white/5 shadow-sm">
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{s.label}</p>
+            <p className={`text-3xl font-black points-font ${s.color}`}>{s.val}</p>
+            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter opacity-60 mt-1">{s.sub} 条</p>
+          </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mobile-tight">
-        <div className="rounded-2xl bg-white border border-gray-100 px-4 py-3 flex items-center justify-between text-sm text-gray-600 mobile-card">
-          <span>成员总数</span>
-          <span className="text-lg font-black text-gray-900">{overview.members}</span>
-        </div>
-        <div className="rounded-2xl bg-white border border-gray-100 px-4 py-3 flex items-center justify-between text-sm text-gray-600 mobile-card">
-          <span>管理员</span>
-          <span className="text-lg font-black text-indigo-600">{overview.admins}</span>
-        </div>
-        <div className="rounded-2xl bg-white border border-gray-100 px-4 py-3 flex items-center justify-between text-sm text-gray-600 mobile-card">
-          <span>任务规则</span>
-          <span className="text-lg font-black text-[#FF4D94]">{overview.tasks}</span>
-        </div>
-        <div className="rounded-2xl bg-white border border-gray-100 px-4 py-3 flex items-center justify-between text-sm text-gray-600 mobile-card">
-          <span>商店奖品</span>
-          <span className="text-lg font-black text-emerald-600">{overview.rewards}</span>
-        </div>
-      </div>
-
       {activeTab === 'members' && (
-        <div className="bg-white p-6 rounded-[32px] shadow-sm border border-gray-100 space-y-4 mobile-card">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">成员管理</p>
-              <h3 className="text-lg font-bold text-gray-900 font-display">新增 / 修改 / 删除</h3>
-              <p className="text-xs text-gray-500 mt-1">支持快速录入、改名和移除成员，至少保留一名管理员。</p>
+        <div className="space-y-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <h3 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">成员权限矩阵</h3>
+              <p className="text-gray-500 dark:text-gray-400 font-medium">快速管理家庭成员的权限、余额与个人资料。</p>
             </div>
+            <button
+              onClick={openCreateModal}
+              className="px-8 py-4 bg-[#1A1A1A] dark:bg-white text-white dark:text-gray-900 rounded-[20px] text-xs font-black uppercase tracking-widest hover:bg-[#FF4D94] dark:hover:bg-[#FF4D94] hover:text-white transition-all shadow-lg flex items-center justify-center gap-2"
+            >
+              <Icon name="plus" size={14} />
+              添加新成员
+            </button>
           </div>
 
-          <div className="grid gap-4">
-            <div className="p-4 rounded-2xl border border-gray-100 shadow-[0_10px_30px_-24px_rgba(15,23,42,0.45)] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div>
-                <p className="text-sm font-bold">快速新增成员</p>
-                <p className="text-[12px]">点击打开弹窗，录入姓名与角色</p>
-              </div>
-              <button
-                onClick={openCreateModal}
-                className="px-5 py-3 rounded-xl text-[11px] font-bold bg-gradient-to-r from-[#FF4D94] to-[#7C4DFF] text-white shadow-md shadow-[#FF4D94]/30 hover:brightness-110 active:scale-95"
-              >
-                新增成员
-              </button>
-            </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {profiles.map(p => {
+              const isOnlyAdmin = p.role === 'admin' && adminCount <= 1;
+              const loadingRole = roleLoading.has(p.id);
+              return (
+                <div key={p.id} className="group bg-white dark:bg-[#0F172A] rounded-[40px] p-8 border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-xl transition-all duration-500 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-gray-50/50 dark:bg-white/5 rounded-bl-[80px] -z-0"></div>
+                  
+                  <div className="relative z-10 flex items-start gap-6">
+                    <div className="relative">
+                      <div className={`w-20 h-20 rounded-[28px] overflow-hidden shadow-2xl flex items-center justify-center text-3xl font-black text-white ${p.avatarColor} transition-transform group-hover:rotate-6 duration-500`}>
+                        {p.avatarUrl ? <img src={p.avatarUrl} className="w-full h-full object-cover" /> : p.name[0]}
+                      </div>
+                      <div className={`absolute -bottom-2 -right-2 w-8 h-8 rounded-2xl flex items-center justify-center border-4 border-white dark:border-[#0F172A] shadow-lg ${
+                        p.role === 'admin' ? 'bg-indigo-500 text-white' : 'bg-gray-400 text-white'
+                      }`}>
+                        <Icon name={p.role === 'admin' ? 'settings' : 'plus'} size={12} />
+                      </div>
+                    </div>
 
-            <div className="p-5 rounded-3xl bg-white/90 border border-gray-100 shadow-[0_12px_36px_-24px_rgba(15,23,42,0.35)] flex flex-col gap-4">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="flex flex-wrap items-center gap-2 text-[12px] text-gray-600">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gray-50 border border-gray-100 font-semibold">
-                    <span className="w-2 h-2 rounded-full bg-[#FF4D94]" />
-                    <span>成员选择</span>
-                  </div>
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100 font-semibold">
-                    <span className="w-2 h-2 rounded-full bg-indigo-500" />管理员 {adminCount}
-                  </div>
-                  <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-gray-50 border border-gray-100 text-gray-500 font-semibold">
-                    已选 {selectedMemberIds.size} / {profiles.length}
-                  </div>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    disabled={!selectedMemberIds.size}
-                    onClick={() => handleBulkRole('admin')}
-                    className={`px-3 py-2 rounded-xl font-bold text-[12px] shadow-sm transition-all ${!selectedMemberIds.size ? 'bg-gray-100 text-gray-400' : 'bg-indigo-600 text-white hover:brightness-105 active:scale-95'}`}
-                  >
-                    设为管理员
-                  </button>
-                  <button
-                    disabled={!selectedMemberIds.size || adminCount <= 1 && Array.from(selectedMemberIds).some(id => profiles.find(p => p.id === id && p.role === 'admin'))}
-                    onClick={() => handleBulkRole('child')}
-                    className={`px-3 py-2 rounded-xl font-bold text-[12px] transition-all ${!selectedMemberIds.size ? 'bg-gray-100 text-gray-400' : 'bg-gray-900 text-white hover:brightness-105 active:scale-95'}`}
-                  >
-                    降为成员
-                  </button>
-                  <button
-                    disabled={!selectedMemberIds.size || adminCount - profiles.filter(p => selectedMemberIds.has(p.id) && p.role === 'admin').length <= 0}
-                    onClick={handleBulkDeleteMembers}
-                    className={`px-3 py-2 rounded-xl font-bold text-[12px] border transition-all ${!selectedMemberIds.size ? 'bg-gray-100 text-gray-400 border-gray-100' : 'bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-100 active:scale-95'}`}
-                  >
-                    批量删除
-                  </button>
-                </div>
-              </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3 mb-1">
+                        <h4 className="text-xl font-black text-gray-900 dark:text-white truncate">{p.name}</h4>
+                        <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                          p.role === 'admin' ? 'bg-indigo-50 text-indigo-600' : 'bg-gray-50 text-gray-500'
+                        }`}>{p.role}</span>
+                      </div>
+                      <div className="flex items-center gap-4 text-xs font-bold text-gray-400 uppercase tracking-widest mb-6">
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                          <span>{p.balance} PTS</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-1.5 h-1.5 rounded-full bg-gray-300"></div>
+                          <span>ID: {p.id.slice(0, 8)}</span>
+                        </div>
+                      </div>
 
-              <div className="flex flex-wrap items-center gap-3 text-[12px] text-gray-600 bg-gray-50 border border-gray-100 rounded-2xl px-3 py-2">
-                <input
-                  type="checkbox"
-                  checked={selectedMemberIds.size > 0 && selectedMemberIds.size === profiles.length && profiles.length > 0}
-                  onChange={() => setSelectedMemberIds(selectedMemberIds.size === profiles.length ? new Set() : new Set(profiles.map(p => p.id)))}
-                  className="w-5 h-5 rounded border-gray-300 text-[#FF4D94] focus:ring-[#FF4D94]"
-                />
-                <span className="font-semibold">全选当前家庭成员</span>
-                <span className="text-gray-400">({selectedMemberIds.size}/{profiles.length})</span>
-              </div>
-
-              <div className="grid gap-3">
-                {profiles.length === 0 && (
-                  <div className="p-6 rounded-2xl border border-dashed border-gray-200 text-center text-sm text-gray-500 bg-gray-50">
-                    暂无成员，点击“新增成员”先添加一位吧。
+                      <div className="grid grid-cols-2 gap-3">
+                        <button
+                          onClick={() => openEditModal(p)}
+                          className="py-3 px-4 rounded-2xl bg-gray-50 dark:bg-white/5 text-[10px] font-black uppercase tracking-widest text-gray-600 dark:text-gray-400 hover:bg-gray-100 transition-colors"
+                        >
+                          Edit Profile
+                        </button>
+                        <button
+                          onClick={() => openAdjustModal(p)}
+                          className="py-3 px-4 rounded-2xl bg-[#FF4D94]/10 text-[10px] font-black uppercase tracking-widest text-[#FF4D94] hover:bg-[#FF4D94] hover:text-white transition-all"
+                        >
+                          Adjust Balance
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                )}
-                {profiles.map(p => {
-                  const isOnlyAdmin = p.role === 'admin' && adminCount <= 1;
-                  const loadingRole = roleLoading.has(p.id);
-                  return (
-                    <div key={p.id} className="p-4 rounded-2xl bg-white/90 border border-gray-100 shadow-[0_10px_30px_-22px_rgba(15,23,42,0.45)]">
-                      <div className="flex flex-col gap-4">
-                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-                          <div className="flex items-start gap-3 flex-1 min-w-0">
-                            <input
-                              type="checkbox"
-                              checked={selectedMemberIds.has(p.id)}
-                              onChange={() => toggleMember(p.id)}
-                              className="mt-1 w-5 h-5 rounded border-gray-300 text-[#FF4D94] focus:ring-[#FF4D94]"
-                            />
-                            <div className="w-12 h-12 rounded-2xl overflow-hidden shadow-inner shrink-0 flex items-center justify-center bg-gray-100">
-                              {p.avatarUrl ? (
-                                <img src={p.avatarUrl} className="w-full h-full object-cover" />
-                              ) : (
-                                <div className={`w-full h-full flex items-center justify-center font-bold text-white text-base ${p.avatarColor} uppercase`}>{p.name[0]}</div>
-                              )}
-                            </div>
-                            <div className="flex-1 min-w-0 space-y-2">
-                              <div className="flex flex-wrap items-center gap-2">
-                                <span className="text-base font-bold text-gray-900 truncate max-w-[240px]">{p.name}</span>
-                                <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold border ${p.role === 'admin' ? 'bg-indigo-50 text-indigo-700 border-indigo-100' : 'bg-gray-100 text-gray-600 border-gray-200'}`}>{p.role === 'admin' ? '管理员' : '成员'}</span>
-                                <select
-                                  value={p.role}
-                                  onChange={e => handleChangeRole(p.id, e.target.value as UserRole)}
-                                  disabled={isOnlyAdmin || loadingRole}
-                                  className={`px-3 py-1 rounded-full text-[11px] font-bold border bg-white ${loadingRole ? 'opacity-70 cursor-not-allowed' : 'hover:border-[#FF4D94]/60'} ${p.role === 'admin' ? 'text-indigo-700 border-indigo-100' : 'text-gray-700 border-gray-200'}`}
-                                >
-                                  <option value="admin">管理员</option>
-                                  <option value="child">成员</option>
-                                </select>
-                              </div>
-                              <div className="flex flex-wrap items-center gap-2 text-[11px] text-gray-500">
-                                <span className="px-2.5 py-1 rounded-lg bg-gradient-to-r from-emerald-50 via-teal-50 to-cyan-50 text-emerald-700 border border-emerald-100 shadow-inner points-font">余额 {p.balance}</span>
-                                <span className="px-2.5 py-1 rounded-lg bg-gray-50 border border-gray-100 text-gray-500">ID: {p.id}</span>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="flex flex-col sm:flex-row lg:flex-col items-stretch gap-2 shrink-0 min-w-[190px]">
-                            <button
-                              onClick={() => openEditModal(p)}
-                              className="px-4 py-2 rounded-xl text-[12px] font-bold bg-white border border-gray-200 text-gray-700 hover:border-[#FF4D94] hover:text-[#FF4D94] transition-all shadow-sm"
-                            >
-                              编辑头像 / 资料
-                            </button>
-                            <button
-                              onClick={() => openAdjustModal(p)}
-                              className="px-4 py-2 rounded-xl text-[12px] font-bold bg-gradient-to-r from-[#FF4D94] to-[#7C4DFF] text-white shadow-md shadow-[#FF4D94]/30 hover:brightness-110 active:scale-95"
-                            >
-                              调整元气值
-                            </button>
-                            <button
-                              disabled={isOnlyAdmin}
-                              onClick={() => {
-                                if (isOnlyAdmin) return;
-                                setConfirmDialog({
-                                  title: `删除成员“${p.name}”？`,
-                                  description: '将同步删除其账单和余额记录，此操作不可恢复。',
-                                  confirmText: '确认删除',
-                                  tone: 'danger',
+
+                  <div className="mt-8 pt-6 border-t border-gray-50 dark:border-white/5 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Role Authority</label>
+                      <select
+                        value={p.role}
+                        onChange={e => handleChangeRole(p.id, e.target.value as UserRole)}
+                        disabled={isOnlyAdmin || loadingRole}
+                        className="bg-transparent text-xs font-black text-[#7C4DFF] focus:outline-none cursor-pointer hover:underline"
+                      >
+                        <option value="admin">Administrator</option>
+                        <option value="child">Account Member</option>
+                      </select>
+                    </div>
+                    {!isOnlyAdmin && (
+                      <button onClick={() => {
+                        setConfirmDialog({
+                          title: `Confirm Removal of ${p.name}?`,
+                          description: 'All associated data and balances will be permanently deleted.',
+                          confirmText: 'Delete Member',
+                          tone: 'danger',
                           onConfirm: () => {
                             onDeleteProfile(p.id);
-                            showToast({ type: 'success', title: `${p.name} 删除已提交` });
+                            showToast({ type: 'success', title: 'Member successfully removed' });
                             closeConfirm();
                           },
                         });
-                      }}
-
-                              className={`px-4 py-2 rounded-xl text-[12px] font-bold border transition-all ${isOnlyAdmin ? 'bg-gray-100 text-gray-400 border-gray-100 cursor-not-allowed' : 'bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-100 active:scale-95'}`}
-                            >
-                              删除
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+                      }} className="text-gray-300 hover:text-rose-500 transition-colors">
+                        <Icon name="trash" size={16} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
-
       )}
+
 
       {activeTab === 'tasks' && (
         <div className="bg-white p-6 rounded-[32px] shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)] border border-gray-100 flex flex-col lg:h-[650px] mobile-card">
@@ -863,101 +812,110 @@ export function SettingsSection({
       )}
 
       {memberModal && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center px-4 py-6">
-          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={closeModal}></div>
-          <div className="relative w-full max-w-[460px] bg-white rounded-[28px] shadow-2xl border border-gray-100 p-6 space-y-5">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.25em]">{memberModal.mode === 'create' ? '新增成员' : '编辑成员'}</p>
-                <h3 className="text-xl font-black text-gray-900">{memberModal.mode === 'create' ? '录入新账户' : memberModal.profile?.name || '成员'}</h3>
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-6 animate-in fade-in duration-500">
+          <div className="absolute inset-0 bg-[#0F172A]/40 backdrop-blur-xl" onClick={closeModal}></div>
+          <div className="relative w-full max-w-[480px] bg-white/95 dark:bg-[#1E293B]/95 backdrop-blur-2xl rounded-[56px] shadow-[0_32px_80px_-16px_rgba(0,0,0,0.4)] border border-white/20 dark:border-white/5 p-10 lg:p-14 space-y-8 animate-in zoom-in-95 duration-300">
+            <div className="flex justify-between items-start">
+              <div className="space-y-1">
+                <p className="text-[11px] font-black text-[#FF4D94] uppercase tracking-[0.4em] mb-1">Account Portal</p>
+                <h3 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">
+                  {memberModal.mode === 'create' ? '录入新账户' : memberModal.profile?.name || '编辑成员'}
+                </h3>
               </div>
-              <button onClick={closeModal} className="text-gray-400 hover:text-[#FF4D94]">✕</button>
+              <button onClick={closeModal} className="text-gray-300 dark:text-gray-600 hover:text-[#FF4D94] transition-all p-2 rounded-2xl hover:bg-gray-100 dark:hover:bg-white/5">
+                <Icon name="plus" size={32} className="rotate-45" />
+              </button>
             </div>
 
-            {modalError && <div className="text-[12px] text-rose-500 font-semibold bg-rose-50 border border-rose-100 rounded-2xl px-3 py-2">{modalError}</div>}
+            {modalError && (
+              <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-500/10 border border-rose-100 dark:border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-black animate-in slide-in-from-top-2">
+                ⚠️ {modalError}
+              </div>
+            )}
 
-            <div className="space-y-3">
-              <div className="flex flex-col gap-1">
-                <label className="text-[11px] text-gray-500 font-semibold">姓名</label>
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-gray-400 dark:text-gray-500 ml-4 tracking-[0.2em]">真实姓名 / Full Name</label>
                 <input
                   value={modalName}
                   onChange={e => setModalName(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#FF4D94] outline-none"
+                  className="w-full px-8 py-5 bg-gray-50 dark:bg-white/5 border border-transparent dark:border-white/5 rounded-[24px] font-black text-sm outline-none focus:ring-2 focus:ring-[#FF4D94] focus:bg-white dark:focus:bg-gray-800 transition-all shadow-inner"
                   placeholder="输入姓名"
                   maxLength={32}
                 />
               </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-[11px] text-gray-500 font-semibold">角色</label>
-                <select
-                  value={modalRole}
-                  onChange={e => setModalRole(e.target.value as UserRole)}
-                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#FF4D94] outline-none"
-                  disabled={memberModal.mode === 'edit' && memberModal.profile?.role === 'admin' && adminCount <= 1}
-                >
-                  <option value="child">成员</option>
-                  <option value="admin">管理员</option>
-                </select>
-              </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
-                <div className="flex items-center gap-3">
-                  <div className="w-14 h-14 rounded-2xl border border-dashed border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center">
-                    {modalAvatar ? (
-                      <img src={modalAvatar} className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-xs text-gray-400 font-bold">无头像</span>
-                    )}
-                  </div>
-                  <div className="flex flex-col gap-2 text-[11px] text-gray-500">
-                    <label className="font-semibold text-gray-600">成员头像（可选）</label>
-                    <div className="flex gap-2">
-                      <label className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-[11px] font-bold cursor-pointer hover:border-[#FF4D94]/60">
-                        上传头像
-                        <input type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
-                      </label>
-                      {modalAvatar && (
-                        <button onClick={() => setModalAvatar(null)} className="px-3 py-2 rounded-xl text-[11px] font-bold bg-gray-100 text-gray-500 border border-gray-200 hover:text-rose-500">移除</button>
-                      )}
-                    </div>
-                  </div>
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase text-gray-400 dark:text-gray-500 ml-4 tracking-[0.2em]">系统权限 / Role</label>
+                  <select
+                    value={modalRole}
+                    onChange={e => setModalRole(e.target.value as UserRole)}
+                    className="w-full px-8 py-5 bg-gray-50 dark:bg-white/5 border border-transparent dark:border-white/5 rounded-[24px] font-black text-sm outline-none focus:ring-2 focus:ring-[#FF4D94] focus:bg-white dark:focus:bg-gray-800 transition-all shadow-inner appearance-none cursor-pointer"
+                    disabled={memberModal.mode === 'edit' && memberModal.profile?.role === 'admin' && adminCount <= 1}
+                  >
+                    <option value="child">成员 (Member)</option>
+                    <option value="admin">管理员 (Master)</option>
+                  </select>
                 </div>
                 {memberModal.mode === 'create' && (
-                  <div className="flex flex-col gap-1">
-                    <label className="text-[11px] text-gray-500 font-semibold">初始元气值（可选）</label>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-gray-400 dark:text-gray-500 ml-4 tracking-[0.2em]">初始元气 / Initial</label>
                     <input
                       type="number"
                       value={modalInitialBalance === '' ? '' : modalInitialBalance}
                       onChange={e => setModalInitialBalance(e.target.value === '' ? '' : Number(e.target.value))}
-                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#FF4D94] outline-none"
-                      placeholder="留空则为 0"
+                      className="w-full px-8 py-5 bg-gray-50 dark:bg-white/5 border border-transparent dark:border-white/5 rounded-[24px] font-black text-sm outline-none focus:ring-2 focus:ring-[#FF4D94] focus:bg-white dark:focus:bg-gray-800 transition-all shadow-inner"
+                      placeholder="0"
                     />
                   </div>
                 )}
               </div>
 
+              <div className="space-y-3">
+                <label className="text-[10px] font-black uppercase text-gray-400 dark:text-gray-500 ml-4 tracking-[0.2em]">成员头像 / Avatar</label>
+                <div className="p-6 rounded-[32px] bg-gray-50 dark:bg-white/5 border border-transparent dark:border-white/5 flex items-center gap-6 group/avatar shadow-inner">
+                  <div className="relative">
+                    <div className={`w-20 h-20 rounded-[24px] overflow-hidden shadow-2xl flex items-center justify-center text-3xl font-black text-white ${modalAvatar ? '' : 'bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800'} transition-transform group-hover/avatar:rotate-3 duration-500`}>
+                      {modalAvatar ? <img src={modalAvatar} className="w-full h-full object-cover" /> : '👤'}
+                    </div>
+                  </div>
+                  <div className="flex-1 space-y-3">
+                    <div className="flex gap-2">
+                      <label className="flex-1 px-6 py-3 bg-white dark:bg-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest text-center cursor-pointer border border-gray-100 dark:border-white/10 hover:border-[#FF4D94]/50 hover:text-[#FF4D94] transition-all">
+                        上传新头像
+                        <input type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
+                      </label>
+                      {modalAvatar && (
+                        <button onClick={() => setModalAvatar(null)} className="px-4 py-3 rounded-2xl bg-rose-50 dark:bg-rose-500/10 text-rose-500 text-[10px] font-black uppercase tracking-widest hover:bg-rose-100 transition-all">移除</button>
+                      )}
+                    </div>
+                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">推荐正方形尺寸的高清照片</p>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <div className="flex items-center justify-between gap-3 pt-1">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4">
               {memberModal.mode === 'edit' ? (
                 <button
                   onClick={handleModalDelete}
-                  className="px-4 py-2 rounded-xl text-[11px] font-bold text-rose-600 bg-rose-50 border border-rose-100 hover:bg-rose-100"
+                  className="w-full sm:w-auto px-8 py-4 rounded-[20px] text-[10px] font-black uppercase tracking-widest text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-500/10 border border-rose-100 dark:border-rose-500/20 hover:bg-rose-100 transition-all disabled:opacity-30 disabled:grayscale"
                   disabled={memberModal.profile?.role === 'admin' && adminCount <= 1}
                 >
-                  删除成员
+                  删除该成员
                 </button>
               ) : <div />}
-              <div className="flex gap-2">
-                <button onClick={closeModal} className="px-4 py-2 rounded-xl text-[11px] font-bold bg-gray-100 text-gray-600 border border-gray-200 hover:text-[#FF4D94] hover:border-[#FF4D94]/40">
+              <div className="flex gap-3 w-full sm:w-auto">
+                <button onClick={closeModal} className="flex-1 sm:flex-none px-8 py-4 rounded-[20px] text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5 transition-all">
                   取消
                 </button>
                 <button
                   onClick={handleModalSave}
                   disabled={modalSaving}
-                  className={`px-5 py-2 rounded-xl text-[11px] font-bold transition-all ${modalSaving ? 'bg-gray-200 text-gray-400' : 'bg-[#FF4D94] text-white shadow-md shadow-[#FF4D94]/30 hover:brightness-110 active:scale-95'}`}
+                  className={`flex-[2] sm:flex-none px-10 py-4 bg-gradient-to-r from-[#FF4D94] to-[#7C4DFF] text-white rounded-[20px] text-[10px] font-black uppercase tracking-[0.3em] shadow-[0_12px_24px_-8px_rgba(255,77,148,0.5)] hover:scale-[1.05] active:scale-[0.95] transition-all flex items-center justify-center gap-2 ${modalSaving ? 'opacity-80' : ''}`}
                 >
-                  {modalSaving ? '保存中...' : '保存'}
+                  {modalSaving ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : '确认保存'}
                 </button>
               </div>
             </div>
@@ -966,68 +924,76 @@ export function SettingsSection({
       )}
 
       {adjustModal && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center px-4 py-6">
-          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={closeAdjustModal}></div>
-          <div className="relative w-full max-w-[420px] bg-white rounded-[24px] shadow-2xl border border-gray-100 p-6 space-y-5">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.25em]">元气值调整</p>
-                <h3 className="text-xl font-black text-gray-900">{adjustModal.name}</h3>
-              </div>
-              <button onClick={closeAdjustModal} className="text-gray-400 hover:text-[#FF4D94]">✕</button>
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-6 animate-in fade-in duration-500">
+          <div className="absolute inset-0 bg-[#0F172A]/40 backdrop-blur-xl" onClick={closeAdjustModal}></div>
+          <div className="relative w-full max-w-[440px] bg-white/95 dark:bg-[#1E293B]/95 backdrop-blur-2xl rounded-[56px] shadow-[0_32px_80px_-16px_rgba(0,0,0,0.4)] border border-white/20 dark:border-white/5 p-12 text-center space-y-8 animate-in zoom-in-95 duration-300">
+            <div className="space-y-2">
+              <p className="text-[11px] font-black text-[#7C4DFF] uppercase tracking-[0.4em] mb-1">Balance Adjustment</p>
+              <h3 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">{adjustModal.name}</h3>
+              <p className="text-sm font-bold text-gray-500 dark:text-gray-400">手动调整该成员的元气值余额。</p>
             </div>
 
-            {adjustError && <div className="text-[12px] text-rose-500 font-semibold bg-rose-50 border border-rose-100 rounded-2xl px-3 py-2">{adjustError}</div>}
+            {adjustError && (
+              <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-500/10 border border-rose-100 dark:border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-black animate-in slide-in-from-top-2">
+                ⚠️ {adjustError}
+              </div>
+            )}
 
-            <div className="space-y-3">
-              <div className="flex flex-col gap-1">
-                <label className="text-[11px] text-gray-500 font-semibold">元气值</label>
+            <div className="space-y-6">
+              <div className="relative group">
                 <input
                   type="number"
                   value={adjustPoints || ''}
                   onChange={e => setAdjustPoints(Number(e.target.value) || 0)}
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#FF4D94] outline-none"
-                  placeholder="输入数值"
+                  className="w-full px-8 py-6 bg-gray-50 dark:bg-white/5 border border-transparent dark:border-white/5 rounded-[32px] font-black text-4xl points-font text-center outline-none focus:ring-2 focus:ring-[#7C4DFF] focus:bg-white dark:focus:bg-gray-800 transition-all shadow-inner"
+                  placeholder="0"
                 />
+                <span className="absolute right-10 top-1/2 -translate-y-1/2 text-xs font-black text-gray-300 uppercase tracking-widest pointer-events-none">Pts</span>
               </div>
-              <div className="flex flex-wrap items-center gap-2 text-[11px] font-bold">
+
+              <div className="flex p-1.5 bg-gray-100 dark:bg-white/5 rounded-[24px] text-[11px] font-black uppercase tracking-widest">
                 <button
                   onClick={() => setAdjustType('earn')}
-                  className={`px-3 py-2 rounded-xl border ${adjustType === 'earn' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-white text-gray-600 border-gray-200'}`}
+                  className={`flex-1 py-4 rounded-[20px] transition-all duration-300 flex items-center justify-center gap-2 ${adjustType === 'earn' ? 'bg-white dark:bg-white/10 shadow-sm text-emerald-500' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600'}`}
                 >
-                  增加
+                  <Icon name="plus" size={14} />
+                  增加 (Plus)
                 </button>
                 <button
                   onClick={() => setAdjustType('penalty')}
-                  className={`px-3 py-2 rounded-xl border ${adjustType === 'penalty' ? 'bg-rose-50 text-rose-600 border-rose-100' : 'bg-white text-gray-600 border-gray-200'}`}
+                  className={`flex-1 py-4 rounded-[20px] transition-all duration-300 flex items-center justify-center gap-2 ${adjustType === 'penalty' ? 'bg-white dark:bg-white/10 shadow-sm text-rose-500' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600'}`}
                 >
-                  扣减
+                  <Icon name="plus" size={14} className="rotate-45" />
+                  扣减 (Minus)
                 </button>
-                <span className="px-3 py-1 rounded-xl bg-gray-50 border border-gray-100 text-gray-500 points-font">当前余额：{adjustModal.balance}</span>
               </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-[11px] text-gray-500 font-semibold">说明</label>
+
+              <div className="space-y-2 text-left">
+                <label className="text-[10px] font-black uppercase text-gray-400 dark:text-gray-500 ml-4 tracking-[0.2em]">备注说明 / Reason</label>
                 <input
                   value={adjustMemo}
                   onChange={e => setAdjustMemo(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#FF4D94] outline-none"
+                  className="w-full px-8 py-5 bg-gray-50 dark:bg-white/5 border border-transparent dark:border-white/5 rounded-[24px] font-black text-sm outline-none focus:ring-2 focus:ring-[#7C4DFF] focus:bg-white dark:focus:bg-gray-800 transition-all shadow-inner"
                   placeholder="如：奖励完成作业 / 迟到扣分"
                 />
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-1">
-              <button onClick={closeAdjustModal} className="px-4 py-2 rounded-xl text-[11px] font-bold bg-gray-100 text-gray-600 border border-gray-200 hover:text-[#FF4D94] hover:border-[#FF4D94]/40">
-                取消
+            <div className="flex flex-col sm:flex-row gap-4">
+              <button onClick={closeAdjustModal} className="flex-1 py-5 text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5 rounded-[24px] transition-all">
+                返回
               </button>
               <button
                 onClick={handleModalAdjust}
                 disabled={adjustLoading}
-                className={`px-5 py-2 rounded-xl text-[11px] font-bold transition-all ${adjustLoading ? 'bg-gray-200 text-gray-400' : 'bg-gradient-to-r from-[#FF4D94] to-[#7C4DFF] text-white shadow-md shadow-[#FF4D94]/30 hover:brightness-110 active:scale-95'}`}
+                className={`flex-[1.5] py-5 bg-gradient-to-r from-[#7C4DFF] to-[#9E7AFF] text-white rounded-[24px] text-[11px] font-black uppercase tracking-[0.3em] shadow-[0_12px_24px_-8px_rgba(124,77,255,0.5)] hover:scale-[1.05] active:scale-[0.95] transition-all flex items-center justify-center gap-3 ${adjustLoading ? 'opacity-80' : ''}`}
               >
-                {adjustLoading ? '保存中...' : '记录'}
+                {adjustLoading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Icon name="check" size={18} />}
+                {adjustLoading ? '记录同步中...' : '确认记录'}
               </button>
             </div>
+            
+            <p className="text-[10px] font-bold text-gray-300 dark:text-gray-600 uppercase tracking-widest">当前账户余额：{adjustModal.balance} PTS</p>
           </div>
         </div>
       )}

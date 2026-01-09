@@ -50,100 +50,103 @@ export function HeaderBar({ activeTab, currentProfile, isAdmin, theme, onToggleT
   const hasMessages = messageCenter.length > 0;
 
   return (
-    <header className="sticky top-0 z-30 bg-white/96 dark:bg-[#0F172A]/92 backdrop-blur-md border-b border-gray-100/80 dark:border-white/10 px-4 py-2.5 mb-4 lg:mb-6 shadow-[0_8px_30px_-20px_rgba(0,0,0,0.35)]">
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-        <div className="space-y-0.5">
-          <h2 className="text-lg md:text-xl font-semibold text-gray-900 font-display leading-tight tracking-tight">
-            {activeTab === 'dashboard' && `您好, ${currentProfile.name}!`}
-            {activeTab === 'earn' && '元气任务'}
-            {activeTab === 'redeem' && '梦想商店'}
-            {activeTab === 'history' && '能量账单'}
-            {activeTab === 'settings' && '系统配置中心'}
-            {/* {activeTab === 'doc' && '使用说明与文档'} */}
-          </h2>
-          <p className="text-gray-600 dark:text-gray-300 text-xs md:text-sm leading-snug">
-            {activeTab === 'dashboard' && '查看您的当前元气值状态'}
-            {activeTab === 'earn' && '完成元气任务来获得更多元气值奖励'}
-            {activeTab === 'redeem' && '兑换心仪的奖品与特权'}
-            {activeTab === 'history' && '查看您的历史交易'}
-            {activeTab === 'settings' && '调整银行运行规则与商店货架'}
-            {/* {activeTab === 'doc' && '阅读项目说明、路由与操作指引'} */}
+    <header className="sticky top-0 z-30 bg-white/80 dark:bg-[#0F172A]/80 backdrop-blur-xl border-b border-white/40 dark:border-white/5 px-4 lg:px-6 py-4 mb-6 lg:mb-8 rounded-b-[32px] shadow-[0_10px_40px_-15px_rgba(0,0,0,0.08)]">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <h2 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white font-display leading-tight tracking-tight">
+              {activeTab === 'dashboard' && `您好, ${currentProfile.name} 👋`}
+              {activeTab === 'earn' && '元气任务'}
+              {activeTab === 'redeem' && '梦想商店'}
+              {activeTab === 'history' && '能量账单'}
+              {activeTab === 'settings' && '系统配置中心'}
+            </h2>
+          </div>
+          <p className="text-gray-500 dark:text-gray-400 text-xs md:text-sm font-medium">
+            {activeTab === 'dashboard' && '查看您的当前元气值与近期动态'}
+            {activeTab === 'earn' && '完成任务即可获得更多元气能量'}
+            {activeTab === 'redeem' && '挑选心仪的梦想奖励'}
+            {activeTab === 'history' && '追踪每一笔元气能量的流动'}
+            {activeTab === 'settings' && '管理银行核心规则与成员名单'}
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center justify-start lg:justify-end gap-1.5 lg:gap-2">
+        <div className="flex flex-wrap items-center justify-start lg:justify-end gap-2 lg:gap-3">
           <div className="relative" ref={noticeRef}>
             <button
               onClick={() => setOpenNotice((prev: boolean) => !prev)}
-              className="h-11 w-11 rounded-2xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-[#FF4D94] dark:text-[#FF7AB8] hover:border-[#FF4D94] hover:text-[#FF4D94] transition-all flex items-center justify-center shadow-[0_4px_12px_-6px_rgba(255,77,148,0.45)]"
-              aria-label="系统通知"
+              className="h-12 w-12 rounded-2xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 text-gray-600 dark:text-gray-400 hover:border-[#FF4D94] hover:text-[#FF4D94] transition-all flex items-center justify-center shadow-sm relative group"
             >
-              <Icon name="bell" size={15} />
-              <span className="sr-only">系统通知</span>
-              <span className="absolute -top-1 -right-1 text-[9px] text-white bg-[#FF4D94] px-1 py-0.5 rounded-full shadow-sm leading-none">{messageCenter.length}</span>
+              <Icon name="bell" size={18} />
+              {messageCenter.length > 0 && (
+                <span className="absolute top-2 right-2 w-4 h-4 text-[9px] font-bold text-white bg-gradient-to-br from-[#FF4D94] to-[#FF7AB8] flex items-center justify-center rounded-full shadow-lg ring-2 ring-white dark:ring-gray-900 group-hover:scale-110 transition-transform">{messageCenter.length}</span>
+              )}
             </button>
             {openNotice && (
-              <div className="absolute top-full mt-2 left-[-20px] -translate-x-0 w-[calc(100vw-20px)] max-w-[calc(100vw-20px)] md:left-auto md:translate-x-0 md:right-0 md:w-72 bg-white border border-gray-100 rounded-2xl shadow-2xl z-40 overflow-hidden transform origin-top-right">
-                <div className="px-4 py-3 border-b border-gray-50 flex items-center justify-between">
+              <div className="absolute top-full mt-3 left-[-20px] md:left-auto md:right-0 w-[calc(100vw-32px)] md:w-80 bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl border border-gray-100 dark:border-white/10 rounded-[28px] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.2)] z-40 overflow-hidden transform origin-top-right animate-in fade-in zoom-in-95 duration-200">
+                <div className="px-5 py-4 border-b border-gray-50 dark:border-white/5 flex items-center justify-between bg-gray-50/50 dark:bg-white/5">
                   <div>
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.25em]">消息中心</p>
-                    <p className="text-sm font-bold text-gray-900">最新提醒</p>
+                    <p className="text-[10px] font-bold text-[#FF4D94] uppercase tracking-[0.25em]">通知中心</p>
+                    <p className="text-sm font-black text-gray-900 dark:text-white">近期提醒</p>
                   </div>
-                  <button onClick={() => setOpenNotice(false)} className="text-xs text-gray-400 hover:text-[#FF4D94]">收起</button>
+                  <button onClick={() => setOpenNotice(false)} className="text-xs font-bold text-gray-400 hover:text-[#FF4D94] transition-colors">全部清除</button>
                 </div>
-                <ul className="max-h-[60vh] overflow-y-auto divide-y divide-gray-50">
+                <ul className="max-h-[60vh] overflow-y-auto divide-y divide-gray-50 dark:divide-white/5">
                   {hasMessages ? (
                     messageCenter.map((msg: HeaderMessage, idx: number) => (
-                      <li key={idx} className="px-4 py-3 flex items-start gap-3 hover:bg-gray-50 transition-colors">
-                        <span className={`mt-0.5 w-2 h-2 rounded-full ${msg.tone === 'rose' ? 'bg-rose-400' : msg.tone === 'indigo' ? 'bg-indigo-400' : msg.tone === 'slate' ? 'bg-gray-400' : 'bg-emerald-400'}`}></span>
+                      <li key={idx} className="px-5 py-4 flex items-start gap-3.5 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group">
+                        <div className={`mt-1 w-2.5 h-2.5 rounded-full shrink-0 shadow-sm ${
+                          msg.tone === 'rose' ? 'bg-[#FF4D94] shadow-[#FF4D94]/40' : 
+                          msg.tone === 'indigo' ? 'bg-[#7C4DFF] shadow-[#7C4DFF]/40' : 
+                          msg.tone === 'slate' ? 'bg-gray-400 shadow-gray-400/40' : 
+                          'bg-[#10B981] shadow-[#10B981]/40'
+                        } group-hover:scale-125 transition-transform`}></div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-gray-800 leading-tight truncate">{msg.title}</p>
-                          <p className="text-[12px] text-gray-500 truncate">{msg.desc}</p>
-                          <p className="text-[11px] text-gray-400 tabular-nums">{msg.time}</p>
+                          <p className="text-sm font-bold text-gray-800 dark:text-gray-200 leading-tight truncate">{msg.title}</p>
+                          <p className="text-[12px] text-gray-500 dark:text-gray-400 mt-0.5 truncate">{msg.desc}</p>
+                          <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1 tabular-nums font-medium uppercase">{msg.time}</p>
                         </div>
                       </li>
                     ))
                   ) : (
-                    <li className="px-4 py-6 text-sm text-gray-400 text-center">暂无消息，去完成任务或兑换看看~</li>
+                    <li className="px-5 py-8 text-sm text-gray-400 dark:text-gray-500 text-center font-medium italic">暂无新消息，保持元气满满哦 ✨</li>
                   )}
                 </ul>
               </div>
             )}
           </div>
 
-          {isAdmin && (
+          <div className="flex items-center gap-1.5 p-1 bg-gray-100/50 dark:bg-white/5 rounded-2xl">
+            {isAdmin && (
+              <button
+                onClick={onPrint}
+                className="h-10 w-10 rounded-[14px] bg-white dark:bg-white/10 text-gray-600 dark:text-gray-300 hover:text-[#7C4DFF] hover:shadow-md transition-all flex items-center justify-center"
+                title="打印报表"
+              >
+                <Icon name="print" size={16} />
+              </button>
+            )}
             <button
-              onClick={onPrint}
-              className="h-11 w-11 rounded-2xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-[#7C4DFF] dark:text-[#BBA5FF] hover:border-[#7C4DFF] hover:text-[#7C4DFF] transition-all flex items-center justify-center shadow-[0_4px_12px_-6px_rgba(124,77,255,0.45)]"
-              aria-label="打印手册"
+              onClick={onToggleTheme}
+              className="h-10 w-10 rounded-[14px] bg-white dark:bg-white/10 text-gray-600 dark:text-gray-300 hover:text-[#7C4DFF] hover:shadow-md transition-all flex items-center justify-center"
+              title={theme === 'dark' ? '日间模式' : '夜间模式'}
             >
-              <Icon name="print" size={15} />
-              <span className="sr-only">打印手册</span>
+              <Icon name={theme === 'dark' ? 'sun' : 'moon'} size={16} />
             </button>
-          )}
+            <button
+              onClick={onLogout}
+              className="h-10 w-10 rounded-[14px] bg-white dark:bg-white/10 text-rose-500 hover:bg-rose-50 hover:shadow-md transition-all flex items-center justify-center"
+              title="退出登录"
+            >
+              <Icon name="logout" size={16} />
+            </button>
+          </div>
 
-          <button
-            onClick={onToggleTheme}
-            className="h-11 w-11 rounded-2xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-[#7C4DFF] dark:text-[#BBA5FF] hover:border-[#7C4DFF] hover:text-[#7C4DFF] transition-all flex items-center justify-center shadow-[0_4px_12px_-6px_rgba(124,77,255,0.45)]"
-            aria-label={theme === 'dark' ? '切换到浅色模式' : '切换到夜间模式'}
-          >
-            <Icon name={theme === 'dark' ? 'sun' : 'moon'} size={15} />
-          </button>
-
-          <button
-            onClick={onLogout}
-            className="h-11 w-11 rounded-2xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-[#FF4D94] dark:text-[#FF7AB8] hover:border-[#FF4D94] hover:text-[#FF4D94] transition-all flex items-center justify-center shadow-[0_4px_12px_-6px_rgba(255,77,148,0.45)]"
-            aria-label="退出登录"
-          >
-            <Icon name="logout" size={15} />
-            <span className="sr-only">退出登录</span>
-          </button>
-
-          <div className="flex-1 lg:flex-none px-3 py-2 via-white to-[#EEF2FF] dark:from-[#0F172A] dark:via-[#0B1224] dark:to-[#0B1224] rounded-2xl border border-gray-100 dark:border-white/10 shadow-[0_10px_30px_-24px_rgba(15,23,42,0.25)] flex items-center gap-2 min-w-[180px]">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#FF4D94]/18 to-[#7C4DFF]/18 text-[#FF4D94] flex items-center justify-center font-bold points-font">∞</div>
+          <div className="flex-1 lg:flex-none pl-3 pr-5 py-2.5 bg-gradient-to-br from-[#FF4D94] to-[#7C4DFF] rounded-[24px] shadow-[0_12px_24px_-8px_rgba(255,77,148,0.4)] flex items-center gap-3.5 min-w-[160px] group hover:scale-[1.02] transition-transform duration-300">
+            <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md text-white flex items-center justify-center font-black text-xl shadow-inner group-hover:rotate-12 transition-transform">⚡</div>
             <div className="flex flex-col leading-tight">
-              <span className="text-[9px] font-semibold text-[#FF4D94] uppercase tracking-[0.28em]">可用元气值</span>
-              <span className="text-2xl font-black text-gray-900 dark:text-white points-font">{currentProfile.balance}</span>
+              <span className="text-[10px] font-bold text-white/70 uppercase tracking-[0.2em]">账户元气值</span>
+              <span className="text-2xl font-black text-white points-font">{currentProfile.balance}</span>
             </div>
           </div>
         </div>

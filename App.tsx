@@ -431,11 +431,25 @@ function AppContent() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session, authReady, syncId]);
 
-  const currentProfile = useMemo<Profile>(() =>
-    state.profiles.find(p => p.id === state.currentProfileId) || state.profiles[0] || INITIAL_PROFILES[0]
-  , [state.profiles, state.currentProfileId]);
+  const currentProfile = useMemo<Profile>(() => {
+    const found = state.profiles.find(p => p.id === state.currentProfileId);
+    if (found) return found;
+    // 找不到时，严禁回退到列表第一个（因为第一个通常是管理员）
+    return {
+      id: 'guest',
+      name: '未登录',
+      balance: 0,
+      history: [],
+      avatarColor: 'bg-gray-200',
+      role: 'child', // 默认非管理
+    } as Profile;
+  }, [state.profiles, state.currentProfileId]);
 
-  const isAdmin = currentProfile.role === 'admin';
+  // 增加更严谨的权限判断逻辑
+  const isAdmin = useMemo(() => {
+    if (!currentProfile || currentProfile.id === 'guest') return false;
+    return currentProfile.role === 'admin';
+  }, [currentProfile]);
 
   const pathToTab: Record<string, 'dashboard' | 'earn' | 'redeem' | 'history' | 'settings' | 'doc'> = {
     'dashboard': 'dashboard',
@@ -520,7 +534,7 @@ function AppContent() {
         await refreshFamily(familyId);
       }
       synced = true;
-      showToast({ type: 'success', title: '已记录元气变动', description: `${title}：${points > 0 ? '+' : ''}${points} pts` });
+      showToast({ type: 'success', title: '已记录元气变动', description: `${title}：${points > 0 ? '+' : ''}${points} 元气值` });
     } catch (e) {
       notifyError('积分变动失败', e);
     } finally {
@@ -846,20 +860,31 @@ function AppContent() {
   };
 
   const handleSwitchProfile = async (id: string) => {
-    if (state.currentProfileId === id) {
-      setShowProfileSwitcher(false);
-      return;
-    }
-    const familyId = resolveFamilyId();
-    const newState = { ...state, currentProfileId: id } as FamilyState;
-    setState(newState);
     setShowProfileSwitcher(false);
-    try {
-      await supabase.from('families').update({ current_profile_id: id }).eq('id', familyId);
-    } catch (e) {
-      console.warn('Profile switch sync failed', e);
+    let nextState: FamilyState | null = null;
+
+    setState(prev => {
+      if (prev.currentProfileId === id) {
+        nextState = prev;
+        return prev;
+      }
+      const updated = { ...prev, currentProfileId: id } as FamilyState;
+      nextState = updated;
+      return updated;
+    });
+
+    const familyId = resolveFamilyId();
+    if (familyId) {
+      try {
+        await supabase.from('families').update({ current_profile_id: id }).eq('id', familyId);
+      } catch (e) {
+        console.warn('Profile switch sync failed', e);
+      }
     }
-    await syncToCloud(newState);
+
+    if (nextState) {
+      await syncToCloud(nextState);
+    }
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
