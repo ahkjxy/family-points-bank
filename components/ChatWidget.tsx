@@ -142,6 +142,7 @@ export function ChatWidget({ currentProfile, familyId, profiles }: ChatWidgetPro
   useEffect(() => {
     const setupNotifications = async () => {
       try {
+        if (typeof window !== "undefined" && !(window as any).Capacitor) return;
         const { display } = await LocalNotifications.requestPermissions();
 
         if (display === "granted") {
