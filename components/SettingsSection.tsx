@@ -28,6 +28,8 @@ interface SettingsSectionProps {
   ) => Promise<void>;
   isSyncing: boolean;
   currentSyncId?: string;
+  currentProfileId?: string;
+  onSendSystemNotification?: (content: string) => void;
 }
 
 export function SettingsSection({
@@ -49,8 +51,11 @@ export function SettingsSection({
   onAdjustBalance,
   isSyncing,
   currentSyncId,
+  currentProfileId,
+  onSendSystemNotification,
 }: SettingsSectionProps) {
   const { showToast } = useToast();
+  const currentProfile = profiles.find((p) => p.id === currentProfileId);
   const [confirmDialog, setConfirmDialog] = useState<{
     title: string;
     description?: string;
@@ -162,6 +167,12 @@ export function SettingsSection({
         .eq("family_id", currentSyncId);
       if (error) throw error;
       await onSync();
+      if (target && onSendSystemNotification) {
+        const roleText = role === "admin" ? "管理员" : "普通成员";
+        await onSendSystemNotification(
+          `${currentProfile?.name || "管理员"} 将 ${target.name} 设置为${roleText}`
+        );
+      }
       showToast({ type: "success", title: "角色已更新" });
     } catch (e) {
       showToast({ type: "error", title: "角色更新失败", description: (e as Error)?.message || "" });

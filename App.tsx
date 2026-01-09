@@ -61,6 +61,21 @@ function AppContent() {
 
   const resolveFamilyId = () => syncId || state.syncId || "";
 
+  const sendSystemNotification = async (content: string) => {
+    const familyId = resolveFamilyId();
+    if (!familyId || !currentProfile) return;
+    try {
+      await supabase.from("messages").insert({
+        family_id: familyId,
+        sender_id: currentProfile.id,
+        sender_name: currentProfile.name,
+        content: `[系统] ${content}`,
+      });
+    } catch (error) {
+      console.error("Failed to send system notification:", error);
+    }
+  };
+
   const [editingItem, setEditingItem] = useState<{ type: "task" | "reward"; item: any } | null>(
     null
   );
@@ -771,10 +786,14 @@ function AppContent() {
           if (exists) {
             const { error } = await supabase.from("tasks").update(payload).eq("id", item.id);
             if (error) throw error;
+            await sendSystemNotification(`${currentProfile.name} 更新了任务「${item.title}」`);
           } else {
             const { data, error } = await supabase.from("tasks").insert(payload).select().single();
             if (error) throw error;
             item = data;
+            await sendSystemNotification(
+              `${currentProfile.name} 新增了任务「${item.title}」（+${item.points}元气）`
+            );
           }
           await refreshFamily(familyId);
           setEditingItem(null);
@@ -804,6 +823,7 @@ function AppContent() {
           if (exists) {
             const { error } = await supabase.from("rewards").update(payload).eq("id", item.id);
             if (error) throw error;
+            await sendSystemNotification(`${currentProfile.name} 更新了奖品「${item.title}」`);
           } else {
             const { data, error } = await supabase
               .from("rewards")
@@ -812,6 +832,9 @@ function AppContent() {
               .single();
             if (error) throw error;
             item = data;
+            await sendSystemNotification(
+              `${currentProfile.name} 上新了奖品「${item.title}」（${item.points}元气）`
+            );
           }
           await refreshFamily(familyId);
           setEditingItem(null);
@@ -957,6 +980,7 @@ function AppContent() {
       if (error) throw error;
       if (data) {
         await refreshFamily(familyId);
+        await sendSystemNotification(`${currentProfile.name} 添加了新成员「${newProfile.name}」`);
       }
       showToast({ type: "success", title: "成员已新增", description: newProfile.name });
     } catch (e) {
@@ -998,6 +1022,7 @@ function AppContent() {
     try {
       await supabase.from("profiles").delete().eq("id", id).eq("family_id", familyId);
       await refreshFamily(familyId);
+      await sendSystemNotification(`${currentProfile.name} 移除了成员「${target.name}」`);
       showToast({ type: "success", title: "成员已删除", description: target.name });
     } catch (e) {
       notifyError("删除成员失败", e);
@@ -1238,6 +1263,8 @@ function AppContent() {
                   onAdjustBalance={(profileId, payload) => handleAdjustBalance(profileId, payload)}
                   isSyncing={isSyncing}
                   currentSyncId={resolveFamilyId()}
+                  currentProfileId={state.currentProfileId}
+                  onSendSystemNotification={sendSystemNotification}
                 />
               ) : (
                 <Navigate to={`/${resolveFamilyId()}/dashboard`} replace />

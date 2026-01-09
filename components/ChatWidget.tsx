@@ -140,29 +140,54 @@ export function ChatWidget({ currentProfile, familyId, profiles }: ChatWidgetPro
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const requestPermission = async () => {
+    const setupNotifications = async () => {
       try {
-        await LocalNotifications.requestPermissions();
-        await LocalNotifications.registerActionTypes({
-          types: [
-            {
-              id: "CHAT_MESSAGE",
-              actions: [
-                {
-                  id: "open-chat",
-                  title: "打开聊天",
-                  destructive: false,
-                },
-              ],
-            },
-          ],
-        });
+        const { display } = await LocalNotifications.requestPermissions();
+
+        if (display === "granted") {
+          await LocalNotifications.createChannel({
+            id: "chat-notifications",
+            name: "聊天消息",
+            description: "家庭成员发送的消息通知",
+            importance: 5,
+            visibility: 1,
+            sound: "default",
+            lights: true,
+            vibration: true,
+          });
+
+          await LocalNotifications.registerActionTypes({
+            types: [
+              {
+                id: "CHAT_MESSAGE",
+                actions: [
+                  {
+                    id: "open-chat",
+                    title: "打开聊天",
+                    destructive: false,
+                  },
+                ],
+              },
+            ],
+          });
+
+          await LocalNotifications.addListener("localNotificationActionPerformed", () => {
+            setIsOpen(true);
+            setUnreadCount(0);
+          });
+        } else {
+          console.log("Notification permission denied");
+        }
       } catch (error) {
-        console.error("Failed to request notification permission:", error);
+        console.error("Failed to setup notifications:", error);
       }
     };
 
-    requestPermission();
+    setupNotifications();
+
+    return () => {
+      LocalNotifications.removeAllListeners();
+    };
   }, []);
 
   const scrollToBottom = () => {
@@ -225,17 +250,12 @@ export function ChatWidget({ currentProfile, familyId, profiles }: ChatWidgetPro
                     id: Date.now(),
                     schedule: { at: new Date() },
                     sound: "default",
-                    smallIcon: "ic_stat_icon_config_sample",
-                    largeBody: newMsg.content,
-                    largeIcon: "ic_launcher",
+                    channelId: "chat-notifications",
                     actionTypeId: "CHAT_MESSAGE",
-                    extra: {
-                      familyId,
-                      messageId: newMsg.id,
-                    },
                   },
                 ],
               });
+              console.log("Notification scheduled successfully");
             } catch (error) {
               console.error("Failed to schedule notification:", error);
             }
