@@ -1,15 +1,21 @@
-import { Icon } from './Icon';
-import { Profile } from '../types';
+import { Icon } from "./Icon";
+import { Profile } from "../types";
 
 interface SidebarProps {
-  activeTab: 'dashboard' | 'earn' | 'redeem' | 'history' | 'settings' | 'doc';
-  onChangeTab: (tab: SidebarProps['activeTab']) => void;
+  activeTab: "dashboard" | "earn" | "redeem" | "history" | "settings";
+  onChangeTab: (tab: SidebarProps["activeTab"]) => void;
   isAdmin: boolean;
   currentProfile: Profile;
   onProfileClick: () => void;
 }
 
-export function Sidebar({ activeTab, onChangeTab, isAdmin, currentProfile, onProfileClick }: SidebarProps) {
+export function Sidebar({
+  activeTab,
+  onChangeTab,
+  isAdmin,
+  currentProfile,
+  onProfileClick,
+}: SidebarProps) {
   return (
     <aside className="glass-sidebar w-64 flex flex-col p-6 h-screen sticky top-0 shrink-0 overflow-hidden border-r border-white/20 dark:border-white/5 shadow-[20px_0_40px_-20px_rgba(0,0,0,0.05)]">
       <div className="flex items-center gap-3 mb-10 group cursor-pointer">
@@ -17,36 +23,43 @@ export function Sidebar({ activeTab, onChangeTab, isAdmin, currentProfile, onPro
           <Icon name="reward" size={26} />
         </div>
         <div>
-          <h1 className="text-xl font-bold font-display leading-tight bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">元气银行</h1>
-          <p className="text-[10px] font-bold text-[#FF4D94] uppercase tracking-[0.2em] opacity-80">家庭元气银行</p>
+          <h1 className="text-xl font-bold font-display leading-tight bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">
+            元气银行
+          </h1>
+          <p className="text-[10px] font-bold text-[#FF4D94] uppercase tracking-[0.2em] opacity-80">
+            家庭元气银行
+          </p>
         </div>
       </div>
 
       <nav className="flex-1 space-y-1.5">
         {[
-          { id: 'dashboard', icon: 'home', label: '账户概览' },
-          { id: 'earn', icon: 'plus', label: '元气任务' },
-          { id: 'redeem', icon: 'reward', label: '梦想商店' },
-          { id: 'history', icon: 'history', label: '能量账单' },
-          ...(isAdmin ? [{ id: 'settings', icon: 'settings', label: '系统配置' }] : []),
-          { id: 'doc', icon: 'info', label: '使用指南' }
-        ].map(tab => {
+          { id: "dashboard", icon: "home", label: "账户概览" },
+          { id: "earn", icon: "plus", label: "元气任务" },
+          { id: "redeem", icon: "reward", label: "梦想商店" },
+          { id: "history", icon: "history", label: "能量账单" },
+          ...(isAdmin ? [{ id: "settings", icon: "settings", label: "系统配置" }] : []),
+        ].map((tab) => {
           const isActive = activeTab === tab.id;
           return (
             <button
               key={tab.id}
-              onClick={() => onChangeTab(tab.id as SidebarProps['activeTab'])}
+              onClick={() => onChangeTab(tab.id as SidebarProps["activeTab"])}
               className={`w-full h-12 flex items-center gap-3.5 px-4 rounded-2xl transition-all duration-300 font-display font-bold text-sm border ${
-                isActive 
-                  ? 'bg-gradient-to-r from-[#FF4D94] to-[#7C4DFF] text-white border-transparent shadow-[0_8px_16px_-4px_rgba(255,77,148,0.3)]' 
-                  : 'text-gray-500 dark:text-gray-400 border-transparent hover:bg-white/60 dark:hover:bg-white/5 hover:text-[#FF4D94] hover:border-[#FF4D94]/10 hover:translate-x-1'
+                isActive
+                  ? "bg-gradient-to-r from-[#FF4D94] to-[#7C4DFF] text-white border-transparent shadow-[0_8px_16px_-4px_rgba(255,77,148,0.3)]"
+                  : "text-gray-500 dark:text-gray-400 border-transparent hover:bg-white/60 dark:hover:bg-white/5 hover:text-[#FF4D94] hover:border-[#FF4D94]/10 hover:translate-x-1"
               }`}
             >
-              <div className={`${isActive ? 'text-white' : 'text-gray-400 group-hover:text-[#FF4D94]'} transition-colors`}>
+              <div
+                className={`${isActive ? "text-white" : "text-gray-400 group-hover:text-[#FF4D94]"} transition-colors`}
+              >
                 <Icon name={tab.icon} size={19} />
               </div>
               <span className="truncate tracking-wide">{tab.label}</span>
-              {isActive && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-white shadow-sm animate-pulse" />}
+              {isActive && (
+                <div className="ml-auto w-1.5 h-1.5 rounded-full bg-white shadow-sm animate-pulse" />
+              )}
             </button>
           );
         })}
@@ -61,13 +74,19 @@ export function Sidebar({ activeTab, onChangeTab, isAdmin, currentProfile, onPro
             {currentProfile.avatarUrl ? (
               <img src={currentProfile.avatarUrl} className="w-full h-full object-cover" />
             ) : (
-              <div className={`w-full h-full flex items-center justify-center font-bold text-white text-base ${currentProfile.avatarColor}`}>{currentProfile.name[0]}</div>
+              <div
+                className={`w-full h-full flex items-center justify-center font-bold text-white text-base ${currentProfile.avatarColor}`}
+              >
+                {currentProfile.name[0]}
+              </div>
             )}
           </div>
           <div className="text-left overflow-hidden flex-1">
-            <p className="text-sm font-bold truncate text-gray-900 dark:text-white group-hover:text-[#FF4D94] transition-colors">{currentProfile.name}</p>
+            <p className="text-sm font-bold truncate text-gray-900 dark:text-white group-hover:text-[#FF4D94] transition-colors">
+              {currentProfile.name}
+            </p>
             <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider group-hover:text-[#FF4D94]/70 transition-colors">
-              {currentProfile.role === 'admin' ? '系统管理员' : '账户成员'}
+              {currentProfile.role === "admin" ? "系统管理员" : "账户成员"}
             </p>
           </div>
           <div className="text-gray-300 group-hover:text-[#FF4D94] transition-colors">

@@ -1,10 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import type { Session } from '@supabase/supabase-js';
-import { Routes, Route, Navigate, useNavigate, useLocation, useMatch } from 'react-router-dom';
-import { FamilyState, Transaction, Profile, Category } from './types';
-import { INITIAL_TASKS, INITIAL_REWARDS, INITIAL_PROFILES } from './constants';
-import { supabase } from './supabaseClient';
-import { printReport } from './utils/export';
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import type { Session } from "@supabase/supabase-js";
+import { Routes, Route, Navigate, useNavigate, useLocation, useMatch } from "react-router-dom";
+import { FamilyState, Transaction, Profile, Category } from "./types";
+import { INITIAL_TASKS, INITIAL_REWARDS, INITIAL_PROFILES } from "./constants";
+import { supabase } from "./supabaseClient";
+import { printReport } from "./utils/export";
 import {
   Sidebar,
   HeaderBar,
@@ -25,7 +25,7 @@ import {
   useToast,
   ThemeProvider,
   useTheme,
-} from './components';
+} from "./components";
 
 export default function App() {
   return (
@@ -40,11 +40,11 @@ export default function App() {
 function AppContent() {
   const navigate = useNavigate();
   const location = useLocation();
-  const matchAny = useMatch('/:syncId/*');
-  const matchExact = useMatch('/:syncId');
+  const matchAny = useMatch("/:syncId/*");
+  const matchExact = useMatch("/:syncId");
   const match = matchAny || matchExact;
   const syncId = match?.params?.syncId;
-  const fallbackSyncId = syncId || '';
+  const fallbackSyncId = syncId || "";
 
   const [state, setState] = useState<FamilyState>({
     currentProfileId: INITIAL_PROFILES[1].id,
@@ -58,10 +58,16 @@ function AppContent() {
   const [authReady, setAuthReady] = useState(false);
   const [bootingFamily, setBootingFamily] = useState(false);
 
-  const resolveFamilyId = () => syncId || state.syncId || '';
+  const resolveFamilyId = () => syncId || state.syncId || "";
 
-  const [editingItem, setEditingItem] = useState<{ type: 'task' | 'reward'; item: any } | null>(null);
-  const [pendingAction, setPendingAction] = useState<{ title: string; points: number; type: 'earn' | 'penalty' | 'redeem' } | null>(null);
+  const [editingItem, setEditingItem] = useState<{ type: "task" | "reward"; item: any } | null>(
+    null
+  );
+  const [pendingAction, setPendingAction] = useState<{
+    title: string;
+    points: number;
+    type: "earn" | "penalty" | "redeem";
+  } | null>(null);
   const [crudSaving, setCrudSaving] = useState(false);
   const [transactionLoading, setTransactionLoading] = useState(false);
   const [showProfileSwitcher, setShowProfileSwitcher] = useState(false);
@@ -69,8 +75,8 @@ function AppContent() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [showPasswordReset, setShowPasswordReset] = useState(false);
 
-  const [taskFilter, setTaskFilter] = useState<Category | 'all'>('all');
-  const [rewardFilter, setRewardFilter] = useState<'实物奖品' | '特权奖励' | 'all'>('all');
+  const [taskFilter, setTaskFilter] = useState<Category | "all">("all");
+  const [rewardFilter, setRewardFilter] = useState<"实物奖品" | "特权奖励" | "all">("all");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -78,29 +84,31 @@ function AppContent() {
   const { theme, toggleTheme } = useTheme();
   const [pendingError, setPendingError] = useState<string | null>(null);
 
-  const STORAGE_BUCKET = 'fpb';
+  const STORAGE_BUCKET = "fpb";
 
   const dataUrlToBlob = async (dataUrl: string) => {
     const res = await fetch(dataUrl);
     return await res.blob();
   };
 
-  const uploadImageToBucket = async (dataUrl: string, folder: 'avatars' | 'tasks' | 'rewards') => {
+  const uploadImageToBucket = async (dataUrl: string, folder: "avatars" | "tasks" | "rewards") => {
     const blob = await dataUrlToBlob(dataUrl);
-    const mime = blob.type || 'image/png';
-    const ext = mime.split('/')[1]?.split('+')[0] || 'png';
-    const familyId = resolveFamilyId() || 'demo';
+    const mime = blob.type || "image/png";
+    const ext = mime.split("/")[1]?.split("+")[0] || "png";
+    const familyId = resolveFamilyId() || "demo";
     const path = `${folder}/${familyId}/${Date.now()}.${ext}`;
-    const { error } = await supabase.storage.from(STORAGE_BUCKET).upload(path, blob, { upsert: true, contentType: mime, cacheControl: '3600' });
+    const { error } = await supabase.storage
+      .from(STORAGE_BUCKET)
+      .upload(path, blob, { upsert: true, contentType: mime, cacheControl: "3600" });
     if (error) throw error;
     const { data } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(path);
     return data.publicUrl;
   };
 
   const ensureCurrentProfileId = (profiles: Profile[], preferredId?: string) => {
-    if (!profiles.length) return '';
-    if (preferredId && profiles.some(p => p.id === preferredId)) return preferredId;
-    const admin = profiles.find(p => p.role === 'admin');
+    if (!profiles.length) return "";
+    if (preferredId && profiles.some((p) => p.id === preferredId)) return preferredId;
+    const admin = profiles.find((p) => p.role === "admin");
     return admin?.id ?? profiles[0].id;
   };
 
@@ -108,7 +116,7 @@ function AppContent() {
 
   useEffect(() => {
     if (fatalError) {
-      showToast({ type: 'error', title: '同步失败', description: fatalError, duration: 4500 });
+      showToast({ type: "error", title: "同步失败", description: fatalError, duration: 4500 });
     }
   }, [fatalError, showToast]);
 
@@ -118,29 +126,40 @@ function AppContent() {
 
   const notifyError = (message: string, e?: any) => {
     console.warn(message, e);
-    showToast({ type: 'error', title: message, description: (e as Error)?.message || '请稍后重试', duration: 3800 });
+    showToast({
+      type: "error",
+      title: message,
+      description: (e as Error)?.message || "请稍后重试",
+      duration: 3800,
+    });
   };
 
   const seedFamilyIfEmpty = async (familyId: string) => {
     try {
       const { count: profileCount } = await supabase
-        .from('profiles')
-        .select('id', { count: 'exact', head: true })
-        .eq('family_id', familyId);
+        .from("profiles")
+        .select("id", { count: "exact", head: true })
+        .eq("family_id", familyId);
       if ((profileCount ?? 0) > 0) return;
 
-      const adminName = (session?.user?.email?.split('@')[0] || '管理员').slice(0, 20);
+      const adminName = (session?.user?.email?.split("@")[0] || "管理员").slice(0, 20);
       const { data: insertedProfiles } = await supabase
-        .from('profiles')
+        .from("profiles")
         .insert([
-          { family_id: familyId, name: adminName, balance: 0, role: 'admin', avatar_color: 'bg-blue-600' },
+          {
+            family_id: familyId,
+            name: adminName,
+            balance: 0,
+            role: "admin",
+            avatar_color: "bg-blue-600",
+          },
         ])
         .select();
 
       const adminProfileId = insertedProfiles?.[0]?.id;
 
-      await supabase.from('tasks').insert(
-        INITIAL_TASKS.map(t => ({
+      await supabase.from("tasks").insert(
+        INITIAL_TASKS.map((t) => ({
           family_id: familyId,
           category: t.category,
           title: t.title,
@@ -150,8 +169,8 @@ function AppContent() {
         }))
       );
 
-      await supabase.from('rewards').insert(
-        INITIAL_REWARDS.map(r => ({
+      await supabase.from("rewards").insert(
+        INITIAL_REWARDS.map((r) => ({
           family_id: familyId,
           title: r.title,
           points: r.points,
@@ -161,25 +180,33 @@ function AppContent() {
       );
 
       if (adminProfileId) {
-        await supabase.from('families').update({ current_profile_id: adminProfileId }).eq('id', familyId);
+        await supabase
+          .from("families")
+          .update({ current_profile_id: adminProfileId })
+          .eq("id", familyId);
       }
     } catch (e) {
-      console.warn('Seed family failed', e);
+      console.warn("Seed family failed", e);
     }
   };
 
   const ensureFamilyForSession = async (sess: Session) => {
     const userId = sess.user.id;
-    let targetFamilyId = syncId?.trim() || '';
+    let targetFamilyId = syncId?.trim() || "";
 
     if (targetFamilyId) {
-      await supabase.from('family_members').upsert({ family_id: targetFamilyId, user_id: userId, role: 'owner' }, { onConflict: 'family_id,user_id' });
+      await supabase
+        .from("family_members")
+        .upsert(
+          { family_id: targetFamilyId, user_id: userId, role: "owner" },
+          { onConflict: "family_id,user_id" }
+        );
     } else {
       const { data: memberships } = await supabase
-        .from('family_members')
-        .select('family_id, role, created_at')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: true });
+        .from("family_members")
+        .select("family_id, role, created_at")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: true });
       if (memberships?.length) {
         targetFamilyId = memberships[0].family_id as string;
       }
@@ -187,78 +214,100 @@ function AppContent() {
 
     if (!targetFamilyId) {
       const { data: created, error: createErr } = await supabase
-        .from('families')
-        .insert({ name: `${sess.user.email?.split('@')[0] || '我的'}的家庭` })
+        .from("families")
+        .insert({ name: `${sess.user.email?.split("@")[0] || "我的"}的家庭` })
         .select()
         .single();
-      if (createErr || !created?.id) throw createErr || new Error('创建家庭失败');
+      if (createErr || !created?.id) throw createErr || new Error("创建家庭失败");
       targetFamilyId = created.id as string;
     }
 
-    await supabase.from('family_members').upsert({ family_id: targetFamilyId, user_id: userId, role: 'owner' }, { onConflict: 'family_id,user_id' });
+    await supabase
+      .from("family_members")
+      .upsert(
+        { family_id: targetFamilyId, user_id: userId, role: "owner" },
+        { onConflict: "family_id,user_id" }
+      );
     await seedFamilyIfEmpty(targetFamilyId);
     return targetFamilyId;
   };
 
-  const grantDailyEnergyIfNeeded = async (familyId: string, profiles: Profile[], transactions: any[]) => {
+  const grantDailyEnergyIfNeeded = async (
+    familyId: string,
+    profiles: Profile[],
+    transactions: any[]
+  ) => {
     if (!familyId || !profiles.length) return;
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
     const cutoff = todayStart.getTime();
-    const dailyTitle = '每日元气+1';
+    const dailyTitle = "每日元气+1";
 
-    const credited = new Set<string>((transactions || [])
-      .filter((t: any) => t?.title === dailyTitle && t?.timestamp && new Date(t.timestamp).getTime() >= cutoff)
-      .map((t: any) => t.profile_id)
+    const credited = new Set<string>(
+      (transactions || [])
+        .filter(
+          (t: any) =>
+            t?.title === dailyTitle && t?.timestamp && new Date(t.timestamp).getTime() >= cutoff
+        )
+        .map((t: any) => t.profile_id)
     );
 
-    const targets = profiles.filter(p => !credited.has(p.id));
+    const targets = profiles.filter((p) => !credited.has(p.id));
     if (!targets.length) return;
 
     const now = Date.now();
     const txList = targets.map((p, idx) => ({
-      id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `daily-${now}-${idx}-${p.id}`,
+      id:
+        typeof crypto !== "undefined" && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `daily-${now}-${idx}-${p.id}`,
       family_id: familyId,
       profile_id: p.id,
       title: dailyTitle,
       points: 1,
-      type: 'earn',
+      type: "earn",
       timestamp: new Date(now + idx).toISOString(),
     }));
 
-    const loadingId = showToast({ type: 'loading', title: '正在发放每日元气...', duration: 0 });
+    const loadingId = showToast({ type: "loading", title: "正在发放每日元气...", duration: 0 });
     try {
-      const { error: txErr } = await supabase.from('transactions').insert(txList);
+      const { error: txErr } = await supabase.from("transactions").insert(txList);
       if (txErr) throw txErr;
 
-      await Promise.all(targets.map(p =>
-        supabase
-          .from('profiles')
-          .update({ balance: p.balance + 1 })
-          .eq('id', p.id)
-          .eq('family_id', familyId)
-      ));
+      await Promise.all(
+        targets.map((p) =>
+          supabase
+            .from("profiles")
+            .update({ balance: p.balance + 1 })
+            .eq("id", p.id)
+            .eq("family_id", familyId)
+        )
+      );
 
-      setState(s => ({
+      setState((s) => ({
         ...s,
-        profiles: s.profiles.map(p => {
-          const bonus = txList.find(t => t.profile_id === p.id);
+        profiles: s.profiles.map((p) => {
+          const bonus = txList.find((t) => t.profile_id === p.id);
           if (!bonus) return p;
           const ts = new Date(bonus.timestamp).getTime();
           return {
             ...p,
             balance: p.balance + 1,
             history: [
-              { id: bonus.id, title: bonus.title, points: 1, timestamp: ts, type: 'earn' },
+              { id: bonus.id, title: bonus.title, points: 1, timestamp: ts, type: "earn" },
               ...p.history,
             ].slice(0, 50),
           } as Profile;
         }),
       }));
 
-      showToast({ type: 'success', title: '每日元气 +1', description: `已为 ${targets.length} 位成员发放` });
+      showToast({
+        type: "success",
+        title: "每日元气 +1",
+        description: `已为 ${targets.length} 位成员发放`,
+      });
     } catch (e) {
-      notifyError('发放每日元气失败', e);
+      notifyError("发放每日元气失败", e);
     } finally {
       if (loadingId) dismissToast(loadingId);
     }
@@ -267,7 +316,7 @@ function AppContent() {
   const fetchData = async (targetSyncId: string) => {
     const normalized = targetSyncId?.trim();
     if (!normalized) {
-      setFatalError('缺少 Sync ID，请在 URL 中使用 /{syncId}/dashboard 访问');
+      setFatalError("缺少 Sync ID，请在 URL 中使用 /{syncId}/dashboard 访问");
       setIsLoading(false);
       setIsSyncing(false);
       return;
@@ -275,19 +324,21 @@ function AppContent() {
     setIsSyncing(true);
     try {
       const { data, error } = await supabase
-        .from('families')
-        .select(`
+        .from("families")
+        .select(
+          `
           id, name, current_profile_id,
           profiles (*),
           tasks (*),
           rewards (*),
           transactions (*, profile_id, family_id)
-        `)
-        .eq('id', targetSyncId)
+        `
+        )
+        .eq("id", targetSyncId)
         .single();
 
       if (error || !data) {
-        setFatalError('家庭未开通或链接失效，请检查 Sync ID。');
+        setFatalError("家庭未开通或链接失效，请检查 Sync ID。");
         return;
       }
 
@@ -303,11 +354,19 @@ function AppContent() {
             type: t.type,
           }))
           .sort((a: any, b: any) => b.timestamp - a.timestamp);
-        return { ...p, avatarColor: p.avatar_color || p.avatarColor, avatarUrl: p.avatar_url || p.avatarUrl || null, history } as Profile;
+        return {
+          ...p,
+          avatarColor: p.avatar_color || p.avatarColor,
+          avatarUrl: p.avatar_url || p.avatarUrl || null,
+          history,
+        } as Profile;
       });
 
       const normalizedRemote: FamilyState = {
-        currentProfileId: ensureCurrentProfileId(profiles, (data as any).current_profile_id || state.currentProfileId),
+        currentProfileId: ensureCurrentProfileId(
+          profiles,
+          (data as any).current_profile_id || state.currentProfileId
+        ),
         profiles,
         tasks: (data as any).tasks || [],
         rewards: (data as any).rewards || [],
@@ -317,8 +376,8 @@ function AppContent() {
       setFatalError(null);
       await grantDailyEnergyIfNeeded(targetSyncId, profiles, tx);
     } catch (e) {
-      console.warn('Sync failed', e);
-      if (!fatalError) setFatalError((e as Error)?.message || '同步失败');
+      console.warn("Sync failed", e);
+      if (!fatalError) setFatalError((e as Error)?.message || "同步失败");
     } finally {
       setIsLoading(false);
       setTimeout(() => setIsSyncing(false), 500);
@@ -333,10 +392,10 @@ function AppContent() {
   useEffect(() => {
     let mounted = true;
     let authStateResolved = false;
-    
+
     const readyTimeout = setTimeout(() => {
       if (mounted && !authStateResolved) {
-        console.warn('INITIAL_SESSION event did not fire, forcing authReady');
+        console.warn("INITIAL_SESSION event did not fire, forcing authReady");
         setAuthReady(true);
         authStateResolved = true;
       }
@@ -347,7 +406,7 @@ function AppContent() {
 
       setSession(sess);
 
-      if (event === 'INITIAL_SESSION') {
+      if (event === "INITIAL_SESSION") {
         setAuthReady(true);
         authStateResolved = true;
         clearTimeout(readyTimeout);
@@ -357,29 +416,29 @@ function AppContent() {
         }
       }
 
-      if (event === 'PASSWORD_RECOVERY') {
+      if (event === "PASSWORD_RECOVERY") {
         setShowPasswordReset(true);
       }
 
       if (!sess && authStateResolved) {
         setFatalError(null);
         setIsLoading(false);
-        setState(s => ({ ...s, syncId: fallbackSyncId }));
+        setState((s) => ({ ...s, syncId: fallbackSyncId }));
       }
     });
 
     const init = async () => {
       const url = window.location.href;
-      if (url.includes('code=')) {
+      if (url.includes("code=")) {
         try {
           await supabase.auth.exchangeCodeForSession(url);
           const cleaned = new URL(url);
-          cleaned.searchParams.delete('code');
-          cleaned.searchParams.delete('token');
-          cleaned.searchParams.delete('type');
-          if (cleaned.hash) cleaned.hash = '';
+          cleaned.searchParams.delete("code");
+          cleaned.searchParams.delete("token");
+          cleaned.searchParams.delete("type");
+          if (cleaned.hash) cleaned.hash = "";
           window.history.replaceState({}, document.title, cleaned.toString());
-          
+
           setTimeout(() => {
             if (mounted && !authStateResolved) {
               setAuthReady(true);
@@ -387,7 +446,7 @@ function AppContent() {
             }
           }, 500);
         } catch (e) {
-          console.warn('exchangeCodeForSession failed', e);
+          console.warn("exchangeCodeForSession failed", e);
         }
       }
     };
@@ -399,7 +458,7 @@ function AppContent() {
       clearTimeout(readyTimeout);
       sub?.subscription?.unsubscribe();
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -412,15 +471,15 @@ function AppContent() {
       try {
         const familyId = await ensureFamilyForSession(session);
         if (cancelled) return;
-        setState(s => ({ ...s, syncId: familyId }));
-        const segments = location.pathname.split('/').filter(Boolean);
+        setState((s) => ({ ...s, syncId: familyId }));
+        const segments = location.pathname.split("/").filter(Boolean);
         const currentId = segments[0];
         if (currentId !== familyId) {
           navigate(`/${familyId}/dashboard`, { replace: true });
         }
         await fetchData(familyId);
       } catch (e) {
-        if (!cancelled) setFatalError((e as Error)?.message || '初始化家庭失败');
+        if (!cancelled) setFatalError((e as Error)?.message || "初始化家庭失败");
       } finally {
         if (!cancelled) setBootingFamily(false);
       }
@@ -428,46 +487,45 @@ function AppContent() {
     return () => {
       cancelled = true;
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session, authReady, syncId]);
 
   const currentProfile = useMemo<Profile>(() => {
-    const found = state.profiles.find(p => p.id === state.currentProfileId);
+    const found = state.profiles.find((p) => p.id === state.currentProfileId);
     if (found) return found;
     // 找不到时，严禁回退到列表第一个（因为第一个通常是管理员）
     return {
-      id: 'guest',
-      name: '未登录',
+      id: "guest",
+      name: "未登录",
       balance: 0,
       history: [],
-      avatarColor: 'bg-gray-200',
-      role: 'child', // 默认非管理
+      avatarColor: "bg-gray-200",
+      role: "child", // 默认非管理
     } as Profile;
   }, [state.profiles, state.currentProfileId]);
 
   // 增加更严谨的权限判断逻辑
   const isAdmin = useMemo(() => {
-    if (!currentProfile || currentProfile.id === 'guest') return false;
-    return currentProfile.role === 'admin';
+    if (!currentProfile || currentProfile.id === "guest") return false;
+    return currentProfile.role === "admin";
   }, [currentProfile]);
 
-  const pathToTab: Record<string, 'dashboard' | 'earn' | 'redeem' | 'history' | 'settings' | 'doc'> = {
-    'dashboard': 'dashboard',
-    'earn': 'earn',
-    'redeem': 'redeem',
-    'history': 'history',
-    'settings': 'settings',
-    'doc': 'doc',
+  const pathToTab: Record<string, "dashboard" | "earn" | "redeem" | "history" | "settings"> = {
+    dashboard: "dashboard",
+    earn: "earn",
+    redeem: "redeem",
+    history: "history",
+    settings: "settings",
   };
 
   const activeTab = useMemo(() => {
-    const segments = location.pathname.split('/').filter(Boolean);
+    const segments = location.pathname.split("/").filter(Boolean);
     const tab = segments[1]; // /:syncId/:tab
-    return pathToTab[tab] || 'dashboard';
+    return pathToTab[tab] || "dashboard";
   }, [location.pathname]);
 
   useEffect(() => {
-    if (!isAdmin && activeTab === 'settings') {
+    if (!isAdmin && activeTab === "settings") {
       navigate(`/${resolveFamilyId()}/dashboard`, { replace: true });
     }
   }, [isAdmin, activeTab, navigate, syncId, state.syncId]);
@@ -482,16 +540,17 @@ function AppContent() {
     setPendingError(null);
     const { title, points, type } = pendingAction;
 
-    if (type === 'redeem' && currentProfile.balance < Math.abs(points)) {
-      const msg = '当前元气值不足';
+    if (type === "redeem" && currentProfile.balance < Math.abs(points)) {
+      const msg = "当前元气值不足";
       setPendingError(msg);
-      showToast({ type: 'error', title: msg, description: '请先完成任务赚取元气值' });
+      showToast({ type: "error", title: msg, description: "请先完成任务赚取元气值" });
       return;
     }
 
     setTransactionLoading(true);
 
-    const txId = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `tx-${Date.now()}`;
+    const txId =
+      typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `tx-${Date.now()}`;
     const transaction: Transaction = {
       id: txId,
       title,
@@ -502,41 +561,53 @@ function AppContent() {
 
     const newState = {
       ...state,
-      profiles: state.profiles.map(p => p.id === state.currentProfileId ? {
-        ...p,
-        balance: p.balance + points,
-        history: [transaction, ...p.history].slice(0, 50)
-      } : p)
+      profiles: state.profiles.map((p) =>
+        p.id === state.currentProfileId
+          ? {
+              ...p,
+              balance: p.balance + points,
+              history: [transaction, ...p.history].slice(0, 50),
+            }
+          : p
+      ),
     };
 
     setState(newState);
 
     const familyId = resolveFamilyId();
-    const loadingId = showToast({ type: 'loading', title: '正在同步积分...', duration: 0 });
+    const loadingId = showToast({ type: "loading", title: "正在同步积分...", duration: 0 });
     let synced = false;
     try {
-      const { data: inserted, error: txErr } = await supabase.from('transactions').insert({
-        id: transaction.id,
-        family_id: familyId,
-        profile_id: state.currentProfileId,
-        title,
-        points,
-        type,
-        timestamp: new Date(transaction.timestamp).toISOString(),
-      }).select().single();
+      const { data: inserted, error: txErr } = await supabase
+        .from("transactions")
+        .insert({
+          id: transaction.id,
+          family_id: familyId,
+          profile_id: state.currentProfileId,
+          title,
+          points,
+          type,
+          timestamp: new Date(transaction.timestamp).toISOString(),
+        })
+        .select()
+        .single();
       if (txErr) throw txErr;
       const { error: balErr } = await supabase
-        .from('profiles')
+        .from("profiles")
         .update({ balance: currentProfile.balance + points })
-        .eq('id', state.currentProfileId);
+        .eq("id", state.currentProfileId);
       if (balErr) throw balErr;
       if (inserted) {
         await refreshFamily(familyId);
       }
       synced = true;
-      showToast({ type: 'success', title: '已记录元气变动', description: `${title}：${points > 0 ? '+' : ''}${points} 元气值` });
+      showToast({
+        type: "success",
+        title: "已记录元气变动",
+        description: `${title}：${points > 0 ? "+" : ""}${points} 元气值`,
+      });
     } catch (e) {
-      notifyError('积分变动失败', e);
+      notifyError("积分变动失败", e);
     } finally {
       if (loadingId) dismissToast(loadingId);
       setTransactionLoading(false);
@@ -544,7 +615,7 @@ function AppContent() {
     }
     await syncToCloud(newState);
     if (!synced) {
-      showToast({ type: 'info', title: '本地已保存', description: '同步遇到问题，请稍后刷新重试' });
+      showToast({ type: "info", title: "本地已保存", description: "同步遇到问题，请稍后刷新重试" });
     }
   };
 
@@ -552,10 +623,10 @@ function AppContent() {
     if (!isAdmin || !ids.length) return false;
     const familyId = resolveFamilyId();
     const profileId = state.currentProfileId;
-    const profile = state.profiles.find(p => p.id === profileId);
+    const profile = state.profiles.find((p) => p.id === profileId);
     if (!familyId || !profile) return false;
 
-    const toRemove = profile.history.filter(h => ids.includes(h.id));
+    const toRemove = profile.history.filter((h) => ids.includes(h.id));
     if (!toRemove.length) return false;
 
     const delta = toRemove.reduce((sum, tx) => sum + tx.points, 0);
@@ -563,34 +634,42 @@ function AppContent() {
 
     const newState = {
       ...state,
-      profiles: state.profiles.map(p => p.id === profileId ? {
-        ...p,
-        balance: newBalance,
-        history: p.history.filter(h => !ids.includes(h.id)),
-      } : p)
+      profiles: state.profiles.map((p) =>
+        p.id === profileId
+          ? {
+              ...p,
+              balance: newBalance,
+              history: p.history.filter((h) => !ids.includes(h.id)),
+            }
+          : p
+      ),
     } as FamilyState;
 
     setState(newState);
-    const loadingId = showToast({ type: 'loading', title: '正在删除账单...', duration: 0 });
+    const loadingId = showToast({ type: "loading", title: "正在删除账单...", duration: 0 });
 
     try {
       const { error: delErr } = await supabase
-        .from('transactions')
+        .from("transactions")
         .delete()
-        .eq('family_id', familyId)
-        .in('id', ids);
+        .eq("family_id", familyId)
+        .in("id", ids);
       if (delErr) throw delErr;
       const { error: balErr } = await supabase
-        .from('profiles')
+        .from("profiles")
         .update({ balance: newBalance })
-        .eq('id', profileId)
-        .eq('family_id', familyId);
+        .eq("id", profileId)
+        .eq("family_id", familyId);
       if (balErr) throw balErr;
       await refreshFamily(familyId);
-      showToast({ type: 'success', title: '已删除账单', description: `共删除 ${toRemove.length} 条记录，余额已更新` });
+      showToast({
+        type: "success",
+        title: "已删除账单",
+        description: `共删除 ${toRemove.length} 条记录，余额已更新`,
+      });
       return true;
     } catch (e) {
-      notifyError('删除账单失败', e);
+      notifyError("删除账单失败", e);
       await refreshFamily(familyId);
       return false;
     } finally {
@@ -599,14 +678,19 @@ function AppContent() {
     }
   };
 
-  const handleAdjustBalance = async (profileId: string, payload: { title: string; points: number; type: 'earn' | 'penalty' }) => {
+  const handleAdjustBalance = async (
+    profileId: string,
+    payload: { title: string; points: number; type: "earn" | "penalty" }
+  ) => {
     if (!isAdmin) return;
     const familyId = resolveFamilyId();
-    const profile = state.profiles.find(p => p.id === profileId);
+    const profile = state.profiles.find((p) => p.id === profileId);
     if (!familyId || !profile) return;
 
-    const adjPoints = payload.type === 'penalty' ? -Math.abs(payload.points) : Math.abs(payload.points);
-    const txId = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `tx-${Date.now()}`;
+    const adjPoints =
+      payload.type === "penalty" ? -Math.abs(payload.points) : Math.abs(payload.points);
+    const txId =
+      typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `tx-${Date.now()}`;
     const transaction: Transaction = {
       id: txId,
       title: payload.title,
@@ -617,17 +701,21 @@ function AppContent() {
 
     const newState = {
       ...state,
-      profiles: state.profiles.map(p => p.id === profileId ? {
-        ...p,
-        balance: p.balance + adjPoints,
-        history: [transaction, ...p.history].slice(0, 50),
-      } : p)
+      profiles: state.profiles.map((p) =>
+        p.id === profileId
+          ? {
+              ...p,
+              balance: p.balance + adjPoints,
+              history: [transaction, ...p.history].slice(0, 50),
+            }
+          : p
+      ),
     } as FamilyState;
 
     setState(newState);
-    const loadingId = showToast({ type: 'loading', title: '正在调整元气值...', duration: 0 });
+    const loadingId = showToast({ type: "loading", title: "正在调整元气值...", duration: 0 });
     try {
-      const { error: txErr } = await supabase.from('transactions').insert({
+      const { error: txErr } = await supabase.from("transactions").insert({
         id: transaction.id,
         family_id: familyId,
         profile_id: profileId,
@@ -638,15 +726,19 @@ function AppContent() {
       });
       if (txErr) throw txErr;
       const { error: balErr } = await supabase
-        .from('profiles')
+        .from("profiles")
         .update({ balance: profile.balance + adjPoints })
-        .eq('id', profileId)
-        .eq('family_id', familyId);
+        .eq("id", profileId)
+        .eq("family_id", familyId);
       if (balErr) throw balErr;
       await refreshFamily(familyId);
-      showToast({ type: 'success', title: '已调整元气值', description: `${profile.name}: ${adjPoints > 0 ? '+' : ''}${adjPoints}` });
+      showToast({
+        type: "success",
+        title: "已调整元气值",
+        description: `${profile.name}: ${adjPoints > 0 ? "+" : ""}${adjPoints}`,
+      });
     } catch (e) {
-      notifyError('调整元气值失败', e);
+      notifyError("调整元气值失败", e);
       await refreshFamily(familyId);
     } finally {
       if (loadingId) dismissToast(loadingId);
@@ -654,100 +746,131 @@ function AppContent() {
     }
   };
 
-  const crudAction = async (type: 'task' | 'reward', action: 'save' | 'delete', item: any) => {
+  const crudAction = async (type: "task" | "reward", action: "save" | "delete", item: any) => {
     if (!isAdmin) return;
-    if (action === 'save' && crudSaving) return;
-    if (action === 'save') setCrudSaving(true);
+    if (action === "save" && crudSaving) return;
+    if (action === "save") setCrudSaving(true);
     const familyId = resolveFamilyId();
     let newState = { ...state } as FamilyState;
     let success = false;
-    const typeLabel = type === 'task' ? '任务' : '奖品';
+    const typeLabel = type === "task" ? "任务" : "奖品";
 
     try {
-      if (type === 'task') {
-        if (action === 'save') {
-          if (item.imageUrl && typeof item.imageUrl === 'string' && item.imageUrl.startsWith('data:')) {
-            item.imageUrl = await uploadImageToBucket(item.imageUrl, 'tasks');
+      if (type === "task") {
+        if (action === "save") {
+          if (
+            item.imageUrl &&
+            typeof item.imageUrl === "string" &&
+            item.imageUrl.startsWith("data:")
+          ) {
+            item.imageUrl = await uploadImageToBucket(item.imageUrl, "tasks");
           }
-          const exists = state.tasks.find(t => t.id === item.id);
+          const exists = state.tasks.find((t) => t.id === item.id);
           const payload = { ...item, id: item.id || undefined, family_id: familyId };
           if (exists) {
-            const { error } = await supabase.from('tasks').update(payload).eq('id', item.id);
+            const { error } = await supabase.from("tasks").update(payload).eq("id", item.id);
             if (error) throw error;
           } else {
-            const { data, error } = await supabase.from('tasks').insert(payload).select().single();
+            const { data, error } = await supabase.from("tasks").insert(payload).select().single();
             if (error) throw error;
             item = data;
           }
           await refreshFamily(familyId);
           setEditingItem(null);
           success = true;
-          showToast({ type: 'success', title: '任务已保存', description: item.title || '已更新任务配置' });
+          showToast({
+            type: "success",
+            title: "任务已保存",
+            description: item.title || "已更新任务配置",
+          });
           return;
         } else {
-          await supabase.from('tasks').delete().eq('id', item.id);
-          newState.tasks = state.tasks.filter(t => t.id !== item.id);
+          await supabase.from("tasks").delete().eq("id", item.id);
+          newState.tasks = state.tasks.filter((t) => t.id !== item.id);
           success = true;
         }
-      } else if (type === 'reward') {
-        if (action === 'save') {
-          if (item.imageUrl && typeof item.imageUrl === 'string' && item.imageUrl.startsWith('data:')) {
-            item.imageUrl = await uploadImageToBucket(item.imageUrl, 'rewards');
+      } else if (type === "reward") {
+        if (action === "save") {
+          if (
+            item.imageUrl &&
+            typeof item.imageUrl === "string" &&
+            item.imageUrl.startsWith("data:")
+          ) {
+            item.imageUrl = await uploadImageToBucket(item.imageUrl, "rewards");
           }
-          const exists = state.rewards.find(r => r.id === item.id);
+          const exists = state.rewards.find((r) => r.id === item.id);
           const payload = { ...item, id: item.id || undefined, family_id: familyId };
           if (exists) {
-            const { error } = await supabase.from('rewards').update(payload).eq('id', item.id);
+            const { error } = await supabase.from("rewards").update(payload).eq("id", item.id);
             if (error) throw error;
           } else {
-            const { data, error } = await supabase.from('rewards').insert(payload).select().single();
+            const { data, error } = await supabase
+              .from("rewards")
+              .insert(payload)
+              .select()
+              .single();
             if (error) throw error;
             item = data;
           }
           await refreshFamily(familyId);
           setEditingItem(null);
           success = true;
-          showToast({ type: 'success', title: '任务已保存', description: item.title || '已更新任务配置' });
+          showToast({
+            type: "success",
+            title: "任务已保存",
+            description: item.title || "已更新任务配置",
+          });
           return;
         } else {
-          await supabase.from('rewards').delete().eq('id', item.id);
-          newState.rewards = state.rewards.filter(r => r.id !== item.id);
+          await supabase.from("rewards").delete().eq("id", item.id);
+          newState.rewards = state.rewards.filter((r) => r.id !== item.id);
           success = true;
         }
       }
     } catch (e) {
-      notifyError(`${typeLabel}${action === 'save' ? '保存' : '删除'}失败`, e);
+      notifyError(`${typeLabel}${action === "save" ? "保存" : "删除"}失败`, e);
     } finally {
-      if (action === 'save') setCrudSaving(false);
+      if (action === "save") setCrudSaving(false);
     }
 
     if (!success) return;
 
-    if (action === 'delete') {
+    if (action === "delete") {
       setState(newState);
       await syncToCloud(newState);
       await refreshFamily(familyId);
-      showToast({ type: 'success', title: `${typeLabel}已删除` });
+      showToast({ type: "success", title: `${typeLabel}已删除` });
     }
   };
 
-  const avatarPalette = ['bg-blue-600', 'bg-pink-500', 'bg-purple-500', 'bg-amber-500', 'bg-emerald-500', 'bg-indigo-500'];
+  const avatarPalette = [
+    "bg-blue-600",
+    "bg-pink-500",
+    "bg-purple-500",
+    "bg-amber-500",
+    "bg-emerald-500",
+    "bg-indigo-500",
+  ];
 
   const handleProfileNameChange = async (id: string, name: string) => {
     if (!isAdmin) return;
     const newState = {
       ...state,
-      profiles: state.profiles.map(p => p.id === id ? { ...p, name } : p)
+      profiles: state.profiles.map((p) => (p.id === id ? { ...p, name } : p)),
     } as FamilyState;
     setState(newState);
     const familyId = resolveFamilyId();
     try {
-      const { error } = await supabase.from('profiles').update({ name }).eq('id', id).eq('family_id', familyId);
+      const { error } = await supabase
+        .from("profiles")
+        .update({ name })
+        .eq("id", id)
+        .eq("family_id", familyId);
       if (error) throw error;
       await refreshFamily(familyId);
-      showToast({ type: 'success', title: '姓名已更新' });
+      showToast({ type: "success", title: "姓名已更新" });
     } catch (e) {
-      notifyError('更新成员姓名失败', e);
+      notifyError("更新成员姓名失败", e);
     }
     await syncToCloud(newState);
   };
@@ -756,32 +879,41 @@ function AppContent() {
     if (!isAdmin) return;
     let finalUrl = avatarUrl;
     try {
-      if (avatarUrl && avatarUrl.startsWith('data:')) {
-        finalUrl = await uploadImageToBucket(avatarUrl, 'avatars');
+      if (avatarUrl && avatarUrl.startsWith("data:")) {
+        finalUrl = await uploadImageToBucket(avatarUrl, "avatars");
       }
     } catch (e) {
-      notifyError('上传头像失败', e);
+      notifyError("上传头像失败", e);
       return;
     }
 
     const newState = {
       ...state,
-      profiles: state.profiles.map(p => p.id === id ? { ...p, avatarUrl: finalUrl } : p)
+      profiles: state.profiles.map((p) => (p.id === id ? { ...p, avatarUrl: finalUrl } : p)),
     } as FamilyState;
     setState(newState);
     const familyId = resolveFamilyId();
     try {
-      const { error } = await supabase.from('profiles').update({ avatar_url: finalUrl }).eq('id', id).eq('family_id', familyId);
+      const { error } = await supabase
+        .from("profiles")
+        .update({ avatar_url: finalUrl })
+        .eq("id", id)
+        .eq("family_id", familyId);
       if (error) throw error;
       await refreshFamily(familyId);
-      showToast({ type: 'success', title: '头像已更新' });
+      showToast({ type: "success", title: "头像已更新" });
     } catch (e) {
-      notifyError('更新头像失败', e);
+      notifyError("更新头像失败", e);
     }
     await syncToCloud(newState);
   };
 
-  const handleAddProfile = async (name: string, role: 'admin' | 'child', initialBalance?: number, avatarUrl?: string | null) => {
+  const handleAddProfile = async (
+    name: string,
+    role: "admin" | "child",
+    initialBalance?: number,
+    avatarUrl?: string | null
+  ) => {
     if (!isAdmin) return;
     const trimmed = name.trim();
     if (!trimmed) return;
@@ -789,11 +921,11 @@ function AppContent() {
     const balance = Number.isFinite(initialBalance) ? Number(initialBalance) : 0;
     let finalAvatar = avatarUrl || null;
     try {
-      if (avatarUrl && avatarUrl.startsWith('data:')) {
-        finalAvatar = await uploadImageToBucket(avatarUrl, 'avatars');
+      if (avatarUrl && avatarUrl.startsWith("data:")) {
+        finalAvatar = await uploadImageToBucket(avatarUrl, "avatars");
       }
     } catch (e) {
-      notifyError('上传头像失败', e);
+      notifyError("上传头像失败", e);
       return;
     }
 
@@ -809,52 +941,65 @@ function AppContent() {
     const newState = { ...state, profiles: [...state.profiles, newProfile] } as FamilyState;
     setState(newState);
     try {
-      const { data, error } = await supabase.from('profiles').insert({
-        family_id: familyId,
-        name: newProfile.name,
-        balance: newProfile.balance,
-        role: newProfile.role,
-        avatar_color: newProfile.avatarColor,
-        avatar_url: finalAvatar,
-      }).select().single();
+      const { data, error } = await supabase
+        .from("profiles")
+        .insert({
+          family_id: familyId,
+          name: newProfile.name,
+          balance: newProfile.balance,
+          role: newProfile.role,
+          avatar_color: newProfile.avatarColor,
+          avatar_url: finalAvatar,
+        })
+        .select()
+        .single();
       if (error) throw error;
       if (data) {
         await refreshFamily(familyId);
       }
-      showToast({ type: 'success', title: '成员已新增', description: newProfile.name });
+      showToast({ type: "success", title: "成员已新增", description: newProfile.name });
     } catch (e) {
-      notifyError('新增成员失败', e);
+      notifyError("新增成员失败", e);
     }
     await syncToCloud(newState);
   };
 
   const handleDeleteProfile = async (id: string) => {
     if (!isAdmin) return;
-    const target = state.profiles.find(p => p.id === id);
+    const target = state.profiles.find((p) => p.id === id);
     if (!target) return;
     if (state.profiles.length <= 1) {
-      showToast({ type: 'error', title: '至少保留一位成员', description: '无法删除最后一名成员' });
+      showToast({ type: "error", title: "至少保留一位成员", description: "无法删除最后一名成员" });
       return;
     }
-    const admins = state.profiles.filter(p => p.role === 'admin');
-    if (target.role === 'admin' && admins.length <= 1) {
-      showToast({ type: 'error', title: '至少保留一位管理员', description: '请先指定其他管理员后再删除' });
+    const admins = state.profiles.filter((p) => p.role === "admin");
+    if (target.role === "admin" && admins.length <= 1) {
+      showToast({
+        type: "error",
+        title: "至少保留一位管理员",
+        description: "请先指定其他管理员后再删除",
+      });
       return;
     }
-    const remainingProfiles = state.profiles.filter(p => p.id !== id);
-    const nextCurrent = state.currentProfileId === id
-      ? (remainingProfiles.find(p => p.role === 'admin')?.id || remainingProfiles[0].id)
-      : state.currentProfileId;
+    const remainingProfiles = state.profiles.filter((p) => p.id !== id);
+    const nextCurrent =
+      state.currentProfileId === id
+        ? remainingProfiles.find((p) => p.role === "admin")?.id || remainingProfiles[0].id
+        : state.currentProfileId;
 
-    const newState = { ...state, profiles: remainingProfiles, currentProfileId: nextCurrent } as FamilyState;
+    const newState = {
+      ...state,
+      profiles: remainingProfiles,
+      currentProfileId: nextCurrent,
+    } as FamilyState;
     setState(newState);
     const familyId = resolveFamilyId();
     try {
-      await supabase.from('profiles').delete().eq('id', id).eq('family_id', familyId);
+      await supabase.from("profiles").delete().eq("id", id).eq("family_id", familyId);
       await refreshFamily(familyId);
-      showToast({ type: 'success', title: '成员已删除', description: target.name });
+      showToast({ type: "success", title: "成员已删除", description: target.name });
     } catch (e) {
-      notifyError('删除成员失败', e);
+      notifyError("删除成员失败", e);
     }
     await syncToCloud(newState);
   };
@@ -863,7 +1008,7 @@ function AppContent() {
     setShowProfileSwitcher(false);
     let nextState: FamilyState | null = null;
 
-    setState(prev => {
+    setState((prev) => {
       if (prev.currentProfileId === id) {
         nextState = prev;
         return prev;
@@ -876,9 +1021,9 @@ function AppContent() {
     const familyId = resolveFamilyId();
     if (familyId) {
       try {
-        await supabase.from('families').update({ current_profile_id: id }).eq('id', familyId);
+        await supabase.from("families").update({ current_profile_id: id }).eq("id", familyId);
       } catch (e) {
-        console.warn('Profile switch sync failed', e);
+        console.warn("Profile switch sync failed", e);
       }
     }
 
@@ -895,7 +1040,7 @@ function AppContent() {
     reader.onloadend = () => {
       setEditingItem({
         ...editingItem,
-        item: { ...editingItem.item, imageUrl: reader.result as string }
+        item: { ...editingItem.item, imageUrl: reader.result as string },
       });
     };
     reader.readAsDataURL(file);
@@ -903,15 +1048,15 @@ function AppContent() {
 
   const filteredTasks = useMemo(() => {
     const sorted = [...state.tasks].sort((a, b) => a.points - b.points);
-    return taskFilter === 'all' ? sorted : sorted.filter(t => t.category === taskFilter);
+    return taskFilter === "all" ? sorted : sorted.filter((t) => t.category === taskFilter);
   }, [state.tasks, taskFilter]);
 
   const filteredRewards = useMemo(() => {
     const sorted = [...state.rewards].sort((a, b) => a.points - b.points);
-    return rewardFilter === 'all' ? sorted : sorted.filter(r => r.type === rewardFilter);
+    return rewardFilter === "all" ? sorted : sorted.filter((r) => r.type === rewardFilter);
   }, [state.rewards, rewardFilter]);
 
-  const goTab = (tab: 'dashboard' | 'earn' | 'redeem' | 'history' | 'settings' | 'doc') => {
+  const goTab = (tab: "dashboard" | "earn" | "redeem" | "history" | "settings") => {
     const target = resolveFamilyId();
     if (!target) return;
     navigate(`/${target}/${tab}`);
@@ -930,11 +1075,11 @@ function AppContent() {
         profiles: INITIAL_PROFILES,
         tasks: INITIAL_TASKS,
         rewards: INITIAL_REWARDS,
-        syncId: '',
+        syncId: "",
       });
-      navigate('/', { replace: true });
+      navigate("/", { replace: true });
     } catch (e) {
-      notifyError('退出登录失败', e);
+      notifyError("退出登录失败", e);
     } finally {
       setIsLoading(false);
     }
@@ -954,7 +1099,7 @@ function AppContent() {
 
   if (!session) {
     const path = location.pathname;
-    if (path.startsWith('/reset')) {
+    if (path.startsWith("/reset")) {
       return <PasswordResetPage />;
     }
     return <AuthGate />;
@@ -963,7 +1108,7 @@ function AppContent() {
   return (
     <div
       className="min-h-screen flex flex-col lg:flex-row transition-colors"
-      style={{ background: 'var(--app-bg)', color: 'var(--text-primary)' }}
+      style={{ background: "var(--app-bg)", color: "var(--text-primary)" }}
     >
       {showInlineBooting && (
         <div className="fixed top-4 right-4 z-50 flex items-center gap-2 px-3 py-2 rounded-full bg-white/90 dark:bg-gray-900/85 border border-white/80 dark:border-gray-700 shadow-lg backdrop-blur-md">
@@ -983,7 +1128,7 @@ function AppContent() {
       )}
 
       <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen">
-        <Sidebar 
+        <Sidebar
           activeTab={activeTab}
           onChangeTab={goTab}
           isAdmin={isAdmin}
@@ -993,7 +1138,7 @@ function AppContent() {
       </div>
 
       <main className="flex-1 w-full lg:p-8 px-3 sm:px-4 pt-8 pb-28 lg:pt-5 lg:pb-10 overflow-y-auto no-scrollbar">
-        <HeaderBar 
+        <HeaderBar
           activeTab={activeTab}
           currentProfile={currentProfile}
           isAdmin={isAdmin}
@@ -1004,87 +1149,113 @@ function AppContent() {
         />
 
         <Routes>
-          <Route path="/" element={resolvedFamilyId ? <Navigate to={`/${resolvedFamilyId}/dashboard`} replace /> : <AuthGate />} />
-          <Route path="/reset" element={<PasswordResetPage />} />
-          <Route path="/:syncId" element={resolvedFamilyId ? <Navigate to={`/${resolvedFamilyId}/dashboard`} replace /> : <AuthGate />} />
-          <Route 
-            path="/:syncId/dashboard" 
+          <Route
+            path="/"
             element={
-              <DashboardSection 
+              resolvedFamilyId ? (
+                <Navigate to={`/${resolvedFamilyId}/dashboard`} replace />
+              ) : (
+                <AuthGate />
+              )
+            }
+          />
+          <Route path="/reset" element={<PasswordResetPage />} />
+          <Route
+            path="/:syncId"
+            element={
+              resolvedFamilyId ? (
+                <Navigate to={`/${resolvedFamilyId}/dashboard`} replace />
+              ) : (
+                <AuthGate />
+              )
+            }
+          />
+          <Route
+            path="/:syncId/dashboard"
+            element={
+              <DashboardSection
                 currentProfile={currentProfile}
                 profiles={state.profiles}
-                onGoEarn={() => goTab('earn')}
-                onGoRedeem={() => goTab('redeem')}
+                onGoEarn={() => goTab("earn")}
+                onGoRedeem={() => goTab("redeem")}
               />
             }
           />
-          <Route 
-            path="/:syncId/earn" 
+          <Route
+            path="/:syncId/earn"
             element={
-              <EarnSection 
+              <EarnSection
                 tasks={state.tasks}
                 onSelectTask={(payload) => setPendingAction(payload)}
               />
             }
           />
-          <Route 
-            path="/:syncId/redeem" 
+          <Route
+            path="/:syncId/redeem"
             element={
-              <RedeemSection 
+              <RedeemSection
                 rewards={state.rewards}
                 balance={currentProfile.balance}
                 onRedeem={(payload) => setPendingAction(payload)}
               />
             }
           />
-          <Route 
-            path="/:syncId/history" 
+          <Route
+            path="/:syncId/history"
             element={
-              <HistorySection 
-                history={currentProfile.history} 
-                isAdmin={isAdmin} 
-                onDeleteTransactions={handleDeleteTransactions} 
+              <HistorySection
+                history={currentProfile.history}
+                isAdmin={isAdmin}
+                onDeleteTransactions={handleDeleteTransactions}
               />
             }
           />
-          <Route 
-            path="/:syncId/settings" 
-            element={isAdmin ? (
-              <SettingsSection 
-                profiles={state.profiles}
-                tasks={filteredTasks}
-                rewards={filteredRewards}
-                taskFilter={taskFilter}
-                rewardFilter={rewardFilter}
-                onTaskFilterChange={setTaskFilter}
-                onRewardFilterChange={setRewardFilter}
-                onEdit={(payload) => setEditingItem(payload)}
-                onDelete={(type, item) => crudAction(type, 'delete', item)}
-                onSync={() => refreshFamily()}
-                onPrint={() => printReport(state)}
-                onProfileNameChange={(id, name) => handleProfileNameChange(id, name)}
-                onUpdateProfileAvatar={(id, avatarUrl) => handleUpdateProfileAvatar(id, avatarUrl)}
-                onAddProfile={(name, role, balance, avatarUrl) => handleAddProfile(name, role, balance, avatarUrl)}
-                onDeleteProfile={(id) => handleDeleteProfile(id)}
-                onAdjustBalance={(profileId, payload) => handleAdjustBalance(profileId, payload)}
-                isSyncing={isSyncing}
-                currentSyncId={resolveFamilyId()}
-              />
-            ) : <Navigate to={`/${resolveFamilyId()}/dashboard`} replace />}
+          <Route
+            path="/:syncId/settings"
+            element={
+              isAdmin ? (
+                <SettingsSection
+                  profiles={state.profiles}
+                  tasks={filteredTasks}
+                  rewards={filteredRewards}
+                  taskFilter={taskFilter}
+                  rewardFilter={rewardFilter}
+                  onTaskFilterChange={setTaskFilter}
+                  onRewardFilterChange={setRewardFilter}
+                  onEdit={(payload) => setEditingItem(payload)}
+                  onDelete={(type, item) => crudAction(type, "delete", item)}
+                  onSync={() => refreshFamily()}
+                  onPrint={() => printReport(state)}
+                  onProfileNameChange={(id, name) => handleProfileNameChange(id, name)}
+                  onUpdateProfileAvatar={(id, avatarUrl) =>
+                    handleUpdateProfileAvatar(id, avatarUrl)
+                  }
+                  onAddProfile={(name, role, balance, avatarUrl) =>
+                    handleAddProfile(name, role, balance, avatarUrl)
+                  }
+                  onDeleteProfile={(id) => handleDeleteProfile(id)}
+                  onAdjustBalance={(profileId, payload) => handleAdjustBalance(profileId, payload)}
+                  isSyncing={isSyncing}
+                  currentSyncId={resolveFamilyId()}
+                />
+              ) : (
+                <Navigate to={`/${resolveFamilyId()}/dashboard`} replace />
+              )
+            }
           />
           <Route path="/:syncId/doc" element={<DocsPage />} />
           <Route path="*" element={<Navigate to={`/${resolveFamilyId()}/dashboard`} replace />} />
         </Routes>
       </main>
 
-      <MobileNav 
+      <MobileNav
         activeTab={activeTab}
         onChangeTab={goTab}
         isAdmin={isAdmin}
         onProfileClick={() => setShowProfileSwitcher(true)}
       />
 
-      <ProfileSwitcherModal 
+      <ProfileSwitcherModal
         open={showProfileSwitcher}
         profiles={state.profiles}
         currentProfileId={state.currentProfileId}
@@ -1093,10 +1264,10 @@ function AppContent() {
       />
 
       {editingItem && isAdmin && (
-        <EditModal 
+        <EditModal
           editingItem={editingItem}
           onClose={() => setEditingItem(null)}
-          onSave={(type, item) => crudAction(type, 'save', item)}
+          onSave={(type, item) => crudAction(type, "save", item)}
           onUpdate={setEditingItem}
           fileInputRef={fileInputRef}
           onImageChange={handleImageUpload}
@@ -1104,7 +1275,7 @@ function AppContent() {
         />
       )}
 
-      <PendingActionModal 
+      <PendingActionModal
         pendingAction={pendingAction}
         error={pendingError}
         loading={transactionLoading}
@@ -1115,10 +1286,7 @@ function AppContent() {
         onConfirm={handleTransaction}
       />
 
-      <PasswordResetModal 
-        open={showPasswordReset}
-        onClose={() => setShowPasswordReset(false)}
-      />
+      <PasswordResetModal open={showPasswordReset} onClose={() => setShowPasswordReset(false)} />
     </div>
   );
 }
