@@ -2,7 +2,7 @@ import { Icon } from "./Icon";
 import { Profile } from "../types";
 
 interface SidebarProps {
-  activeTab: "dashboard" | "earn" | "redeem" | "history" | "settings";
+  activeTab: "dashboard" | "earn" | "redeem" | "history" | "settings" | "achievements";
   onChangeTab: (tab: SidebarProps["activeTab"]) => void;
   isAdmin: boolean;
   currentProfile: Profile;
@@ -38,6 +38,7 @@ export function Sidebar({
           { id: "earn", icon: "plus", label: "元气任务" },
           { id: "redeem", icon: "reward", label: "梦想商店" },
           { id: "history", icon: "history", label: "能量账单" },
+          { id: "achievements", icon: "reward", label: "成就中心" },
           ...(isAdmin ? [{ id: "settings", icon: "settings", label: "系统配置" }] : []),
         ].map((tab) => {
           const isActive = activeTab === tab.id;

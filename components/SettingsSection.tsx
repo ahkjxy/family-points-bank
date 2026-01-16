@@ -30,6 +30,8 @@ interface SettingsSectionProps {
   currentSyncId?: string;
   currentProfileId?: string;
   onSendSystemNotification?: (content: string) => void;
+  onApproveWishlist?: (rewardId: string) => void;
+  onRejectWishlist?: (rewardId: string) => void;
 }
 
 export function SettingsSection({
@@ -53,6 +55,8 @@ export function SettingsSection({
   currentSyncId,
   currentProfileId,
   onSendSystemNotification,
+  onApproveWishlist,
+  onRejectWishlist,
 }: SettingsSectionProps) {
   const { showToast } = useToast();
   const currentProfile = profiles.find((p) => p.id === currentProfileId);
@@ -920,19 +924,54 @@ export function SettingsSection({
                         className="w-full h-full object-cover"
                       />
                     </div>
-                    <div className="overflow-hidden">
-                      <span className="text-sm font-bold text-gray-800 block truncate group-hover:text-[#FF4D94]">
-                        {r.title}
-                      </span>
+                    <div className="overflow-hidden flex-1">
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <span className="text-sm font-bold text-gray-800 truncate group-hover:text-[#FF4D94]">
+                          {r.title}
+                        </span>
+                        {r.status === 'pending' && (
+                          <span className="text-[9px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-bold uppercase">
+                            待审核
+                          </span>
+                        )}
+                        {r.status === 'rejected' && (
+                          <span className="text-[9px] px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 font-bold uppercase">
+                            已拒绝
+                          </span>
+                        )}
+                        {r.requestedBy && profiles.find(p => p.id === r.requestedBy) && (
+                          <span className="text-[9px] px-2 py-0.5 rounded-full bg-pink-100 text-pink-700 font-bold">
+                            💝 {profiles.find(p => p.id === r.requestedBy)?.name}的愿望
+                          </span>
+                        )}
+                      </div>
                       <span className="text-[11px] text-gray-400 block tracking-wider uppercase">
                         {r.type}
                       </span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 shrink-0 ml-3">
+                  <div className="flex items-center gap-2 shrink-0 ml-3">
                     <span className="text-sm font-black text-[#FF4D94] points-font bg-[#FFF2F7] px-3 py-1 rounded-xl">
                       {r.points}
                     </span>
+                    {r.status === 'pending' && onApproveWishlist && onRejectWishlist && (
+                      <div className="flex gap-1">
+                        <button
+                          onClick={() => onApproveWishlist(r.id)}
+                          className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+                          title="批准"
+                        >
+                          <Icon name="plus" size={16} />
+                        </button>
+                        <button
+                          onClick={() => onRejectWishlist(r.id)}
+                          className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                          title="拒绝"
+                        >
+                          <Icon name="plus" size={16} className="rotate-45" />
+                        </button>
+                      </div>
+                    )}
                     <div className="flex gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all">
                       <button
                         onClick={() => onEdit({ type: "reward", item: r })}

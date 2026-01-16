@@ -395,28 +395,34 @@ export function ChatWidget({ currentProfile, familyId, profiles }: ChatWidgetPro
 
       {isOpen && (
         <div
-          className={`fixed bottom-6 right-6 z-50 w-80 sm:w-96 bg-white dark:bg-[#1E293B] rounded-[32px] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] border border-gray-100 dark:border-white/10 flex flex-col transition-all duration-300 ${isMinimized ? "h-16" : "h-[500px]"}`}
+          className={`fixed top-0 right-0 z-50 bg-white dark:bg-[#1E293B] shadow-[-4px_0_24px_-8px_rgba(0,0,0,0.2)] border-l border-gray-100 dark:border-white/10 flex flex-col transition-all duration-300 ${
+            isMinimized ? "w-16 h-screen" : "w-80 sm:w-96 h-screen"
+          }`}
         >
-          <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-white/10">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#FF4D94] to-[#7C4DFF] flex items-center justify-center text-white font-black">
-                <Icon name="bell" size={16} />
+          <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-white/10 shrink-0">
+            {!isMinimized && (
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#FF4D94] to-[#7C4DFF] flex items-center justify-center text-white font-black">
+                  <Icon name="bell" size={16} />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-gray-900 dark:text-white">家庭聊天室</h3>
+                  <p className="text-[10px] text-gray-400">{profiles.length} 位成员在线</p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-sm font-black text-gray-900 dark:text-white">家庭聊天室</h3>
-                <p className="text-[10px] text-gray-400">{profiles.length} 位成员在线</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
+            )}
+            <div className={`flex items-center gap-2 ${isMinimized ? "flex-col w-full" : ""}`}>
               <button
                 onClick={handleToggleMinimize}
                 className="w-8 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 flex items-center justify-center text-gray-400 transition-colors"
+                title={isMinimized ? "展开" : "收起"}
               >
                 <Icon name={isMinimized ? "plus" : "history"} size={14} />
               </button>
               <button
                 onClick={handleClose}
                 className="w-8 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 flex items-center justify-center text-gray-400 hover:text-rose-500 transition-colors"
+                title="关闭"
               >
                 <Icon name="plus" size={14} className="rotate-45" />
               </button>

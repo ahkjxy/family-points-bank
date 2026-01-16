@@ -5,12 +5,13 @@ import { useToast } from './Toast';
 import { ConfirmDialog } from './ConfirmDialog';
 import { Icon } from './Icon';
 
-type HistoryTab = 'all' | 'earn' | 'penalty' | 'redeem';
+type HistoryTab = 'all' | 'earn' | 'penalty' | 'redeem' | 'transfer';
 const TAB_LABELS: Record<HistoryTab, string> = {
   all: '全部账单',
   earn: '赚取',
   penalty: '扣减',
   redeem: '兑换',
+  transfer: '转赠',
 };
 
 interface HistorySectionProps {
@@ -68,6 +69,7 @@ export function HistorySection({ history, isAdmin = false, onDeleteTransactions 
       earn: { label: 'Earned', cls: 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-transparent', icon: 'plus' },
       penalty: { label: 'Penalty', cls: 'bg-rose-50 text-rose-600 border-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:border-transparent', icon: 'penalty' },
       redeem: { label: 'Redeem', cls: 'bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:border-transparent', icon: 'reward' },
+      transfer: { label: 'Transfer', cls: 'bg-purple-50 text-purple-600 border-purple-100 dark:bg-purple-500/10 dark:text-purple-400 dark:border-transparent', icon: 'history' },
       all: { label: 'Bill', cls: 'bg-gray-50 text-gray-600 border-gray-100 dark:bg-white/5 dark:text-gray-400 dark:border-transparent', icon: 'history' },
     };
     const item = map[type];

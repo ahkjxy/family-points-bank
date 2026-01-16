@@ -5,18 +5,20 @@ import { ThemeMode } from './ThemeProvider';
 import { formatDateTime } from '../utils/datetime';
 
 interface HeaderBarProps {
-  activeTab: 'dashboard' | 'earn' | 'redeem' | 'history' | 'settings' | 'doc';
+  activeTab: 'dashboard' | 'earn' | 'redeem' | 'history' | 'settings' | 'doc' | 'achievements';
   currentProfile: Profile;
   isAdmin: boolean;
   theme: ThemeMode;
   onToggleTheme: () => void;
   onPrint: () => void;
   onLogout: () => void;
+  onTransfer?: () => void;
+  onWishlist?: () => void;
 }
 
 type HeaderMessage = { title: string; desc: string; time: string; tone: 'indigo' | 'rose' | 'emerald' | 'slate' };
 
-export function HeaderBar({ activeTab, currentProfile, isAdmin, theme, onToggleTheme, onPrint, onLogout }: HeaderBarProps) {
+export function HeaderBar({ activeTab, currentProfile, isAdmin, theme, onToggleTheme, onPrint, onLogout, onTransfer, onWishlist }: HeaderBarProps) {
   const [openNotice, setOpenNotice] = useState<boolean>(false);
   const messageCenter = useMemo<HeaderMessage[]>(() => {
     const sorted = [...currentProfile.history].sort((a, b) => b.timestamp - a.timestamp).slice(0, 5);
@@ -72,6 +74,26 @@ export function HeaderBar({ activeTab, currentProfile, isAdmin, theme, onToggleT
         </div>
 
         <div className="flex flex-wrap items-center justify-start lg:justify-end gap-2 lg:gap-3">
+          {onTransfer && (
+            <button
+              onClick={onTransfer}
+              className="px-4 py-2.5 bg-gradient-to-r from-[#FF4D94] to-[#7C4DFF] text-white rounded-2xl text-xs font-bold hover:brightness-110 transition-all flex items-center gap-2 shadow-lg"
+            >
+              <Icon name="plus" size={14} className="rotate-45" />
+              转赠
+            </button>
+          )}
+          
+          {onWishlist && (
+            <button
+              onClick={onWishlist}
+              className="px-4 py-2.5 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 rounded-2xl text-xs font-bold hover:bg-gray-50 dark:hover:bg-white/10 transition-all flex items-center gap-2"
+            >
+              <Icon name="reward" size={14} />
+              许愿
+            </button>
+          )}
+
           <div className="relative" ref={noticeRef}>
             <button
               onClick={() => setOpenNotice((prev: boolean) => !prev)}

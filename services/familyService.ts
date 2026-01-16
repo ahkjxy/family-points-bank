@@ -41,7 +41,16 @@ export async function fetchFamilyData(familyId: string): Promise<FamilyState | n
       currentProfileId: (data as any).current_profile_id || profiles[0]?.id || '',
       profiles,
       tasks: (data as any).tasks || [],
-      rewards: (data as any).rewards || [],
+      rewards: ((data as any).rewards || []).map((r: any) => ({
+        id: r.id,
+        title: r.title,
+        points: r.points,
+        type: r.type,
+        imageUrl: r.image_url,
+        status: r.status,
+        requestedBy: r.requested_by,
+        requestedAt: r.requested_at ? new Date(r.requested_at).getTime() : undefined,
+      })),
       syncId: familyId,
     };
   } catch (e) {

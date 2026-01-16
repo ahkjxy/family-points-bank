@@ -1,4 +1,4 @@
-import { Reward } from '../types';
+import { Reward, Profile } from '../types';
 import { Icon } from './Icon';
 
 interface RewardSettingsProps {
@@ -10,11 +10,26 @@ interface RewardSettingsProps {
   onEdit: (reward: Reward) => void;
   onBatchDelete: () => void;
   isDeleting: boolean;
+  onApproveWishlist?: (rewardId: string) => void;
+  onRejectWishlist?: (rewardId: string) => void;
+  profiles?: Profile[];
 }
 
 const REWARD_COLORS: Record<string, string> = {
   '实物奖品': 'bg-orange-100 text-orange-700',
   '特权奖励': 'bg-purple-100 text-purple-700',
+};
+
+const STATUS_COLORS: Record<string, string> = {
+  'active': 'bg-emerald-100 text-emerald-700',
+  'pending': 'bg-amber-100 text-amber-700',
+  'rejected': 'bg-rose-100 text-rose-700',
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  'active': '已上架',
+  'pending': '待审核',
+  'rejected': '已拒绝',
 };
 
 export function RewardSettings({
@@ -26,10 +41,20 @@ export function RewardSettings({
   onEdit,
   onBatchDelete,
   isDeleting,
+  onApproveWishlist,
+  onRejectWishlist,
+  profiles = [],
 }: RewardSettingsProps) {
   const filters: ('实物奖品' | '特权奖励' | 'all')[] = ['all', '实物奖品', '特权奖励'];
 
+  // 包含所有状态的奖励（包括 rejected）
   const filteredRewards = filter === 'all' ? rewards : rewards.filter(r => r.type === filter);
+
+  const getRequesterName = (reward: Reward) => {
+    if (!reward.requestedBy) return null;
+    const requester = profiles.find(p => p.id === reward.requestedBy);
+    return requester?.name || '某人';
+  };
 
   return (
     <div className="space-y-4">
@@ -86,10 +111,20 @@ export function RewardSettings({
               )}
             </div>
             <div className="flex-1">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <span className={`text-xs px-2 py-0.5 rounded-full ${REWARD_COLORS[reward.type] || 'bg-gray-100 text-gray-700'}`}>
                   {reward.type}
                 </span>
+                {reward.status && (
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${STATUS_COLORS[reward.status] || 'bg-gray-100 text-gray-700'}`}>
+                    {STATUS_LABELS[reward.status] || reward.status}
+                  </span>
+                )}
+                {reward.requestedBy && getRequesterName(reward) && (
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-pink-100 text-pink-700">
+                    💝 {getRequesterName(reward)}的愿望
+                  </span>
+                )}
                 <span className="font-semibold text-gray-900 text-sm">{reward.title}</span>
               </div>
               <div className="flex items-center gap-2 mt-1">
@@ -98,6 +133,29 @@ export function RewardSettings({
                 </span>
               </div>
             </div>
+            
+            {/* 审核按钮 - 仅对 pending 状态显示 */}
+            {reward.status === 'pending' && onApproveWishlist && onRejectWishlist && (
+              <div className="flex gap-2">
+                <button
+                  onClick={() => onApproveWishlist(reward.id)}
+                  className="px-3 py-1.5 text-xs font-semibold text-emerald-600 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition-colors flex items-center gap-1"
+                  title="批准"
+                >
+                  <Icon name="plus" size={14} />
+                  批准
+                </button>
+                <button
+                  onClick={() => onRejectWishlist(reward.id)}
+                  className="px-3 py-1.5 text-xs font-semibold text-rose-600 bg-rose-50 rounded-lg hover:bg-rose-100 transition-colors flex items-center gap-1"
+                  title="拒绝"
+                >
+                  <Icon name="plus" size={14} className="rotate-45" />
+                  拒绝
+                </button>
+              </div>
+            )}
+            
             <button
               onClick={() => onEdit(reward)}
               className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"

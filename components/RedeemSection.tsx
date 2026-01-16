@@ -1,25 +1,46 @@
 import { useMemo, useState } from 'react';
-import { Reward } from '../types';
+import { Reward, Profile } from '../types';
 import { Icon } from './Icon';
 
 interface RedeemSectionProps {
   rewards: Reward[];
   balance: number;
   onRedeem: (payload: { title: string; points: number; type: 'redeem' }) => void;
+  isAdmin?: boolean;
+  onApproveWishlist?: (rewardId: string) => void;
+  onRejectWishlist?: (rewardId: string) => void;
+  profiles?: Profile[];
 }
 
-export function RedeemSection({ rewards, balance, onRedeem }: RedeemSectionProps) {
+export function RedeemSection({ rewards, balance, onRedeem, isAdmin = false, onApproveWishlist, onRejectWishlist, profiles = [] }: RedeemSectionProps) {
   const tabs = ['all', '实物奖品', '特权奖励'] as const;
   const [activeTab, setActiveTab] = useState<typeof tabs[number]>('all');
 
   const filtered = useMemo(() => {
-    const sorted = [...rewards].sort((a, b) => a.points - b.points);
+    // 过滤掉已拒绝的奖励
+    // 普通用户只能看到 active 状态的奖励
+    // 管理员可以看到 active 和 pending 状态的奖励
+    const availableRewards = rewards.filter(r => {
+      // 排除已拒绝的
+      if (r.status === 'rejected') return false;
+      // 管理员可以看到 active 和 pending
+      if (isAdmin) return r.status === 'active' || r.status === 'pending' || !r.status;
+      // 普通用户只能看到 active
+      return r.status === 'active' || !r.status;
+    });
+    const sorted = [...availableRewards].sort((a, b) => a.points - b.points);
     if (activeTab === 'all') return sorted;
     return sorted.filter(r => r.type === activeTab);
-  }, [activeTab, rewards]);
+  }, [activeTab, rewards, isAdmin]);
 
   const getRewardImage = (reward: Reward) =>
     reward.imageUrl || `https://ui-avatars.com/api/?background=7C4DFF&color=fff&name=${encodeURIComponent(reward.title)}&bold=true&font-size=0.33`;
+
+  const getRequesterName = (reward: Reward) => {
+    if (!reward.requestedBy) return null;
+    const requester = profiles.find(p => p.id === reward.requestedBy);
+    return requester?.name || '某人';
+  };
 
   return (
     <div className="space-y-8 pb-24 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -101,13 +122,28 @@ export function RedeemSection({ rewards, balance, onRedeem }: RedeemSectionProps
                     {reward.type === '实物奖品' ? '实物' : '特权'}
                   </div>
 
+                  {/* Wishlist Badge - 显示请求者 */}
+                  {reward.requestedBy && getRequesterName(reward) && (
+                    <div className="absolute top-14 left-4 px-3 py-1 rounded-full text-[9px] font-black tracking-wide bg-pink-500/90 backdrop-blur-md text-white border border-white/20 shadow-sm flex items-center gap-1">
+                      <span>💝</span>
+                      <span>{getRequesterName(reward)}的愿望</span>
+                    </div>
+                  )}
+
+                  {/* Status Badge for Pending */}
+                  {reward.status === 'pending' && (
+                    <div className="absolute top-4 right-4 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-amber-500/90 backdrop-blur-md text-white border border-white/20 shadow-sm">
+                      待审核
+                    </div>
+                  )}
+
                   {/* Points Badge */}
                   <div className="absolute bottom-4 right-4 px-4 py-2 rounded-2xl bg-gradient-to-br from-[#FF4D94] to-[#7C4DFF] text-white text-sm font-black points-font shadow-lg transform translate-y-0 group-hover:-translate-y-1 transition-transform">
                     {reward.points} 元气值
                   </div>
 
                   {/* Progress Overlay if not affordable */}
-                  {!canAfford && (
+                  {!canAfford && reward.status !== 'pending' && (
                     <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex flex-col items-center justify-center p-6 text-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                       <p className="text-white text-xs font-black uppercase tracking-[0.2em] mb-2">成长进度</p>
                       <div className="w-full h-2 bg-white/20 rounded-full overflow-hidden mb-2">
@@ -124,12 +160,14 @@ export function RedeemSection({ rewards, balance, onRedeem }: RedeemSectionProps
                 <div className="mb-4">
                   <h4 className="text-lg font-black text-gray-900 dark:text-white tracking-tight group-hover:text-[#FF4D94] transition-colors truncate">{reward.title}</h4>
                   <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mt-1">
-                    {canAfford ? '✨ 立即兑换，享受惊喜' : `⚡ 再加油获得 ${gap} 元气值`}
+                    {reward.status === 'pending' 
+                      ? '🔔 等待管理员审核中...' 
+                      : canAfford ? '✨ 立即兑换，享受惊喜' : `⚡ 再加油获得 ${gap} 元气值`}
                   </p>
                 </div>
 
                 <div className="mt-auto">
-                  {!canAfford && (
+                  {!canAfford && reward.status !== 'pending' && (
                     <div className="mb-4 space-y-1.5">
                       <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-gray-400">
                         <span>当前进度</span>
@@ -141,24 +179,50 @@ export function RedeemSection({ rewards, balance, onRedeem }: RedeemSectionProps
                     </div>
                   )}
 
-                  <button
-                    disabled={!canAfford}
-                    onClick={() => onRedeem({ title: reward.title, points: -reward.points, type: 'redeem' })}
-                    className={`w-full py-4 rounded-[20px] text-sm font-black uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2 ${
-                      canAfford 
-                        ? 'bg-[#1A1A1A] dark:bg-white text-white dark:text-black hover:bg-[#FF4D94] dark:hover:bg-[#FF4D94] hover:text-white dark:hover:text-white shadow-lg active:scale-95' 
-                        : 'bg-gray-100 dark:bg-white/5 text-gray-400 dark:text-gray-600 cursor-not-allowed'
-                    }`}
-                  >
-                    {canAfford ? (
-                      <>
-                        <Icon name="reward" size={16} />
-                        立即兑换
-                      </>
-                    ) : (
-                      '元气不足'
-                    )}
-                  </button>
+                  {reward.status === 'pending' && isAdmin ? (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => onApproveWishlist?.(reward.id)}
+                        className="flex-1 py-3 rounded-2xl text-sm font-bold bg-emerald-500 text-white hover:bg-emerald-600 transition-all flex items-center justify-center gap-2"
+                      >
+                        <Icon name="plus" size={16} />
+                        批准
+                      </button>
+                      <button
+                        onClick={() => onRejectWishlist?.(reward.id)}
+                        className="flex-1 py-3 rounded-2xl text-sm font-bold bg-rose-500 text-white hover:bg-rose-600 transition-all flex items-center justify-center gap-2"
+                      >
+                        <Icon name="plus" size={16} className="rotate-45" />
+                        拒绝
+                      </button>
+                    </div>
+                  ) : reward.status === 'pending' ? (
+                    <button
+                      disabled
+                      className="w-full py-4 rounded-[20px] text-sm font-black uppercase tracking-widest bg-gray-100 dark:bg-white/5 text-gray-400 dark:text-gray-600 cursor-not-allowed"
+                    >
+                      等待审核
+                    </button>
+                  ) : (
+                    <button
+                      disabled={!canAfford}
+                      onClick={() => onRedeem({ title: reward.title, points: -reward.points, type: 'redeem' })}
+                      className={`w-full py-4 rounded-[20px] text-sm font-black uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2 ${
+                        canAfford 
+                          ? 'bg-[#1A1A1A] dark:bg-white text-white dark:text-black hover:bg-[#FF4D94] dark:hover:bg-[#FF4D94] hover:text-white dark:hover:text-white shadow-lg active:scale-95' 
+                          : 'bg-gray-100 dark:bg-white/5 text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                      }`}
+                    >
+                      {canAfford ? (
+                        <>
+                          <Icon name="reward" size={16} />
+                          立即兑换
+                        </>
+                      ) : (
+                        '元气不足'
+                      )}
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

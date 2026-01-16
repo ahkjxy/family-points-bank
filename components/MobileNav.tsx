@@ -1,7 +1,7 @@
 import { Icon } from "./Icon";
 
 interface MobileNavProps {
-  activeTab: "dashboard" | "earn" | "redeem" | "history" | "settings";
+  activeTab: "dashboard" | "earn" | "redeem" | "history" | "settings" | "achievements";
   onChangeTab: (tab: MobileNavProps["activeTab"]) => void;
   isAdmin: boolean;
   onProfileClick: () => void;
@@ -12,7 +12,7 @@ export function MobileNav({ activeTab, onChangeTab, isAdmin, onProfileClick }: M
     { id: "dashboard", label: "概览", icon: "home" },
     { id: "earn", label: "任务", icon: "plus" },
     { id: "redeem", label: "商店", icon: "reward" },
-    { id: "history", label: "账单", icon: "history" },
+    { id: "achievements", label: "成就", icon: "reward" },
     ...(isAdmin ? [{ id: "settings", label: "配置", icon: "settings" }] : []),
   ];
 

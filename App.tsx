@@ -26,6 +26,9 @@ import {
   useToast,
   ThemeProvider,
   useTheme,
+  TransferModal,
+  WishlistModal,
+  AchievementCenter,
 } from "./components";
 
 export default function App() {
@@ -90,6 +93,8 @@ function AppContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
   const [showPasswordReset, setShowPasswordReset] = useState(false);
+  const [showTransferModal, setShowTransferModal] = useState(false);
+  const [showWishlistModal, setShowWishlistModal] = useState(false);
 
   const [taskFilter, setTaskFilter] = useState<Category | "all">("all");
   const [rewardFilter, setRewardFilter] = useState<"实物奖品" | "特权奖励" | "all">("all");
@@ -385,7 +390,16 @@ function AppContent() {
         ),
         profiles,
         tasks: (data as any).tasks || [],
-        rewards: (data as any).rewards || [],
+        rewards: ((data as any).rewards || []).map((r: any) => ({
+          id: r.id,
+          title: r.title,
+          points: r.points,
+          type: r.type,
+          imageUrl: r.image_url,
+          status: r.status,
+          requestedBy: r.requested_by,
+          requestedAt: r.requested_at ? new Date(r.requested_at).getTime() : undefined,
+        })),
         syncId: targetSyncId,
       };
       setState(normalizedRemote);
@@ -526,18 +540,24 @@ function AppContent() {
     return currentProfile.role === "admin";
   }, [currentProfile]);
 
-  const pathToTab: Record<string, "dashboard" | "earn" | "redeem" | "history" | "settings"> = {
+  const pathToTab: Record<
+    string,
+    "dashboard" | "earn" | "redeem" | "history" | "settings" | "achievements"
+  > = {
     dashboard: "dashboard",
     earn: "earn",
     redeem: "redeem",
     history: "history",
     settings: "settings",
+    achievements: "achievements",
   };
 
-  const activeTab = useMemo(() => {
+  const activeTab = useMemo<
+    "dashboard" | "earn" | "redeem" | "history" | "settings" | "achievements"
+  >(() => {
     const segments = location.pathname.split("/").filter(Boolean);
     const tab = segments[1]; // /:syncId/:tab
-    return pathToTab[tab] || "dashboard";
+    return (pathToTab[tab] as any) || "dashboard";
   }, [location.pathname]);
 
   useEffect(() => {
@@ -1030,31 +1050,192 @@ function AppContent() {
     await syncToCloud(newState);
   };
 
-  const handleSwitchProfile = async (id: string) => {
+  const handleSwitchProfile = (id: string) => {
     setShowProfileSwitcher(false);
-    let nextState: FamilyState | null = null;
 
     setState((prev) => {
       if (prev.currentProfileId === id) {
-        nextState = prev;
         return prev;
       }
-      const updated = { ...prev, currentProfileId: id } as FamilyState;
-      nextState = updated;
-      return updated;
+      return { ...prev, currentProfileId: id } as FamilyState;
     });
+  };
 
+  const handleTransfer = async (toProfileId: string, points: number, message: string) => {
     const familyId = resolveFamilyId();
-    if (familyId) {
-      try {
-        await supabase.from("families").update({ current_profile_id: id }).eq("id", familyId);
-      } catch (e) {
-        console.warn("Profile switch sync failed", e);
-      }
-    }
+    if (!familyId) return;
 
-    if (nextState) {
-      await syncToCloud(nextState);
+    const loadingId = showToast({ type: "loading", title: "正在转赠...", duration: 0 });
+
+    try {
+      // 创建转赠交易记录（双向）- 不指定 id，让数据库自动生成 UUID
+      const { error: txError } = await supabase.from("transactions").insert([
+        {
+          family_id: familyId,
+          profile_id: state.currentProfileId,
+          title: `转赠给 ${state.profiles.find((p) => p.id === toProfileId)?.name}`,
+          points: -points,
+          type: "transfer",
+          from_profile_id: state.currentProfileId,
+          to_profile_id: toProfileId,
+          timestamp: new Date().toISOString(),
+        },
+        {
+          family_id: familyId,
+          profile_id: toProfileId,
+          title: `来自 ${currentProfile.name} 的转赠`,
+          points: points,
+          type: "transfer",
+          from_profile_id: state.currentProfileId,
+          to_profile_id: toProfileId,
+          timestamp: new Date().toISOString(),
+        },
+      ]);
+
+      if (txError) throw txError;
+
+      // 更新余额
+      await supabase
+        .from("profiles")
+        .update({ balance: currentProfile.balance - points })
+        .eq("id", state.currentProfileId)
+        .eq("family_id", familyId);
+
+      const toProfile = state.profiles.find((p) => p.id === toProfileId);
+      if (toProfile) {
+        await supabase
+          .from("profiles")
+          .update({ balance: toProfile.balance + points })
+          .eq("id", toProfileId)
+          .eq("family_id", familyId);
+      }
+
+      // 记录转赠日志
+      await supabase.from("transfer_logs").insert({
+        family_id: familyId,
+        from_profile_id: state.currentProfileId,
+        to_profile_id: toProfileId,
+        points: points,
+        message: message,
+      });
+
+      // 发送系统通知
+      await sendSystemNotification(
+        `${currentProfile.name} 向 ${toProfile?.name} 转赠了 ${points} 元气值${message ? `：${message}` : ""}`
+      );
+
+      await refreshFamily(familyId);
+      showToast({ type: "success", title: "转赠成功" });
+    } catch (error) {
+      notifyError("转赠失败", error);
+    } finally {
+      if (loadingId) dismissToast(loadingId);
+    }
+  };
+
+  const handleSubmitWishlist = async (
+    title: string,
+    points: number,
+    type: "实物奖品" | "特权奖励",
+    imageUrl?: string
+  ) => {
+    const familyId = resolveFamilyId();
+    if (!familyId) return;
+
+    const loadingId = showToast({ type: "loading", title: "正在提交愿望...", duration: 0 });
+
+    try {
+      const { error } = await supabase.from("rewards").insert({
+        family_id: familyId,
+        title: title,
+        points: points,
+        type: type,
+        image_url: imageUrl,
+        status: "pending",
+        requested_by: state.currentProfileId,
+        requested_at: new Date().toISOString(),
+      });
+
+      if (error) throw error;
+
+      await sendSystemNotification(`${currentProfile.name} 提交了新愿望：${title}（${points}元气值）`);
+      await refreshFamily(familyId);
+      showToast({ type: "success", title: "愿望已提交", description: "等待管理员审核" });
+    } catch (error) {
+      notifyError("提交愿望失败", error);
+      throw error;
+    } finally {
+      if (loadingId) dismissToast(loadingId);
+    }
+  };
+
+  const handleApproveWishlist = async (rewardId: string) => {
+    const familyId = resolveFamilyId();
+    if (!familyId) return;
+
+    const loadingId = showToast({ type: "loading", title: "正在批准...", duration: 0 });
+
+    try {
+      const { error } = await supabase
+        .from("rewards")
+        .update({ status: "active" })
+        .eq("id", rewardId)
+        .eq("family_id", familyId);
+
+      if (error) throw error;
+
+      const reward = state.rewards.find(r => r.id === rewardId);
+      if (reward) {
+        await supabase.from("wishlist_reviews").insert({
+          reward_id: rewardId,
+          family_id: familyId,
+          reviewer_id: state.currentProfileId,
+          action: "approved",
+        });
+        await sendSystemNotification(`管理员批准了愿望：${reward.title}`);
+      }
+
+      await refreshFamily(familyId);
+      showToast({ type: "success", title: "已批准", description: "愿望已上架到商店" });
+    } catch (error) {
+      notifyError("批准失败", error);
+    } finally {
+      if (loadingId) dismissToast(loadingId);
+    }
+  };
+
+  const handleRejectWishlist = async (rewardId: string) => {
+    const familyId = resolveFamilyId();
+    if (!familyId) return;
+
+    const loadingId = showToast({ type: "loading", title: "正在拒绝...", duration: 0 });
+
+    try {
+      const { error } = await supabase
+        .from("rewards")
+        .update({ status: "rejected" })
+        .eq("id", rewardId)
+        .eq("family_id", familyId);
+
+      if (error) throw error;
+
+      const reward = state.rewards.find(r => r.id === rewardId);
+      if (reward) {
+        await supabase.from("wishlist_reviews").insert({
+          reward_id: rewardId,
+          family_id: familyId,
+          reviewer_id: state.currentProfileId,
+          action: "rejected",
+        });
+        await sendSystemNotification(`管理员拒绝了愿望：${reward.title}`);
+      }
+
+      await refreshFamily(familyId);
+      showToast({ type: "success", title: "已拒绝", description: "愿望已被拒绝" });
+    } catch (error) {
+      notifyError("拒绝失败", error);
+    } finally {
+      if (loadingId) dismissToast(loadingId);
     }
   };
 
@@ -1082,7 +1263,9 @@ function AppContent() {
     return rewardFilter === "all" ? sorted : sorted.filter((r) => r.type === rewardFilter);
   }, [state.rewards, rewardFilter]);
 
-  const goTab = (tab: "dashboard" | "earn" | "redeem" | "history" | "settings") => {
+  const goTab = (
+    tab: "dashboard" | "earn" | "redeem" | "history" | "settings" | "achievements"
+  ) => {
     const target = resolveFamilyId();
     if (!target) return;
     navigate(`/${target}/${tab}`);
@@ -1172,6 +1355,8 @@ function AppContent() {
           onToggleTheme={toggleTheme}
           onPrint={() => printReport(state)}
           onLogout={handleLogout}
+          onTransfer={() => setShowTransferModal(true)}
+          onWishlist={() => setShowWishlistModal(true)}
         />
 
         <Routes>
@@ -1223,6 +1408,10 @@ function AppContent() {
                 rewards={state.rewards}
                 balance={currentProfile.balance}
                 onRedeem={(payload) => setPendingAction(payload)}
+                isAdmin={isAdmin}
+                onApproveWishlist={handleApproveWishlist}
+                onRejectWishlist={handleRejectWishlist}
+                profiles={state.profiles}
               />
             }
           />
@@ -1265,10 +1454,18 @@ function AppContent() {
                   currentSyncId={resolveFamilyId()}
                   currentProfileId={state.currentProfileId}
                   onSendSystemNotification={sendSystemNotification}
+                  onApproveWishlist={handleApproveWishlist}
+                  onRejectWishlist={handleRejectWishlist}
                 />
               ) : (
                 <Navigate to={`/${resolveFamilyId()}/dashboard`} replace />
               )
+            }
+          />
+          <Route
+            path="/:syncId/achievements"
+            element={
+              <AchievementCenter currentProfile={currentProfile} familyId={resolvedFamilyId} />
             }
           />
           <Route path="/:syncId/doc" element={<DocsPage />} />
@@ -1323,6 +1520,20 @@ function AppContent() {
       />
 
       <PasswordResetModal open={showPasswordReset} onClose={() => setShowPasswordReset(false)} />
+
+      <TransferModal
+        open={showTransferModal}
+        onClose={() => setShowTransferModal(false)}
+        currentProfile={currentProfile}
+        profiles={state.profiles}
+        onTransfer={handleTransfer}
+      />
+
+      <WishlistModal
+        open={showWishlistModal}
+        onClose={() => setShowWishlistModal(false)}
+        onSubmit={handleSubmitWishlist}
+      />
     </div>
   );
 }
